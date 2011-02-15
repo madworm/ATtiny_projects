@@ -10,10 +10,10 @@
 #define __DISPLAY_OFF PORTB |= _BV(PB1)
 #define __step_delay 1500 // used to let the amp-meter settle on a current value
 
-#define __brightness_levels 128 // higher numbers at your own risk - should be divisible by 8 ;-)
-#define __max_brightness __brightness_levels-1
-#define __OCR1A ( 0x0010 * (__brightness_levels / 8) )
-#define __fade_delay 128 / (__brightness_levels / 8)
+#define __max_brightness 32 // higher numbers at your own risk - should be divisible by 8 ;-)
+#define __pwm_loop_max __max_brightness - 1
+#define __OCR1A ( 0x0010 * (__max_brightness / 8) )
+#define __fade_delay ( 32 / (__max_brightness / 8) )
 
 void setup(void);
 void loop(void);
@@ -23,7 +23,7 @@ void setup_timer1_ctc(void);
 uint8_t spi_transfer(uint8_t data);
 int main(void);
 
-volatile uint8_t brightness[8] = {255,255,255,255,255,255,255,255};
+volatile uint8_t brightness[8] = {0,0,0,0,0,0,0,0};
 
 void setup(void) {
   DDRB |= _BV(PB0); // set LED pin as output
@@ -91,13 +91,12 @@ void fader(void) {
     }	
     _delay_ms(__fade_delay);
   }
-  for(ctr1 = __max_brightness; (ctr1 >= 0) & (ctr1 != 255); ctr1--) {
+  for(ctr1 = __max_brightness; (ctr1 >= 0) && (ctr1 != 255); ctr1--) {
     for(ctr2 = 0; ctr2 <= 7; ctr2++) {
       brightness[ctr2] = ctr1;
     }	
     _delay_ms(__fade_delay);
   }
-
 }
 
 void loop(void) {
@@ -154,14 +153,17 @@ ISR(TIMER1_COMPA_vect)
 
 	__DISPLAY_ON;		// only enable the drivers when we actually have time to talk to them
 
-	for (pwm_cycle = 0; pwm_cycle <= __max_brightness; pwm_cycle++) {
+	for (pwm_cycle = 0; pwm_cycle <= __pwm_loop_max; pwm_cycle++) {
 
 		uint8_t led;
 		uint8_t red = 0x00;	// off
 
 		for (led = 0; led <= 7; led++) {
-			if (pwm_cycle < brightness[led]) {
+			if ( pwm_cycle < brightness[led] ) {
 				red |= _BV(led);
+			}
+			else {
+				red &= ~_BV(led);
 			}
 		}
 
