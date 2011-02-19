@@ -11,9 +11,9 @@
 #define __DISPLAY_ON PORTB &= ~_BV(PB1)
 #define __DISPLAY_OFF PORTB |= _BV(PB1)
 
-#define __max_brightness 128 // higher numbers at your own risk - should be divisible by 8 ;-)
+#define __max_brightness 16 // higher numbers at your own risk - should be divisible by 8 ;-)
 #define __pwm_loop_max __max_brightness - 1
-#define __OCR1A ( 0x0010 * (__max_brightness / 8) )
+#define __OCR1A ( 0x0050 * (__max_brightness / 8) )
 
 void setup(void);
 void __delay_ms(uint16_t ms);
@@ -28,9 +28,9 @@ int main(void) {
 	setup();
 	cli();
 	__DISPLAY_OFF;
-	__delay_ms(400);
+	__delay_ms(1000);
 	PORTB |= _BV(PB0); // debug led on
-	__delay_ms(400);
+	__delay_ms(1000);
 	PORTB &= ~_BV(PB0); // off again
 	for(;;) {} // stop here
 };
@@ -59,7 +59,7 @@ void current_calib(void) {
     brightness[ctr1] = 255;
   }
   PORTB |= _BV(PB0);
-  __delay_ms(400);
+  __delay_ms(1000);
   PORTB &= ~_BV(PB0);
 }
 
@@ -90,9 +90,9 @@ void setup_timer1_ctc(void)
 	cli();			/* disable all interrupts while messing with the register setup */
 
 	/* multiplexed TRUE-RGB PWM mode (quite dim) */
-	/* set prescaler to 256 */
-	TCCR1B |= (_BV(CS12));
-	TCCR1B &= ~(_BV(CS11) | _BV(CS10));
+	/* set prescaler to 1 */
+	TCCR1B |= (_BV(CS10));
+	TCCR1B &= ~(_BV(CS11) | _BV(CS12));
 	/* set WGM mode 4: CTC using OCR1A */
 	TCCR1A &= ~(_BV(WGM11) | _BV(WGM10));
 	TCCR1B |= _BV(WGM12);
@@ -110,10 +110,9 @@ void setup_timer1_ctc(void)
 ISR(TIMER1_COMPA_vect)
 {				/* Framebuffer interrupt routine */
 
-	uint8_t pwm_cycle;
+	__DISPLAY_ON;
 
-	__DISPLAY_ON;		// only enable the drivers when we actually have time to talk to them
-	for (pwm_cycle = 0; pwm_cycle <= __pwm_loop_max; pwm_cycle++) {
+	static uint8_t pwm_cycle = 0;
 
 		uint8_t led;
 		uint8_t red = 0x00;	// off
@@ -131,6 +130,11 @@ ISR(TIMER1_COMPA_vect)
 		spi_transfer(red);
 		__LATCH_HIGH;
 
-	}
-	__DISPLAY_OFF;		// we're done with this line, turn the driver's off until next time
+        pwm_cycle++;
+
+        if(pwm_cycle > __pwm_loop_max) {
+	  pwm_cycle = 0;
+	}	  
+
+	__DISPLAY_OFF;	
 }

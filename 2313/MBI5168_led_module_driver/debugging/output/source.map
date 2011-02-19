@@ -20,10 +20,6 @@ Discarded input sections
                 0x00000000        0x0 source.o
  .text._Z12spi_transferh
                 0x00000000        0x0 source.o
- .text._Z16setup_timer1_ctcv
-                0x00000000        0x0 source.o
- .text._Z5setupv
-                0x00000000        0x0 source.o
  .text          0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_exit.o)
  .data          0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_exit.o)
  .bss           0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_exit.o)
@@ -146,7 +142,7 @@ LOAD /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a
 .rela.plt
  *(.rela.plt)
 
-.text           0x00000000      0x1d8
+.text           0x00000000      0x1c8
  *(.vectors)
  .vectors       0x00000000       0x26 /opt/cross/avr/lib/gcc/avr/4.3.3/../../../../avr/lib/avr25/crttn2313.o
                 0x00000000                __vectors
@@ -222,16 +218,22 @@ LOAD /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a
                 0x00000058                __vector_18
                 0x0000005a                . = ALIGN (0x2)
  *(.text.*)
+ .text._Z16setup_timer1_ctcv
+                0x0000005a       0x3a source.o
+                0x0000005a                setup_timer1_ctc()
+ .text._Z5setupv
+                0x00000094       0x46 source.o
+                0x00000094                setup()
+ .text.main     0x000000da       0x3c source.o
+                0x000000da                main
  .text.__vector_4
-                0x0000005a       0xc0 source.o
-                0x0000005a                __vector_4
- .text.main     0x0000011a       0xba source.o
-                0x0000011a                main
-                0x000001d4                . = ALIGN (0x2)
+                0x00000116       0xae source.o
+                0x00000116                __vector_4
+                0x000001c4                . = ALIGN (0x2)
  *(.fini9)
- .fini9         0x000001d4        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_exit.o)
-                0x000001d4                exit
-                0x000001d4                _exit
+ .fini9         0x000001c4        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_exit.o)
+                0x000001c4                exit
+                0x000001c4                _exit
  *(.fini9)
  *(.fini8)
  *(.fini8)
@@ -250,11 +252,11 @@ LOAD /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a
  *(.fini1)
  *(.fini1)
  *(.fini0)
- .fini0         0x000001d4        0x4 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_exit.o)
+ .fini0         0x000001c4        0x4 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_exit.o)
  *(.fini0)
-                0x000001d8                _etext = .
+                0x000001c8                _etext = .
 
-.data           0x00800060        0x0 load address 0x000001d8
+.data           0x00800060        0x0 load address 0x000001c8
                 0x00800060                PROVIDE (__data_start, .)
  *(.data)
  *(.data*)
@@ -265,24 +267,26 @@ LOAD /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a
                 0x00800060                _edata = .
                 0x00800060                PROVIDE (__data_end, .)
 
-.bss            0x00800060        0x8
+.bss            0x00800060        0x9
                 0x00800060                PROVIDE (__bss_start, .)
  *(.bss)
  *(.bss*)
  .bss.brightness
                 0x00800060        0x8 source.o
                 0x00800060                brightness
+ .bss._ZZ10__vector_4E9pwm_cycle
+                0x00800068        0x1 source.o
  *(COMMON)
-                0x00800068                PROVIDE (__bss_end, .)
-                0x000001d8                __data_load_start = LOADADDR (.data)
-                0x000001d8                __data_load_end = (__data_load_start + SIZEOF (.data))
+                0x00800069                PROVIDE (__bss_end, .)
+                0x000001c8                __data_load_start = LOADADDR (.data)
+                0x000001c8                __data_load_end = (__data_load_start + SIZEOF (.data))
 
-.noinit         0x00800068        0x0
-                0x00800068                PROVIDE (__noinit_start, .)
+.noinit         0x00800069        0x0
+                0x00800069                PROVIDE (__noinit_start, .)
  *(.noinit*)
-                0x00800068                PROVIDE (__noinit_end, .)
-                0x00800068                _end = .
-                0x00800068                PROVIDE (__heap_start, .)
+                0x00800069                PROVIDE (__noinit_end, .)
+                0x00800069                _end = .
+                0x00800069                PROVIDE (__heap_start, .)
 
 .eeprom         0x00810000        0x0
  *(.eeprom*)
@@ -346,36 +350,36 @@ LOAD /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a
  .debug_pubnames
                 0x00000000       0x8a source.o
 
-.debug_info     0x00000000      0x4a4
+.debug_info     0x00000000      0x3f3
  *(.debug_info)
- .debug_info    0x00000000      0x4a4 source.o
+ .debug_info    0x00000000      0x3f3 source.o
  *(.gnu.linkonce.wi.*)
 
-.debug_abbrev   0x00000000      0x1a3
+.debug_abbrev   0x00000000      0x1a0
  *(.debug_abbrev)
- .debug_abbrev  0x00000000      0x1a3 source.o
+ .debug_abbrev  0x00000000      0x1a0 source.o
 
-.debug_line     0x00000000      0x548
+.debug_line     0x00000000      0x3e8
  *(.debug_line)
- .debug_line    0x00000000      0x548 source.o
+ .debug_line    0x00000000      0x3e8 source.o
 
 .debug_frame    0x00000000       0x80
  *(.debug_frame)
  .debug_frame   0x00000000       0x80 source.o
 
-.debug_str      0x00000000      0x142
+.debug_str      0x00000000      0x187
  *(.debug_str)
- .debug_str     0x00000000      0x142 source.o
-                                0x180 (size before relaxing)
+ .debug_str     0x00000000      0x187 source.o
+                                0x1c5 (size before relaxing)
 
-.debug_loc      0x00000000      0x10e
+.debug_loc      0x00000000       0x56
  *(.debug_loc)
- .debug_loc     0x00000000      0x10e source.o
+ .debug_loc     0x00000000       0x56 source.o
 
 .debug_macinfo
  *(.debug_macinfo)
 OUTPUT(output/source.elf elf32-avr)
 LOAD linker stubs
 
-.debug_ranges   0x00000000       0x78
- .debug_ranges  0x00000000       0x78 source.o
+.debug_ranges   0x00000000       0x48
+ .debug_ranges  0x00000000       0x48 source.o

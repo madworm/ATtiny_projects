@@ -11,7 +11,7 @@ COMMON = -mmcu=$(MCU)
 ## Flags common to C only
 CFLAGS = $(COMMON)
 CONLYFLAGS = -std=gnu99
-CFLAGS += -Wall -gdwarf-2 -std=gnu99 -DF_CPU=8000000UL -O3 -funsigned-bitfields -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -fno-exceptions
+CFLAGS += -Wall -gdwarf-2 -std=gnu99 -DF_CPU=8000000UL -Os -funsigned-bitfields -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -fno-exceptions
 CFLAGS += -MD -MP -MT $(*F).o
 
 ## Flags common to ASM only
