@@ -1,8 +1,10 @@
-#define F_CPU 8000000UL
+// moved to makefile // #define F_CPU 8000000UL
 #include <avr/io.h>
 #include <inttypes.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
+
+//#define  __HAS_DELAY_CYCLES 0 
 
 #define __LATCH_LOW PORTB &= ~(1 << PB4)
 #define __LATCH_HIGH PORTB |= (1 << PB4)
@@ -10,7 +12,7 @@
 #define __DISPLAY_OFF PORTB |= _BV(PB1)
 #define __step_delay 1500 // used to let the amp-meter settle on a current value
 
-#define __max_brightness 32 // higher numbers at your own risk - should be divisible by 8 ;-)
+#define __max_brightness 128 // higher numbers at your own risk - should be divisible by 8 ;-)
 #define __pwm_loop_max __max_brightness - 1
 #define __OCR1A ( 0x0010 * (__max_brightness / 8) )
 #define __fade_delay ( 32 / (__max_brightness / 8) )
@@ -19,11 +21,24 @@ void setup(void);
 void loop(void);
 void no_isr_demo(void);
 void fader(void);
+void __delay_ms(uint16_t ms);
+void current_calib(void);
 void setup_timer1_ctc(void);
 uint8_t spi_transfer(uint8_t data);
 int main(void);
 
 volatile uint8_t brightness[8] = {0,0,0,0,0,0,0,0};
+
+int main(void) {
+	setup();
+	for(;;) {
+		loop();
+	}
+};
+
+void loop(void) {
+  fader();
+}
 
 void setup(void) {
   DDRB |= _BV(PB0); // set LED pin as output
@@ -41,6 +56,7 @@ void setup(void) {
   sei(); // turn global irq flag on
 
   setup_timer1_ctc();
+  current_calib();
 }
 
 void no_isr_demo(void) {
@@ -48,35 +64,35 @@ void no_isr_demo(void) {
   __LATCH_LOW;
     spi_transfer(0x01); // ch1 on
   __LATCH_HIGH;
-  _delay_ms(__step_delay);
+  __delay_ms(__step_delay);
 
   PORTB ^= _BV(PB0); // toggle LED
 
   __LATCH_LOW;
     spi_transfer(0x03); // ch1+2 on
   __LATCH_HIGH;
-  _delay_ms(__step_delay);
+  __delay_ms(__step_delay);
 
   PORTB ^= _BV(PB0); // toggle LED
 
   __LATCH_LOW;
     spi_transfer(0x07); // ch1+2+3 on
   __LATCH_HIGH;
-  _delay_ms(__step_delay);
+  __delay_ms(__step_delay);
 
   PORTB ^= _BV(PB0); // toggle LED
 
   __LATCH_LOW;
     spi_transfer(0x00); // all off
   __LATCH_HIGH;
-  _delay_ms(__step_delay);
+  __delay_ms(__step_delay);
 
   PORTB ^= _BV(PB0); // toggle LED
 
   __LATCH_LOW;
     spi_transfer(0x00); // all outputs on
   __LATCH_HIGH;
-  _delay_ms(__step_delay);
+  __delay_ms(__step_delay);
 
   PORTB ^= _BV(PB0); // toggle LED
   __DISPLAY_OFF;
@@ -89,26 +105,30 @@ void fader(void) {
     for(ctr2 = 0; ctr2 <= 7; ctr2++) {
       brightness[ctr2] = ctr1;
     }	
-    _delay_ms(__fade_delay);
+    __delay_ms(__fade_delay);
   }
   for(ctr1 = __max_brightness; (ctr1 >= 0) && (ctr1 != 255); ctr1--) {
     for(ctr2 = 0; ctr2 <= 7; ctr2++) {
       brightness[ctr2] = ctr1;
     }	
-    _delay_ms(__fade_delay);
+    __delay_ms(__fade_delay);
   }
 }
 
-void loop(void) {
-  fader();
+void current_calib(void) {
+  uint8_t ctr1;
+  for(ctr1 = 0; ctr1 <= 7; ctr1++) {
+    brightness[ctr1] = 255;
+  }
+  __delay_ms(5000);
 }
 
-int main(void) {
-	setup();
-	for(;;) {
-		loop();
-	}
-};
+void __delay_ms(uint16_t ms) {
+  uint16_t ctr1;
+  for(ctr1 = 0; ctr1 < ms; ctr1++ ){
+    _delay_ms(1);	  
+  }
+}
 
 /*
 Functions dealing with hardware specific jobs / settings
