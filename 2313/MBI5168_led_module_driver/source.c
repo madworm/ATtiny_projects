@@ -13,7 +13,7 @@
 
 #define __step_delay 1500U	// used to let the amp-meter settle on a current value
 
-#define __OCR1A_max 8000U	// this adjusts the PWM frequency
+#define __OCR1A_max 80U	// this adjusts the PWM frequency
 #define __fade_delay 256U
 
 void setup(void);
@@ -33,7 +33,7 @@ typedef struct {
 	uint8_t dutycycle;
 } led_t;
 
-volatile led_t brightness[8] = { {0, 10}, {1, 20}, {2, 30}, {3, 40}, {4, 50}, {5, 60}, {6, 70}, {7, 80} };	// 1-dutycycle
+volatile led_t brightness[8] = { {0, 90}, {1, 91}, {2, 92}, {3, 93}, {4, 94}, {5, 95}, {6, 96}, {7, 100} };	// 1-dutycycle
 
 volatile uint32_t system_ticks = 0;
 
@@ -47,7 +47,7 @@ int main(void)
 
 void loop(void)
 {
-	//fader();
+	fader();
 }
 
 void setup(void)
@@ -231,6 +231,7 @@ ISR(TIMER0_OVF_vect)
 ISR(TIMER1_COMPA_vect)
 {				/* Framebuffer interrupt routine */
 	__LED0_ON;
+	__DISPLAY_OFF;
 	static uint8_t data = 0;	// init as off
 	static uint8_t index = 0;
 
@@ -273,5 +274,6 @@ ISR(TIMER1_COMPA_vect)
 	spi_transfer(data);
 	__LATCH_HIGH;
 
+	__DISPLAY_ON;
 	__LED0_OFF;
 }
