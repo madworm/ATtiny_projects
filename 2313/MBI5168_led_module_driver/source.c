@@ -15,7 +15,7 @@
 
 #define __max_brightness 64U // higher numbers at your own risk - should be divisible by 8 ;-)
 #define __pwm_loop_max __max_brightness - 1
-#define __OCR1A_max 800U 
+#define __OCR1A_max 8000U 
 #define __fade_delay 1024U
 
 void setup(void);
@@ -35,7 +35,7 @@ typedef struct {
 	uint8_t dutycycle;
 } led_t;
 
-volatile led_t brightness[8] = { {0,10},{1,20},{2,30},{3,40},{4,50},{5,60},{6,70},{7,80}};
+volatile led_t brightness[8] = { {0,10},{1,20},{2,30},{3,40},{4,50},{5,60},{6,70},{7,80} };
 volatile uint32_t system_ticks = 0;
 
 int main(void) {
@@ -225,23 +225,35 @@ ISR(TIMER1_COMPA_vect)
 		static uint8_t data = 0;	// init as off
 	        static uint8_t index = 0;
 
-		data ^= _BV(brightness[index].number); // toggle the bit that is due
-	/*
-		if(index == 8){
-		  index = 0;
-		  data = 0;
+		/* starts with index = 0 */
+		/* now calculate when to run the next time and turn on LED0 */
+		if(index == 0) {
+ 		  OCR1A = (uint16_t)((uint32_t)(brightness[index].dutycycle)*(uint32_t)(__OCR1A_max)/(uint32_t)(100));
+		  index++;
 		}
-	*/
+		else if (index == 8) { // the last led in the row
+		  data |= _BV(brightness[(index-1)].number);
+		  /* calculate when to turn everything off */
+		  OCR1A = (uint16_t)(((uint32_t)(100)-(uint32_t)(brightness[(index-1)].dutycycle))*(uint32_t)(__OCR1A_max)/(uint32_t)(100));
+		  index++;
+		}
+		else if (index == 9) {
+		  /* cycle completed, reset everything */
+		  data = 0;
+		  index = 0;
+		  /* immediately restart */
+		  OCR1A = 0;
+		  /* DON'T increase the index counter ! */
+		}
+		else {
+		  /* turn on the LED we deciced to turn on in the last invocation */
+		  data |= _BV(brightness[(index-1)].number); 
+		  /* calculate when to run the next time and turn on the next LED */
+                  OCR1A = (uint16_t)(((uint32_t)(brightness[index].dutycycle)-(uint32_t)(brightness[(index-1)].dutycycle))*(uint32_t)(__OCR1A_max)/(uint32_t)(100));
+		  index++;
+		}
+
 		__LATCH_LOW;
 		spi_transfer(data);
 		__LATCH_HIGH;
-
-		if(index == 7){
-		  OCR1A = (uint16_t)(((uint32_t)(100)-(uint32_t)(brightness[index].dutycycle))*(uint32_t)(__OCR1A_max)/(uint32_t)(100));
-		}
-		else{
-		  OCR1A = (uint16_t)(((uint32_t)(brightness[index+1].dutycycle)-(uint32_t)(brightness[index].dutycycle))*(uint32_t)(__OCR1A_max)/(uint32_t)(100));
-		}
-		index++;
-		index=index%8;
 }
