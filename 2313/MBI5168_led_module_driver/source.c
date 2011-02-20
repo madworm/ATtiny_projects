@@ -11,12 +11,12 @@
 #define __LED1_ON PORTB |= _BV(PB1)
 #define __LED1_OFF PORTB &= ~_BV(PB1)
 
-#define __step_delay 1500 // used to let the amp-meter settle on a current value
+#define __step_delay 1500U // used to let the amp-meter settle on a current value
 
-#define __max_brightness 64 // higher numbers at your own risk - should be divisible by 8 ;-)
+#define __max_brightness 64U // higher numbers at your own risk - should be divisible by 8 ;-)
 #define __pwm_loop_max __max_brightness - 1
-#define __OCR1A_max 200
-#define __fade_delay 1024
+#define __OCR1A_max 800U 
+#define __fade_delay 1024U
 
 void setup(void);
 void loop(void);
@@ -35,7 +35,7 @@ typedef struct {
 	uint8_t dutycycle;
 } led_t;
 
-volatile led_t brightness[1] = { {0,10} };
+volatile led_t brightness[8] = { {0,10},{1,20},{2,30},{3,40},{4,50},{5,60},{6,70},{7,80}};
 volatile uint32_t system_ticks = 0;
 
 int main(void) {
@@ -196,9 +196,9 @@ void setup_timer1_ctc(void)
 	cli();			/* disable all interrupts while messing with the register setup */
 
 	/* multiplexed TRUE-RGB PWM mode (quite dim) */
-	/* set prescaler to 64 */
-	TCCR1B |= (_BV(CS11) | _BV(CS10));
-	TCCR1B &= ~_BV(CS12);
+	/* set prescaler to 1024 */
+	TCCR1B |= (_BV(CS10) | _BV(CS12));
+	TCCR1B &= ~(_BV(CS11));
 	/* set WGM mode 4: CTC using OCR1A */
 	TCCR1A &= ~(_BV(WGM11) | _BV(WGM10));
 	TCCR1B |= _BV(WGM12);
@@ -224,22 +224,24 @@ ISR(TIMER1_COMPA_vect)
 {				/* Framebuffer interrupt routine */
 		static uint8_t data = 0;	// init as off
 	        static uint8_t index = 0;
-		
-		if(index == 2){
-		  index = 0;
-		}
 
- 	  	data ^= _BV(brightness[0].number); // toggle the bit that is due
-		
+		data ^= _BV(brightness[index].number); // toggle the bit that is due
+	/*
+		if(index == 8){
+		  index = 0;
+		  data = 0;
+		}
+	*/
 		__LATCH_LOW;
 		spi_transfer(data);
 		__LATCH_HIGH;
 
-		if(index == 1){
-		  OCR1A = (100-brightness[0].dutycycle)*__OCR1A_max/100;
+		if(index == 7){
+		  OCR1A = (uint16_t)(((uint32_t)(100)-(uint32_t)(brightness[index].dutycycle))*(uint32_t)(__OCR1A_max)/(uint32_t)(100));
 		}
 		else{
-		  OCR1A = brightness[0].dutycycle*__OCR1A_max/100;
+		  OCR1A = (uint16_t)(((uint32_t)(brightness[index+1].dutycycle)-(uint32_t)(brightness[index].dutycycle))*(uint32_t)(__OCR1A_max)/(uint32_t)(100));
 		}
 		index++;
+		index=index%8;
 }
