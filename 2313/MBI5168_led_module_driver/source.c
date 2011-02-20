@@ -205,7 +205,7 @@ void setup_timer1_ctc(void)
 
 	/* multiplexed TRUE-RGB PWM mode (quite dim) */
 	/* set prescaler to 1024 */
-	TCCR1B |= (_BV(CS10) | _BV(CS11));
+	TCCR1B |= (_BV(CS10) | _BV(CS12));
 	TCCR1B &= ~(_BV(CS11));
 	/* set WGM mode 4: CTC using OCR1A */
 	TCCR1A &= ~(_BV(WGM11) | _BV(WGM10));
