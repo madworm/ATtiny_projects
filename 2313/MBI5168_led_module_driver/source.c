@@ -15,8 +15,8 @@
 
 #define __max_brightness 64 // higher numbers at your own risk - should be divisible by 8 ;-)
 #define __pwm_loop_max __max_brightness - 1
-#define __OCR1A ( 0x008 * (__max_brightness / 8) )
-#define __fade_delay ( 1024 / (__max_brightness / 8) )
+#define __OCR1A_max 200
+#define __fade_delay 1024
 
 void setup(void);
 void loop(void);
@@ -30,7 +30,12 @@ void setup_timer1_ctc(void);
 uint8_t spi_transfer(uint8_t data);
 int main(void);
 
-volatile uint8_t brightness[8] = {0,0,0,0,0,0,0,0};
+typedef struct {
+	uint8_t number;
+	uint8_t dutycycle;
+} led_t;
+
+volatile led_t brightness[1] = { {0,10} };
 volatile uint32_t system_ticks = 0;
 
 int main(void) {
@@ -41,7 +46,7 @@ int main(void) {
 };
 
 void loop(void) {
-  fader();
+  //fader();
 }
 
 void setup(void) {
@@ -63,9 +68,10 @@ void setup(void) {
 
   sei(); // turn global irq flag on
 
-  setup_system_ticker();
+  //setup_system_ticker();
   setup_timer1_ctc();
-  current_calib();
+  //current_calib();
+  __DISPLAY_ON;
 }
 
 void no_isr_demo(void) {
@@ -112,13 +118,13 @@ void fader(void) {
   uint8_t ctr2;
   for(ctr1 = 0; ctr1 <= __max_brightness; ctr1++) {
     for(ctr2 = 0; ctr2 <= 7; ctr2++) {
-      brightness[ctr2] = ctr1;
+      // brightness[ctr2] = ctr1;
     }	
     delay(__fade_delay);
   }
   for(ctr1 = __max_brightness; (ctr1 >= 0) && (ctr1 != 255); ctr1--) {
     for(ctr2 = 0; ctr2 <= 7; ctr2++) {
-      brightness[ctr2] = ctr1;
+      // brightness[ctr2] = ctr1;
     }	
     delay(__fade_delay);
   }
@@ -127,7 +133,7 @@ void fader(void) {
 void current_calib(void) {
   uint8_t ctr1;
   for(ctr1 = 0; ctr1 <= 7; ctr1++) {
-    brightness[ctr1] = 255;
+    // brightness[ctr1] = 255;
   }
   delay(50000);
 }
@@ -190,9 +196,9 @@ void setup_timer1_ctc(void)
 	cli();			/* disable all interrupts while messing with the register setup */
 
 	/* multiplexed TRUE-RGB PWM mode (quite dim) */
-	/* set prescaler to 8 */
-	TCCR1B |= (_BV(CS11));
-	TCCR1B &= ~(_BV(CS10) | _BV(CS12));
+	/* set prescaler to 64 */
+	TCCR1B |= (_BV(CS11) | _BV(CS10));
+	TCCR1B &= ~_BV(CS12);
 	/* set WGM mode 4: CTC using OCR1A */
 	TCCR1A &= ~(_BV(WGM11) | _BV(WGM10));
 	TCCR1B |= _BV(WGM12);
@@ -200,7 +206,7 @@ void setup_timer1_ctc(void)
 	/* normal operation - disconnect PWM pins */
 	TCCR1A &= ~(_BV(COM1A1) | _BV(COM1A0) | _BV(COM1B1) | _BV(COM1B0));
 	/* set top value for TCNT1 */
-	OCR1A = __OCR1A;
+	OCR1A = __OCR1A_max;
 	/* enable COMPA isr */
 	TIMSK |= _BV(OCIE1A);
 	/* restore SREG with global interrupt flag */
@@ -209,36 +215,31 @@ void setup_timer1_ctc(void)
 
 ISR(TIMER0_OVF_vect)
 {
-  __LED1_ON;
+  // __LED1_ON;
   system_ticks++;  
-  __LED1_OFF;
+  // __LED1_OFF;
 }
 
 ISR(TIMER1_COMPA_vect)
 {				/* Framebuffer interrupt routine */
-	static uint8_t pwm_cycle = 0;
-
-	__DISPLAY_ON;		// only enable the drivers when we actually have time to talk to them
-		uint8_t led;
-		uint8_t red = 0x00;	// off
-
-		for (led = 0; led <= 7; led++) {
-			if ( pwm_cycle < brightness[led] ) {
-				red |= _BV(led);
-			}
-			else {
-				red &= ~_BV(led);
-			}
+		static uint8_t data = 0;	// init as off
+	        static uint8_t index = 0;
+		
+		if(index == 2){
+		  index = 0;
 		}
 
+ 	  	data ^= _BV(brightness[0].number); // toggle the bit that is due
+		
 		__LATCH_LOW;
-		spi_transfer(red);
+		spi_transfer(data);
 		__LATCH_HIGH;
 
-	pwm_cycle++;
-	if(pwm_cycle > __pwm_loop_max) {
-	  pwm_cycle = 0;
-	}
-	__DISPLAY_OFF;		// we're done with this line, turn the driver's off until next time
-
+		if(index == 1){
+		  OCR1A = (100-brightness[0].dutycycle)*__OCR1A_max/100;
+		}
+		else{
+		  OCR1A = brightness[0].dutycycle*__OCR1A_max/100;
+		}
+		index++;
 }
