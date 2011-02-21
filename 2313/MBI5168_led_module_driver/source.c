@@ -1,6 +1,7 @@
 #include <avr/io.h>
 #include <inttypes.h>
 #include <avr/interrupt.h>
+#include <stdlib.h>
 #include "source.h"
 
 // the 2nd number is actually 1-dutycycle.
@@ -93,6 +94,26 @@ void no_isr_demo(void)
 	__DISPLAY_OFF;
 }
 
+static int my_compare_func(const void * p1, const void * p2)
+{
+	// to make dereferencing sensible
+	led_t * first = (led_t *)(*(const int *)(p1));
+	led_t * second = (led_t *)(*(const int *)(p2));
+
+	if( (*first).dutycycle > (*second).dutycycle )
+	{
+		return 1;
+	}
+	else if ( (*first).dutycycle < (*second).dutycycle )
+	{
+		return -1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 void fader(void)
 {
 	uint8_t ctr1;
@@ -100,48 +121,17 @@ void fader(void)
 	for (ctr1 = 0; ctr1 <= 100; ctr1++) {
 		for (ctr2 = 0; ctr2 <= 7; ctr2++) {
 			glob_brightness[ctr2].dutycycle = ctr1;
-			sort(&glob_brightness[0],&sorted[0],8);
+			qsort(&sorted[0],8,sizeof(sorted[0]),my_compare_func);
 		}
 		delay(__fade_delay);
 	}
 	for (ctr1 = 100; (ctr1 >= 0) && (ctr1 != 255); ctr1--) {
 		for (ctr2 = 0; ctr2 <= 7; ctr2++) {
 			glob_brightness[ctr2].dutycycle = ctr1;
-			sort(&glob_brightness[0],&sorted[0],8);
+                	qsort(&sorted[0],8,sizeof(sorted[0]),my_compare_func);			
 		}
 		delay(__fade_delay);
 	}
-}
-
-volatile led_t * min(volatile led_t * array, uint8_t size)
-{
-	uint8_t index;
-	volatile led_t * minimum = &array[0]; // start with the first element
-	for(index = 1; index < size; index++)
-	{
-		if( (*minimum).dutycycle < array[index].dutycycle )
-	       	{
-			// keep it
-		}
-		else 
-		{
-			minimum = &array[index];
-		}
-	}
-	return minimum;
-}
-
-void sort(volatile led_t * array, volatile led_t ** buffer, uint8_t size)
-{
-        //buffer[0] = min(array,size);
-	buffer[0] = &glob_brightness[0];
-	buffer[1] = &glob_brightness[1];
-	buffer[2] = &glob_brightness[2];
-	buffer[3] = &glob_brightness[3]; 
-	buffer[4] = &glob_brightness[4];
-	buffer[5] = &glob_brightness[5];
-	buffer[6] = &glob_brightness[6];
-	buffer[7] = &glob_brightness[7];
 }
 
 void current_calib(void)

@@ -54,25 +54,19 @@ void init(void)
 
 static int my_compare_func(const void * p1, const void * p2)
 {
-
-	/* to make dereferencing sensible
-	 * 
-	 * from right to left: 
-	 *
-	 * p1/2 are declared as "const *", as this is what the function takes as input
-	 * THEN "led_t *" is added, as this is the true type of the stuff
-	 * as we're sorting an array of pointers!
-	 *
+	/* see 'sort_test_1a.c' as well for an
+	 * equivalent version.
+	 * pointer magic... ugh...
 	 */
+	 
+	led_t * first = (led_t *)(*(const int *)(p1));
+	led_t * second = (led_t *)(*(const int *)(p2));
 
-	led_t * const * first = p1;
-	led_t * const * second = p2;
-
-	if( (*first)->dutycycle > (*second)->dutycycle )
+	if( (*first).dutycycle > (*second).dutycycle )
 	{
 		return 1;
 	}
-	else if ( (*first)->dutycycle < (*second)->dutycycle )
+	else if ( (*first).dutycycle < (*second).dutycycle )
 	{
 		return -1;
 	}

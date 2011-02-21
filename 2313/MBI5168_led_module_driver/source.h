@@ -20,11 +20,10 @@ typedef struct {
 void setup(void);
 void loop(void);
 void no_isr_demo(void);
-volatile led_t * min(volatile led_t * array, uint8_t size);
-void sort(volatile led_t * array, volatile led_t ** buffer, uint8_t size);
 void fader(void);
 void delay(uint32_t ticks);
 void current_calib(void);
+static int my_compare_func(const void * p1, const void * p2);
 void setup_system_ticker(void);
 uint32_t time(void);
 void setup_timer1_ctc(void);

@@ -1,0 +1,470 @@
+Archive member included because of file (symbol)
+
+/opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_mulsi3.o)
+                              source.o (__mulsi3)
+/opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_udivmodsi4.o)
+                              source.o (__udivmodsi4)
+/opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_exit.o)
+                              /opt/cross/avr/lib/gcc/avr/4.3.3/../../../../avr/lib/avr25/crttn2313.o (exit)
+/opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_copy_data.o)
+                              source.o (__do_copy_data)
+/opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_clear_bss.o)
+                              source.o (__do_clear_bss)
+/opt/cross/avr/lib/gcc/avr/4.3.3/../../../../avr/lib/avr25/libc.a(qsort.o)
+                              source.o (qsort)
+/opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_mulhi3.o)
+                              /opt/cross/avr/lib/gcc/avr/4.3.3/../../../../avr/lib/avr25/libc.a(qsort.o) (__mulhi3)
+/opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_udivmodhi4.o)
+                              /opt/cross/avr/lib/gcc/avr/4.3.3/../../../../avr/lib/avr25/libc.a(qsort.o) (__udivmodhi4)
+/opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_prologue.o)
+                              /opt/cross/avr/lib/gcc/avr/4.3.3/../../../../avr/lib/avr25/libc.a(qsort.o) (__prologue_saves__)
+/opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_epilogue.o)
+                              /opt/cross/avr/lib/gcc/avr/4.3.3/../../../../avr/lib/avr25/libc.a(qsort.o) (__epilogue_restores__)
+
+Discarded input sections
+
+ .data          0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/../../../../avr/lib/avr25/crttn2313.o
+ .bss           0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/../../../../avr/lib/avr25/crttn2313.o
+ .text          0x00000000        0x0 source.o
+ .data          0x00000000        0x0 source.o
+ .bss           0x00000000        0x0 source.o
+ .text._Z11no_isr_demov
+                0x00000000        0x0 source.o
+ .text._Z13current_calibv
+                0x00000000        0x0 source.o
+ .text._Z4timev
+                0x00000000        0x0 source.o
+ .text._Z5delaym
+                0x00000000        0x0 source.o
+ .text._Z12spi_transferh
+                0x00000000        0x0 source.o
+ .text._Z4loopv
+                0x00000000        0x0 source.o
+ .text          0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_mulsi3.o)
+ .data          0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_mulsi3.o)
+ .bss           0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_mulsi3.o)
+ .text          0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_udivmodsi4.o)
+ .data          0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_udivmodsi4.o)
+ .bss           0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_udivmodsi4.o)
+ .text          0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_exit.o)
+ .data          0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_exit.o)
+ .bss           0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_exit.o)
+ .text.libgcc   0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_exit.o)
+ .text          0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_copy_data.o)
+ .data          0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_copy_data.o)
+ .bss           0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_copy_data.o)
+ .text.libgcc   0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_copy_data.o)
+ .text          0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_clear_bss.o)
+ .data          0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_clear_bss.o)
+ .bss           0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_clear_bss.o)
+ .text.libgcc   0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_clear_bss.o)
+ .text          0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/../../../../avr/lib/avr25/libc.a(qsort.o)
+ .data          0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/../../../../avr/lib/avr25/libc.a(qsort.o)
+ .bss           0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/../../../../avr/lib/avr25/libc.a(qsort.o)
+ .text          0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_mulhi3.o)
+ .data          0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_mulhi3.o)
+ .bss           0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_mulhi3.o)
+ .text          0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_udivmodhi4.o)
+ .data          0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_udivmodhi4.o)
+ .bss           0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_udivmodhi4.o)
+ .text          0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_prologue.o)
+ .data          0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_prologue.o)
+ .bss           0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_prologue.o)
+ .text          0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_epilogue.o)
+ .data          0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_epilogue.o)
+ .bss           0x00000000        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_epilogue.o)
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+text             0x00000000         0x00002000         xr
+data             0x00800060         0x0000ffa0         rw !x
+eeprom           0x00810000         0x00010000         rw !x
+fuse             0x00820000         0x00000400         rw !x
+lock             0x00830000         0x00000400         rw !x
+signature        0x00840000         0x00000400         rw !x
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+LOAD /opt/cross/avr/lib/gcc/avr/4.3.3/../../../../avr/lib/avr25/crttn2313.o
+LOAD source.o
+LOAD /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a
+LOAD /opt/cross/avr/lib/gcc/avr/4.3.3/../../../../avr/lib/avr25/libc.a
+LOAD /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a
+
+.hash
+ *(.hash)
+
+.dynsym
+ *(.dynsym)
+
+.dynstr
+ *(.dynstr)
+
+.gnu.version
+ *(.gnu.version)
+
+.gnu.version_d
+ *(.gnu.version_d)
+
+.gnu.version_r
+ *(.gnu.version_r)
+
+.rel.init
+ *(.rel.init)
+
+.rela.init
+ *(.rela.init)
+
+.rel.text
+ *(.rel.text)
+ *(.rel.text.*)
+ *(.rel.gnu.linkonce.t*)
+
+.rela.text
+ *(.rela.text)
+ *(.rela.text.*)
+ *(.rela.gnu.linkonce.t*)
+
+.rel.fini
+ *(.rel.fini)
+
+.rela.fini
+ *(.rela.fini)
+
+.rel.rodata
+ *(.rel.rodata)
+ *(.rel.rodata.*)
+ *(.rel.gnu.linkonce.r*)
+
+.rela.rodata
+ *(.rela.rodata)
+ *(.rela.rodata.*)
+ *(.rela.gnu.linkonce.r*)
+
+.rel.data
+ *(.rel.data)
+ *(.rel.data.*)
+ *(.rel.gnu.linkonce.d*)
+
+.rela.data
+ *(.rela.data)
+ *(.rela.data.*)
+ *(.rela.gnu.linkonce.d*)
+
+.rel.ctors
+ *(.rel.ctors)
+
+.rela.ctors
+ *(.rela.ctors)
+
+.rel.dtors
+ *(.rel.dtors)
+
+.rela.dtors
+ *(.rela.dtors)
+
+.rel.got
+ *(.rel.got)
+
+.rela.got
+ *(.rela.got)
+
+.rel.bss
+ *(.rel.bss)
+
+.rela.bss
+ *(.rela.bss)
+
+.rel.plt
+ *(.rel.plt)
+
+.rela.plt
+ *(.rela.plt)
+
+.text           0x00000000      0x924
+ *(.vectors)
+ .vectors       0x00000000       0x26 /opt/cross/avr/lib/gcc/avr/4.3.3/../../../../avr/lib/avr25/crttn2313.o
+                0x00000000                __vectors
+                0x00000000                __vector_default
+ *(.vectors)
+ *(.progmem.gcc*)
+ *(.progmem*)
+                0x00000026                . = ALIGN (0x2)
+                0x00000026                __trampolines_start = .
+ *(.trampolines)
+ .trampolines   0x00000026        0x0 linker stubs
+ *(.trampolines*)
+                0x00000026                __trampolines_end = .
+ *(.jumptables)
+ *(.jumptables*)
+ *(.lowtext)
+ *(.lowtext*)
+                0x00000026                __ctors_start = .
+ *(.ctors)
+                0x00000026                __ctors_end = .
+                0x00000026                __dtors_start = .
+ *(.dtors)
+                0x00000026                __dtors_end = .
+ SORT(*)(.ctors)
+ SORT(*)(.dtors)
+ *(.init0)
+ .init0         0x00000026        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/../../../../avr/lib/avr25/crttn2313.o
+                0x00000026                __init
+ *(.init0)
+ *(.init1)
+ *(.init1)
+ *(.init2)
+ .init2         0x00000026        0x8 /opt/cross/avr/lib/gcc/avr/4.3.3/../../../../avr/lib/avr25/crttn2313.o
+ *(.init2)
+ *(.init3)
+ *(.init3)
+ *(.init4)
+ .init4         0x0000002e       0x16 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_copy_data.o)
+                0x0000002e                __do_copy_data
+ .init4         0x00000044       0x10 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_clear_bss.o)
+                0x00000044                __do_clear_bss
+ *(.init4)
+ *(.init5)
+ *(.init5)
+ *(.init6)
+ *(.init6)
+ *(.init7)
+ *(.init7)
+ *(.init8)
+ *(.init8)
+ *(.init9)
+ .init9         0x00000054        0x4 /opt/cross/avr/lib/gcc/avr/4.3.3/../../../../avr/lib/avr25/crttn2313.o
+ *(.init9)
+ *(.text)
+ .text          0x00000058        0x2 /opt/cross/avr/lib/gcc/avr/4.3.3/../../../../avr/lib/avr25/crttn2313.o
+                0x00000058                __vector_1
+                0x00000058                __vector_12
+                0x00000058                __bad_interrupt
+                0x00000058                __vector_3
+                0x00000058                __vector_11
+                0x00000058                __vector_13
+                0x00000058                __vector_17
+                0x00000058                __vector_7
+                0x00000058                __vector_5
+                0x00000058                __vector_9
+                0x00000058                __vector_2
+                0x00000058                __vector_15
+                0x00000058                __vector_8
+                0x00000058                __vector_14
+                0x00000058                __vector_10
+                0x00000058                __vector_16
+                0x00000058                __vector_18
+                0x0000005a                . = ALIGN (0x2)
+ *(.text.*)
+ .text._ZL15my_compare_funcPKvS0_
+                0x0000005a       0x2e source.o
+ .text._Z19setup_system_tickerv
+                0x00000088       0x2c source.o
+                0x00000088                setup_system_ticker()
+ .text._Z16setup_timer1_ctcv
+                0x000000b4       0x3a source.o
+                0x000000b4                setup_timer1_ctc()
+ .text._Z5setupv
+                0x000000ee       0x1e source.o
+                0x000000ee                setup()
+ .text.__vector_6
+                0x0000010c       0x4e source.o
+                0x0000010c                __vector_6
+ .text.__vector_4
+                0x0000015a      0x172 source.o
+                0x0000015a                __vector_4
+ .text._Z5faderv
+                0x000002cc       0xfa source.o
+                0x000002cc                fader()
+ .text.main     0x000003c6        0x6 source.o
+                0x000003c6                main
+ .text.libgcc   0x000003cc       0x32 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_mulsi3.o)
+                0x000003cc                __mulsi3
+ .text.libgcc   0x000003fe       0x44 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_udivmodsi4.o)
+                0x000003fe                __udivmodsi4
+ .text.avr-libc
+                0x00000442      0x424 /opt/cross/avr/lib/gcc/avr/4.3.3/../../../../avr/lib/avr25/libc.a(qsort.o)
+                0x000004b4                qsort
+ .text.libgcc   0x00000866       0x24 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_mulhi3.o)
+                0x00000866                __mulhi3
+ .text.libgcc   0x0000088a       0x28 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_udivmodhi4.o)
+                0x0000088a                __udivmodhi4
+ .text.libgcc   0x000008b2       0x38 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_prologue.o)
+                0x000008b2                __prologue_saves__
+ .text.libgcc   0x000008ea       0x36 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_epilogue.o)
+                0x000008ea                __epilogue_restores__
+                0x00000920                . = ALIGN (0x2)
+ *(.fini9)
+ .fini9         0x00000920        0x0 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_exit.o)
+                0x00000920                exit
+                0x00000920                _exit
+ *(.fini9)
+ *(.fini8)
+ *(.fini8)
+ *(.fini7)
+ *(.fini7)
+ *(.fini6)
+ *(.fini6)
+ *(.fini5)
+ *(.fini5)
+ *(.fini4)
+ *(.fini4)
+ *(.fini3)
+ *(.fini3)
+ *(.fini2)
+ *(.fini2)
+ *(.fini1)
+ *(.fini1)
+ *(.fini0)
+ .fini0         0x00000920        0x4 /opt/cross/avr/lib/gcc/avr/4.3.3/avr25/libgcc.a(_exit.o)
+ *(.fini0)
+                0x00000924                _etext = .
+
+.data           0x00800060       0x10 load address 0x00000924
+                0x00800060                PROVIDE (__data_start, .)
+ *(.data)
+ *(.data*)
+ .data.glob_brightness
+                0x00800060       0x10 source.o
+                0x00800060                glob_brightness
+ *(.rodata)
+ *(.rodata*)
+ *(.gnu.linkonce.d*)
+                0x00800070                . = ALIGN (0x2)
+                0x00800070                _edata = .
+                0x00800070                PROVIDE (__data_end, .)
+
+.bss            0x00800070       0x16
+                0x00800070                PROVIDE (__bss_start, .)
+ *(.bss)
+ *(.bss*)
+ .bss.sorted    0x00800070       0x10 source.o
+                0x00800070                sorted
+ .bss.system_ticks
+                0x00800080        0x4 source.o
+                0x00800080                system_ticks
+ .bss._ZZ10__vector_4E5index
+                0x00800084        0x1 source.o
+ .bss._ZZ10__vector_4E4data
+                0x00800085        0x1 source.o
+ *(COMMON)
+                0x00800086                PROVIDE (__bss_end, .)
+                0x00000924                __data_load_start = LOADADDR (.data)
+                0x00000934                __data_load_end = (__data_load_start + SIZEOF (.data))
+
+.noinit         0x00800086        0x0
+                0x00800086                PROVIDE (__noinit_start, .)
+ *(.noinit*)
+                0x00800086                PROVIDE (__noinit_end, .)
+                0x00800086                _end = .
+                0x00800086                PROVIDE (__heap_start, .)
+
+.eeprom         0x00810000        0x0
+ *(.eeprom*)
+                0x00810000                __eeprom_end = .
+
+.fuse
+ *(.fuse)
+ *(.lfuse)
+ *(.hfuse)
+ *(.efuse)
+
+.lock
+ *(.lock*)
+
+.signature
+ *(.signature*)
+
+.stab           0x00000000      0x6b4
+ *(.stab)
+ .stab          0x00000000      0x6b4 /opt/cross/avr/lib/gcc/avr/4.3.3/../../../../avr/lib/avr25/crttn2313.o
+
+.stabstr        0x00000000       0x54
+ *(.stabstr)
+ .stabstr       0x00000000       0x54 /opt/cross/avr/lib/gcc/avr/4.3.3/../../../../avr/lib/avr25/crttn2313.o
+
+.stab.excl
+ *(.stab.excl)
+
+.stab.exclstr
+ *(.stab.exclstr)
+
+.stab.index
+ *(.stab.index)
+
+.stab.indexstr
+ *(.stab.indexstr)
+
+.comment
+ *(.comment)
+
+.debug
+ *(.debug)
+
+.line
+ *(.line)
+
+.debug_srcinfo
+ *(.debug_srcinfo)
+
+.debug_sfnames
+ *(.debug_sfnames)
+
+.debug_aranges  0x00000000       0xb0
+ *(.debug_aranges)
+ .debug_aranges
+                0x00000000       0x88 source.o
+ .debug_aranges
+                0x00000088       0x28 /opt/cross/avr/lib/gcc/avr/4.3.3/../../../../avr/lib/avr25/libc.a(qsort.o)
+
+.debug_pubnames
+                0x00000000      0x115
+ *(.debug_pubnames)
+ .debug_pubnames
+                0x00000000       0xf9 source.o
+ .debug_pubnames
+                0x000000f9       0x1c /opt/cross/avr/lib/gcc/avr/4.3.3/../../../../avr/lib/avr25/libc.a(qsort.o)
+
+.debug_info     0x00000000      0xc88
+ *(.debug_info)
+ .debug_info    0x00000000      0x7f7 source.o
+ .debug_info    0x000007f7      0x491 /opt/cross/avr/lib/gcc/avr/4.3.3/../../../../avr/lib/avr25/libc.a(qsort.o)
+ *(.gnu.linkonce.wi.*)
+
+.debug_abbrev   0x00000000      0x35d
+ *(.debug_abbrev)
+ .debug_abbrev  0x00000000      0x225 source.o
+ .debug_abbrev  0x00000225      0x138 /opt/cross/avr/lib/gcc/avr/4.3.3/../../../../avr/lib/avr25/libc.a(qsort.o)
+
+.debug_line     0x00000000      0xb77
+ *(.debug_line)
+ .debug_line    0x00000000      0x8b1 source.o
+ .debug_line    0x000008b1      0x2c6 /opt/cross/avr/lib/gcc/avr/4.3.3/../../../../avr/lib/avr25/libc.a(qsort.o)
+
+.debug_frame    0x00000000      0x120
+ *(.debug_frame)
+ .debug_frame   0x00000000       0xf0 source.o
+ .debug_frame   0x000000f0       0x30 /opt/cross/avr/lib/gcc/avr/4.3.3/../../../../avr/lib/avr25/libc.a(qsort.o)
+
+.debug_str      0x00000000      0x2b3
+ *(.debug_str)
+ .debug_str     0x00000000      0x22b source.o
+                                0x26a (size before relaxing)
+ .debug_str     0x0000022b       0x88 /opt/cross/avr/lib/gcc/avr/4.3.3/../../../../avr/lib/avr25/libc.a(qsort.o)
+                                 0xa8 (size before relaxing)
+
+.debug_loc      0x00000000     0x1142
+ *(.debug_loc)
+ .debug_loc     0x00000000      0x44f source.o
+ .debug_loc     0x0000044f      0xcf3 /opt/cross/avr/lib/gcc/avr/4.3.3/../../../../avr/lib/avr25/libc.a(qsort.o)
+
+.debug_macinfo
+ *(.debug_macinfo)
+OUTPUT(output/source.elf elf32-avr)
+LOAD linker stubs
+
+.debug_ranges   0x00000000       0xa0
+ .debug_ranges  0x00000000       0x80 source.o
+ .debug_ranges  0x00000080       0x20 /opt/cross/avr/lib/gcc/avr/4.3.3/../../../../avr/lib/avr25/libc.a(qsort.o)
