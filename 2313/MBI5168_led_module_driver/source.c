@@ -1,39 +1,16 @@
 #include <avr/io.h>
 #include <inttypes.h>
 #include <avr/interrupt.h>
+#include "source.h"
 
-#define __LATCH_LOW PORTB &= ~(1 << PB4)
-#define __LATCH_HIGH PORTB |= (1 << PB4)
-#define __DISPLAY_ON PORTB &= ~_BV(PB2)
-#define __DISPLAY_OFF PORTB |= _BV(PB2)
-#define __LED0_ON PORTB |= _BV(PB0)
-#define __LED0_OFF PORTB &= ~_BV(PB0)
-#define __LED1_ON PORTB |= _BV(PB1)
-#define __LED1_OFF PORTB &= ~_BV(PB1)
-
-#define __step_delay 1500U	// used to let the amp-meter settle on a current value
-
-#define __OCR1A_max 80U	// this adjusts the PWM frequency
-#define __fade_delay 256U
-
-void setup(void);
-void loop(void);
-void no_isr_demo(void);
-void fader(void);
-void delay(uint32_t ticks);
-void current_calib(void);
-void setup_system_ticker(void);
-uint32_t time(void);
-void setup_timer1_ctc(void);
-uint8_t spi_transfer(uint8_t data);
-int main(void);
-
-typedef struct {
-	uint8_t number;
-	uint8_t dutycycle;
-} led_t;
-
-volatile led_t brightness[8] = { {0, 90}, {1, 91}, {2, 92}, {3, 93}, {4, 94}, {5, 95}, {6, 96}, {7, 100} };	// 1-dutycycle
+// the 2nd number is actually 1-dutycycle.
+// this array MUST be sorted ascendingly with respect to the 2nd number
+// or the framebuffer ISR will mess up.
+// the 2nd number determines when the signal line is supposed to go UP
+// and all of these must be staggered.
+volatile led_t glob_brightness[8] = { {0, 90}, {1, 91}, {2, 92}, {3, 93}, {4, 94}, {5, 95}, {6, 96}, {7, 100} };
+// array of pointers, pointing to glob_brightness elements such that it appears sorted
+volatile led_t * sorted[8];
 
 volatile uint32_t system_ticks = 0;
 
@@ -122,16 +99,49 @@ void fader(void)
 	uint8_t ctr2;
 	for (ctr1 = 0; ctr1 <= 100; ctr1++) {
 		for (ctr2 = 0; ctr2 <= 7; ctr2++) {
-			brightness[ctr2].dutycycle = ctr1;
+			glob_brightness[ctr2].dutycycle = ctr1;
+			sort(&glob_brightness[0],&sorted[0],8);
 		}
 		delay(__fade_delay);
 	}
 	for (ctr1 = 100; (ctr1 >= 0) && (ctr1 != 255); ctr1--) {
 		for (ctr2 = 0; ctr2 <= 7; ctr2++) {
-			brightness[ctr2].dutycycle = ctr1;
+			glob_brightness[ctr2].dutycycle = ctr1;
+			sort(&glob_brightness[0],&sorted[0],8);
 		}
 		delay(__fade_delay);
 	}
+}
+
+volatile led_t * min(volatile led_t * array, uint8_t size)
+{
+	uint8_t index;
+	volatile led_t * minimum = &array[0]; // start with the first element
+	for(index = 1; index < size; index++)
+	{
+		if( (*minimum).dutycycle < array[index].dutycycle )
+	       	{
+			// keep it
+		}
+		else 
+		{
+			minimum = &array[index];
+		}
+	}
+	return minimum;
+}
+
+void sort(volatile led_t * array, volatile led_t ** buffer, uint8_t size)
+{
+        //buffer[0] = min(array,size);
+	buffer[0] = &glob_brightness[0];
+	buffer[1] = &glob_brightness[1];
+	buffer[2] = &glob_brightness[2];
+	buffer[3] = &glob_brightness[3]; 
+	buffer[4] = &glob_brightness[4];
+	buffer[5] = &glob_brightness[5];
+	buffer[6] = &glob_brightness[6];
+	buffer[7] = &glob_brightness[7];
 }
 
 void current_calib(void)
@@ -239,15 +249,15 @@ ISR(TIMER1_COMPA_vect)
 	/* now calculate when to run the next time and turn on LED0 */
 	if (index == 0) {
 		OCR1A =
-		    (uint16_t) ((uint32_t) (brightness[index].dutycycle) *
+		    (uint16_t) ((uint32_t) ((*sorted[index]).dutycycle) *
 				(uint32_t) (__OCR1A_max) / (uint32_t) (100));
 		index++;
 	} else if (index == 8) {	// the last led in the row
-		data |= _BV(brightness[(index - 1)].number);
+		data |= _BV((*sorted[(index - 1)]).number);
 		/* calculate when to turn everything off */
 		OCR1A =
 		    (uint16_t) (((uint32_t) (100) -
-				 (uint32_t) (brightness[(index - 1)].
+				 (uint32_t) ((*sorted[(index - 1)]).
 					     dutycycle)) *
 				(uint32_t) (__OCR1A_max) / (uint32_t) (100));
 		index++;
@@ -260,11 +270,11 @@ ISR(TIMER1_COMPA_vect)
 		/* DON'T increase the index counter ! */
 	} else {
 		/* turn on the LED we deciced to turn on in the last invocation */
-		data |= _BV(brightness[(index - 1)].number);
+		data |= _BV((*sorted[(index - 1)]).number);
 		/* calculate when to run the next time and turn on the next LED */
 		OCR1A =
-		    (uint16_t) (((uint32_t) (brightness[index].dutycycle) -
-				 (uint32_t) (brightness[(index - 1)].
+		    (uint16_t) (((uint32_t) ((*sorted[index]).dutycycle) -
+				 (uint32_t) ((*sorted[(index - 1)]).
 					     dutycycle)) *
 				(uint32_t) (__OCR1A_max) / (uint32_t) (100));
 		index++;
