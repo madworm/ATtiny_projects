@@ -9,15 +9,19 @@
 // or the framebuffer ISR will mess up.
 // the 2nd number determines when the signal line is supposed to go UP
 // and all of these must be staggered.
-volatile led_t glob_brightness[8] = { {0, 90}, {1, 91}, {2, 92}, {3, 93}, {4, 94}, {5, 95}, {6, 96}, {7, 100} };
+volatile led_t glob_brightness[8] = { {0, 0}, {1,100}, {2, 0}, {3, 100}, {4, 0}, {5, 100}, {6, 0}, {7, 100} };
+
 // array of pointers, pointing to glob_brightness elements such that it appears sorted
-volatile led_t * sorted[8];
+// initially unsorted, need bubbleSort at least once and for every order breaking manipulation to glob_brightness
+volatile led_t * sorted[8]; 
 
 volatile uint32_t system_ticks = 0;
 
 int main(void)
 {
-	setup();
+	setup_hw();
+	populate_sorted();
+	bubbleSort(&sorted[0],8);
 	for (;;) {
 		loop();
 	}
@@ -26,9 +30,15 @@ int main(void)
 void loop(void)
 {
 	fader();
+	glob_brightness[4].dutycycle = 100;
+	bubbleSort(&sorted[0],8);
+	delay(10000);
+	glob_brightness[4].dutycycle = 0;
+	bubbleSort(&sorted[0],8);
+	delay(10000);
 }
 
-void setup(void)
+void setup_hw(void)
 {
 	DDRB |= _BV(PB0);	// set LED pin as output
 	__LED0_ON;
@@ -94,26 +104,6 @@ void no_isr_demo(void)
 	__DISPLAY_OFF;
 }
 
-static int my_compare_func(const void * p1, const void * p2)
-{
-	// to make dereferencing sensible
-	led_t * first = (led_t *)(*(const int *)(p1));
-	led_t * second = (led_t *)(*(const int *)(p2));
-
-	if( (*first).dutycycle > (*second).dutycycle )
-	{
-		return 1;
-	}
-	else if ( (*first).dutycycle < (*second).dutycycle )
-	{
-		return -1;
-	}
-	else
-	{
-		return 0;
-	}
-}
-
 void fader(void)
 {
 	uint8_t ctr1;
@@ -121,14 +111,16 @@ void fader(void)
 	for (ctr1 = 0; ctr1 <= 100; ctr1++) {
 		for (ctr2 = 0; ctr2 <= 7; ctr2++) {
 			glob_brightness[ctr2].dutycycle = ctr1;
-			qsort(&sorted[0],8,sizeof(sorted[0]),my_compare_func);
+			// waaaay toooo slow ;-(
+			bubbleSort(&sorted[0],8);
 		}
 		delay(__fade_delay);
 	}
 	for (ctr1 = 100; (ctr1 >= 0) && (ctr1 != 255); ctr1--) {
 		for (ctr2 = 0; ctr2 <= 7; ctr2++) {
 			glob_brightness[ctr2].dutycycle = ctr1;
-                	qsort(&sorted[0],8,sizeof(sorted[0]),my_compare_func);			
+			// waaaay toooo slow ;-(
+                	bubbleSort(&sorted[0],8);
 		}
 		delay(__fade_delay);
 	}
@@ -158,6 +150,42 @@ void delay(uint32_t ticks)
 	uint32_t start_time = time();
 	while ((time() - start_time) < ticks) {
 		// just wait here
+	}
+}
+
+void populate_sorted(void)
+{
+	uint8_t index;
+	for(index = 0; index < 8; index++)
+	{
+		sorted[index] = &glob_brightness[index];
+	}
+}
+
+void bubbleSort(volatile led_t ** array, uint8_t length)
+{
+	uint8_t i;
+	uint8_t j;
+	volatile led_t * temp;
+	uint8_t test;
+
+	for(i = (length - 1); i > 0; i--)
+	{
+		test = 0;
+		for(j = 0; j < i; j++)
+		{
+			if( (*array[j]).dutycycle > (*array[j+1]).dutycycle )
+			{
+				temp = array[j];
+				array[j] = array[j+1];
+				array[j+1] = temp;
+				test = 1;
+			}
+		}
+		if(test == 0)
+		{
+			break;
+		}
 	}
 }
 

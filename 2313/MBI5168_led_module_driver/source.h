@@ -10,20 +10,21 @@
 #define __step_delay 1500U	// used to let the amp-meter settle on a current value
 
 #define __OCR1A_max 80U	// this adjusts the PWM frequency
-#define __fade_delay 256U
+#define __fade_delay 64U
 
 typedef struct {
 	uint8_t number;
 	uint8_t dutycycle;
 } led_t;
 
-void setup(void);
+void setup_hw(void);
+void populate_sorted(void);
 void loop(void);
 void no_isr_demo(void);
 void fader(void);
 void delay(uint32_t ticks);
 void current_calib(void);
-static int my_compare_func(const void * p1, const void * p2);
+void bubbleSort(volatile led_t ** array, uint8_t size);
 void setup_system_ticker(void);
 uint32_t time(void);
 void setup_timer1_ctc(void);
