@@ -1,5 +1,15 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
+
+/*
+ * this sorts an array of pointers with qsort
+ * the pointers point to elements of another array, which are structs of 2 numbers
+ * the sorting is done with regard to the 2nd number of each struct
+ *
+ * purpose: leave the original data alone and still access it in a sorted way
+ *
+ */
 
 typedef struct {
 	uint8_t number;
@@ -7,49 +17,67 @@ typedef struct {
 } led_t;
 
 led_t glob_brightness[8] = { {0, 1}, {1, 2}, {2, 6}, {3, 5}, {4, 4}, {5, 7}, {6, 3}, {7, 8} };
-led_t * sorted[8];
+led_t * sorted[8]; // array of pointers
 
-led_t * min(led_t * array, uint8_t size);
-void sort(led_t * array, led_t ** buffer, uint8_t size);
+void init(void);
+static int my_compare_func(const void * p1, const void * p2);
 int main(void);
-
 
 int main(void)
 {
-	uint8_t index;
-	sort(&glob_brightness[0],&sorted[0],8);
+	init();
 
+	qsort(&sorted[0],8,sizeof(sorted[0]),my_compare_func);
+	
+	uint8_t index;
 	for(index = 0; index < 8; index++)
 	{
-		printf("\nmin: %d \n", (*min(&glob_brightness[0],8)).dutycycle);
 		printf("sorted: %d \n", (*sorted[index]).dutycycle);
-
+	}
+	
+	for(index = 0; index < 8; index++)
+	{
+		printf("original: %d \n", (glob_brightness[index]).dutycycle);
 	}
 }
 
-led_t * min(led_t * array, uint8_t size)
+
+void init(void)
 {
 	uint8_t index;
-	led_t * minimum = &array[0]; // start with the first element
-	for(index = 1; index < size; index++)
+	for(index = 0; index < 8; index++)
 	{
-		if( (*minimum).dutycycle < array[index].dutycycle )
-	       	{
-			// keep it
-		}
-		else 
-		{
-			minimum = &array[index];
-		}
+		/* load the array of pointers with the unsorted data */
+		sorted[index] = &glob_brightness[index];
 	}
-	return minimum;
 }
 
-void sort(led_t * array, led_t ** buffer, uint8_t size)
+static int my_compare_func(const void * p1, const void * p2)
 {
-	uint8_t index;
-	for(index = 0; index < size; index++)
+
+	/* to make dereferencing sensible
+	 * 
+	 * from right to left: 
+	 *
+	 * p1/2 are declared as "const *", as this is what the function takes as input
+	 * THEN "led_t *" is added, as this is the true type of the stuff
+	 * as we're sorting an array of pointers!
+	 *
+	 */
+
+	led_t * const * first = p1;
+	led_t * const * second = p2;
+
+	if( (*first)->dutycycle > (*second)->dutycycle )
 	{
-		buffer[index] = min(array,size);
+		return 1;
+	}
+	else if ( (*first)->dutycycle < (*second)->dutycycle )
+	{
+		return -1;
+	}
+	else
+	{
+		return 0;
 	}
 }
