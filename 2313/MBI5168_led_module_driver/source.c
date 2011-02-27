@@ -9,11 +9,15 @@
 // or the framebuffer ISR will mess up.
 // the 2nd number determines when the signal line is supposed to go UP
 // and all of these must be staggered.
-volatile led_t glob_brightness[8] = { {0, 0}, {1,100}, {2, 0}, {3, 100}, {4, 0}, {5, 100}, {6, 0}, {7, 100} };
+volatile led_t glob_brightness_1[8] = { {0, 0}, {1,128}, {2, 0}, {3, 128}, {4, 0}, {5, 128}, {6, 0}, {7, 128} };
+volatile led_t glob_brightness_2[8] = { {0, 0}, {1,128}, {2, 0}, {3, 128}, {4, 0}, {5, 128}, {6, 0}, {7, 128} };
+volatile led_t * glob_brightness_live = &glob_brightness_2[0];
 
 // array of pointers, pointing to glob_brightness elements such that it appears sorted
 // initially unsorted, need bubbleSort at least once and for every order breaking manipulation to glob_brightness
-volatile led_t * sorted[8]; 
+volatile led_t * sorted_1[8]; 
+volatile led_t * sorted_2[8];
+volatile led_t ** sorted_live = &sorted_2[0];
 
 volatile uint32_t system_ticks = 0;
 
@@ -21,7 +25,8 @@ int main(void)
 {
 	setup_hw();
 	populate_sorted();
-	bubbleSort(&sorted[0],8);
+	bubbleSort(&sorted_1[0],8);
+	bubbleSort(&sorted_2[0],8);
 	for (;;) {
 		loop();
 	}
@@ -29,12 +34,12 @@ int main(void)
 
 void loop(void)
 {
-	fader();
-	glob_brightness[4].dutycycle = 100;
-	bubbleSort(&sorted[0],8);
+	//fader();
+	(*(glob_brightness_live+4)).dutycycle = 128;
+	bubbleSort(&sorted_2[0],8);
 	delay(10000);
-	glob_brightness[4].dutycycle = 0;
-	bubbleSort(&sorted[0],8);
+	(*(glob_brightness_live+4)).dutycycle = 0;
+	bubbleSort(&sorted_2[0],8);
 	delay(10000);
 }
 
@@ -108,19 +113,15 @@ void fader(void)
 {
 	uint8_t ctr1;
 	uint8_t ctr2;
-	for (ctr1 = 0; ctr1 <= 100; ctr1++) {
+	for (ctr1 = 0; ctr1 <= 128; ctr1++) {
 		for (ctr2 = 0; ctr2 <= 7; ctr2++) {
-			glob_brightness[ctr2].dutycycle = ctr1;
-			// waaaay toooo slow ;-(
-			bubbleSort(&sorted[0],8);
+			glob_brightness_1[ctr2].dutycycle = ctr1;
 		}
 		delay(__fade_delay);
 	}
-	for (ctr1 = 100; (ctr1 >= 0) && (ctr1 != 255); ctr1--) {
+	for (ctr1 = 128; (ctr1 >= 0) && (ctr1 != 255); ctr1--) {
 		for (ctr2 = 0; ctr2 <= 7; ctr2++) {
-			glob_brightness[ctr2].dutycycle = ctr1;
-			// waaaay toooo slow ;-(
-                	bubbleSort(&sorted[0],8);
+			glob_brightness_1[ctr2].dutycycle = ctr1;
 		}
 		delay(__fade_delay);
 	}
@@ -158,7 +159,8 @@ void populate_sorted(void)
 	uint8_t index;
 	for(index = 0; index < 8; index++)
 	{
-		sorted[index] = &glob_brightness[index];
+		sorted_1[index] = &glob_brightness_1[index];
+		sorted_2[index] = &glob_brightness_2[index];
 	}
 }
 
@@ -266,18 +268,12 @@ ISR(TIMER1_COMPA_vect)
 	/* starts with index = 0 */
 	/* now calculate when to run the next time and turn on LED0 */
 	if (index == 0) {
-		OCR1A =
-		    (uint16_t) ((uint32_t) ((*sorted[index]).dutycycle) *
-				(uint32_t) (__OCR1A_max) / (uint32_t) (100));
+		OCR1A = (uint16_t) ( (*sorted_live[index]).dutycycle );
 		index++;
 	} else if (index == 8) {	// the last led in the row
-		data |= _BV((*sorted[(index - 1)]).number);
+		data |= _BV( (*sorted_live[index-1]).dutycycle );
 		/* calculate when to turn everything off */
-		OCR1A =
-		    (uint16_t) (((uint32_t) (100) -
-				 (uint32_t) ((*sorted[(index - 1)]).
-					     dutycycle)) *
-				(uint32_t) (__OCR1A_max) / (uint32_t) (100));
+		OCR1A = (uint16_t) ( 128 - (*sorted_live[index-1]).dutycycle ); 
 		index++;
 	} else if (index == 9) {
 		/* cycle completed, reset everything */
@@ -288,13 +284,9 @@ ISR(TIMER1_COMPA_vect)
 		/* DON'T increase the index counter ! */
 	} else {
 		/* turn on the LED we deciced to turn on in the last invocation */
-		data |= _BV((*sorted[(index - 1)]).number);
+		data |= _BV( (*sorted_live[index-1]).number );
 		/* calculate when to run the next time and turn on the next LED */
-		OCR1A =
-		    (uint16_t) (((uint32_t) ((*sorted[index]).dutycycle) -
-				 (uint32_t) ((*sorted[(index - 1)]).
-					     dutycycle)) *
-				(uint32_t) (__OCR1A_max) / (uint32_t) (100));
+		OCR1A = (uint16_t) ( (*sorted_live[index]).dutycycle - (*sorted_live[index-1]).dutycycle ); 
 		index++;
 	}
 

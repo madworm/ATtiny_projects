@@ -1,0 +1,38 @@
+On Mon, 3 Dec 2007 09:13:14 -0800 (PST), ramu <ramu.ask@gmail.com>
+wrote:
+>Hi,
+Could anyone please tell me how to dereference a pointer to an
+>array of pointers?
+>
+In strict terminology, a pointer to an array of pointers is
+TYPE *arr[N];
+TYPE *(*ptr)[N];
+ptr = &arr;
+ptr is a pointer to an array of N pointer to TYPE and points to one
+such array.
+
+In this case, ptr[0] is the array itself and ptr[0][i] is the i-th
+pointer in the array.
+
+Frequent, as in 99+%, newcomers to the language use the term to mean
+TYPE *arr[N]
+TYPE **ptr;
+ptr =arr; /* or the equivalent ptr = &arr[0]; */
+ptr is a pointer to pointer to TYPE and points to the first pointer in
+the array of such pointers.
+
+In this case, the slightly simpler ptr[i] is the i-th pointer in the
+array.
+
+Which one did you mean?
+
+
+Remove del for email
+
+
+
+
+
+http://bytes.com/topic/c/answers/744233-pointer-array-pointers
+
+

@@ -9,8 +9,8 @@
 
 #define __step_delay 1500U	// used to let the amp-meter settle on a current value
 
-#define __OCR1A_max 80U	// this adjusts the PWM frequency
-#define __fade_delay 64U
+#define __OCR1A_max 128U	// this adjusts the PWM frequency
+#define __fade_delay 32U
 
 typedef struct {
 	uint8_t number;
