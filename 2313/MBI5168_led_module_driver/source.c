@@ -9,41 +9,46 @@
 // or the framebuffer ISR will mess up.
 // the 2nd number determines when the signal line is supposed to go UP
 // and all of these must be staggered.
-volatile led_t glob_brightness_1[8] = { {0, 0}, {1,128}, {2, 0}, {3, 128}, {4, 0}, {5, 128}, {6, 0}, {7, 128} };
-volatile led_t glob_brightness_2[8] = { {0, 0}, {1,128}, {2, 0}, {3, 128}, {4, 0}, {5, 128}, {6, 0}, {7, 128} };
-volatile led_t * glob_brightness_live = &glob_brightness_2[0];
+// the array is split into 2 for double buffering
+led_t glob_brightness[2][8] = { { {0, 0}, {1,128}, {2, 0}, {3, 128}, {4, 0}, {5, 128}, {6, 0}, {7, 128} },
+    			        { {0, 0}, {1,128}, {2, 0}, {3, 128}, {4, 0}, {5, 128}, {6, 0}, {7, 128} } };
 
-// array of pointers, pointing to glob_brightness elements such that it appears sorted
+// array of pointers, pointing to glob_brightness elements such that it appears sorted (keeping the original data untouched)!
 // initially unsorted, need bubbleSort at least once and for every order breaking manipulation to glob_brightness
-volatile led_t * sorted_1[8]; 
-volatile led_t * sorted_2[8];
-volatile led_t ** sorted_live = &sorted_2[0];
+led_t * sorted[2][8]; 
+volatile uint8_t read_from_this = 0;
+volatile uint8_t write_to_this = 1;
+volatile uint8_t flip_req = 0;
 
 volatile uint32_t system_ticks = 0;
 
 int main(void)
 {
-	setup_hw();
 	populate_sorted();
-	bubbleSort(&sorted_1[0],8);
-	bubbleSort(&sorted_2[0],8);
+	bubbleSort(&sorted[read_from_this][0],8);
+	bubbleSort(&sorted[write_to_this][0],8);
+	setup_hw();
 	for (;;) {
 		loop();
 	}
 };
 
-void loop(void)
+static inline void loop(void)
 {
-	//fader();
-	(*(glob_brightness_live+4)).dutycycle = 128;
-	bubbleSort(&sorted_2[0],8);
+	fader();
+	
+	glob_brightness[write_to_this][4].dutycycle = 128;
+	bubbleSort(&sorted[write_to_this][0],8);
+	flip_req = 1;
 	delay(10000);
-	(*(glob_brightness_live+4)).dutycycle = 0;
-	bubbleSort(&sorted_2[0],8);
+
+	glob_brightness[write_to_this][4].dutycycle = 0;
+	bubbleSort(&sorted[write_to_this][0],8);
+	flip_req = 1;
 	delay(10000);
 }
 
-void setup_hw(void)
+static inline void setup_hw(void)
 {
 	DDRB |= _BV(PB0);	// set LED pin as output
 	__LED0_ON;
@@ -69,7 +74,7 @@ void setup_hw(void)
 	__DISPLAY_ON;
 }
 
-void no_isr_demo(void)
+static void no_isr_demo(void)
 {
 	__DISPLAY_ON;
 	__LATCH_LOW;
@@ -109,25 +114,29 @@ void no_isr_demo(void)
 	__DISPLAY_OFF;
 }
 
-void fader(void)
+static void fader(void)
 {
 	uint8_t ctr1;
 	uint8_t ctr2;
 	for (ctr1 = 0; ctr1 <= 128; ctr1++) {
 		for (ctr2 = 0; ctr2 <= 7; ctr2++) {
-			glob_brightness_1[ctr2].dutycycle = ctr1;
+			glob_brightness[write_to_this][ctr2].dutycycle = ctr1;
+			bubbleSort(&sorted[write_to_this][0],8);
+			flip_req = 1;
 		}
 		delay(__fade_delay);
 	}
 	for (ctr1 = 128; (ctr1 >= 0) && (ctr1 != 255); ctr1--) {
 		for (ctr2 = 0; ctr2 <= 7; ctr2++) {
-			glob_brightness_1[ctr2].dutycycle = ctr1;
+			glob_brightness[write_to_this][ctr2].dutycycle = ctr1;
+			bubbleSort(&sorted[write_to_this][0],8);
+			flip_req = 1;
 		}
 		delay(__fade_delay);
 	}
 }
 
-void current_calib(void)
+static inline void current_calib(void)
 {
 	uint8_t ctr1;
 	for (ctr1 = 0; ctr1 <= 7; ctr1++) {
@@ -136,7 +145,7 @@ void current_calib(void)
 	delay(50000);
 }
 
-uint32_t time(void)
+static inline uint32_t time(void)
 {
 	uint8_t _sreg = SREG;
 	uint32_t time;
@@ -146,7 +155,7 @@ uint32_t time(void)
 	return time;
 }
 
-void delay(uint32_t ticks)
+static inline void delay(uint32_t ticks)
 {
 	uint32_t start_time = time();
 	while ((time() - start_time) < ticks) {
@@ -154,21 +163,21 @@ void delay(uint32_t ticks)
 	}
 }
 
-void populate_sorted(void)
+static inline void populate_sorted(void)
 {
 	uint8_t index;
 	for(index = 0; index < 8; index++)
 	{
-		sorted_1[index] = &glob_brightness_1[index];
-		sorted_2[index] = &glob_brightness_2[index];
+		sorted[0][index] = &glob_brightness[0][index];
+		sorted[1][index] = &glob_brightness[1][index];
 	}
 }
 
-void bubbleSort(volatile led_t ** array, uint8_t length)
+static void bubbleSort(led_t ** array, uint8_t length)
 {
 	uint8_t i;
 	uint8_t j;
-	volatile led_t * temp;
+	led_t * temp;
 	uint8_t test;
 
 	for(i = (length - 1); i > 0; i--)
@@ -191,11 +200,19 @@ void bubbleSort(volatile led_t ** array, uint8_t length)
 	}
 }
 
+static inline void flip_buffers()
+{
+	uint8_t temp;
+	temp = read_from_this;
+	read_from_this = write_to_this;
+	write_to_this = temp;
+}
+
 /*
 Functions dealing with hardware specific jobs / settings
 */
 
-uint8_t spi_transfer(uint8_t data)
+static inline uint8_t spi_transfer(uint8_t data)
 {
 	USIDR = data;
 	USISR = _BV(USIOIF);	// clear flag
@@ -208,7 +225,7 @@ uint8_t spi_transfer(uint8_t data)
 	return USIDR;
 }
 
-void setup_system_ticker(void)
+static inline void setup_system_ticker(void)
 {
 	/* save SREG and turn interrupts off globally */
 	uint8_t _sreg = SREG;
@@ -228,7 +245,7 @@ void setup_system_ticker(void)
 	SREG = _sreg;
 }
 
-void setup_timer1_ctc(void)
+static inline void setup_timer1_ctc(void)
 {
 	uint8_t _sreg = SREG;	/* save SREG */
 	cli();			/* disable all interrupts while messing with the register setup */
@@ -268,12 +285,19 @@ ISR(TIMER1_COMPA_vect)
 	/* starts with index = 0 */
 	/* now calculate when to run the next time and turn on LED0 */
 	if (index == 0) {
-		OCR1A = (uint16_t) ( (*sorted_live[index]).dutycycle );
+		if (flip_req == 1)
+		{
+			flip_buffers(); // only do this at the beginning of a NEW cycle !
+			flip_req = 0;
+		}
+		OCR1A =
+		    (uint16_t) ( (*sorted[read_from_this][index]).dutycycle );
 		index++;
 	} else if (index == 8) {	// the last led in the row
-		data |= _BV( (*sorted_live[index-1]).dutycycle );
+		data |= _BV( (*sorted[read_from_this][(index - 1)]).number );
 		/* calculate when to turn everything off */
-		OCR1A = (uint16_t) ( 128 - (*sorted_live[index-1]).dutycycle ); 
+		OCR1A =
+		    (uint16_t) ( 128 - (*sorted[read_from_this][(index - 1)]).dutycycle );
 		index++;
 	} else if (index == 9) {
 		/* cycle completed, reset everything */
@@ -284,9 +308,10 @@ ISR(TIMER1_COMPA_vect)
 		/* DON'T increase the index counter ! */
 	} else {
 		/* turn on the LED we deciced to turn on in the last invocation */
-		data |= _BV( (*sorted_live[index-1]).number );
+		data |= _BV( (*sorted[read_from_this][(index - 1)]).number );
 		/* calculate when to run the next time and turn on the next LED */
-		OCR1A = (uint16_t) ( (*sorted_live[index]).dutycycle - (*sorted_live[index-1]).dutycycle ); 
+		OCR1A =
+		    (uint16_t) ( (*sorted[read_from_this][index]).dutycycle - (*sorted[read_from_this][(index - 1)]).dutycycle );
 		index++;
 	}
 
