@@ -21,6 +21,7 @@ static inline void setup_hw(void);
 static inline void populate_sorted(void);
 static inline void loop(void);
 static void no_isr_demo(void);
+static void kitchen_lights(void);
 static inline void fader(void);
 static void clear_buffer();
 static void flip_buffers();

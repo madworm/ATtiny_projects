@@ -11,24 +11,24 @@
 // and all of these must be staggered.
 // the array is split into 2 for double buffering
 led_t glob_brightness[2][8] = {
-	{{0, 0}
+	{{0, 64}
 	 , {1, 64}
 	 , {2, 64}
 	 , {3, 64}
 	 , {4, 64}
 	 , {5, 64}
 	 , {6, 64}
-	 , {7, 0}
+	 , {7, 64}
 	 }
 	,
-	{{0, 0}
+	{{0, 64}
 	 , {1, 64}
 	 , {2, 64}
 	 , {3, 64}
 	 , {4, 64}
 	 , {5, 64}
 	 , {6, 64}
-	 , {7, 0}
+	 , {7, 64}
 	 }
 };
 
@@ -54,8 +54,8 @@ int main(void)
 
 static inline void loop(void)
 {
+	/*
 	fader();
-
 	delay(10000);
 
 	glob_brightness[write_to_this][2].dutycycle = 64;
@@ -67,18 +67,60 @@ static inline void loop(void)
 	bubbleSort(&sorted[write_to_this][0], 8);
 	flip_req = 1;
 	delay(10000);
+	*/
+
+	kitchen_lights();
+}
+
+static void kitchen_lights(void)
+{
+	uint8_t ctr1;
+	static uint8_t ctr2 = 64;
+
+	if( !(PIND & _BV(PD5)) ) {
+		__LED0_ON;
+		delay(800);
+		__LED0_OFF;
+		for (ctr1 = 0; ctr1 <= 7; ctr1++) {
+			glob_brightness[write_to_this][ctr1].dutycycle = ctr2;
+			bubbleSort(&sorted[write_to_this][0], 8);
+			flip_req = 1;
+		}
+		if(ctr2 < 64) {
+			ctr2++;
+		}
+	}
+	if( !(PIND & _BV(PD6)) ) {
+		__LED0_ON;
+		delay(800);
+		__LED0_OFF;
+		for (ctr1 = 0; ctr1 <= 7; ctr1++) {
+			glob_brightness[write_to_this][ctr1].dutycycle = ctr2;
+			bubbleSort(&sorted[write_to_this][0], 8);
+			flip_req = 1;
+		}
+		if(ctr2 > 0) {
+			ctr2--;
+		}
+	}
 }
 
 static inline void setup_hw(void)
 {
 	DDRB |= _BV(PB0);	// set LED pin as output
-	__LED0_ON;
+	__LED0_OFF;
 
 	DDRB |= _BV(PB1);	// 2nd LED pin
-	__LED1_ON;
+	__LED1_OFF;
 
 	DDRB |= _BV(PB2);	// display enable pin as output
 	PORTB |= _BV(PB2);	// pullup on
+
+	DDRD &= ~_BV(PD5);	// set as input
+	PORTD |= _BV(PD5);	// pull-up on
+
+	DDRD &= ~_BV(PD6);	// set as input
+	PORTD |= _BV(PD6);	// pull-up on
 
 	// USI stuff
 
@@ -359,7 +401,8 @@ ISR(TIMER1_COMPA_vect)
 	}
 
 	__LATCH_LOW;
-	spi_transfer(data);
+	spi_transfer(data); // send the date for each MBI5168
+	spi_transfer(data); // same data for the 2nd chip in the chain as well
 	__LATCH_HIGH;
 
 	__DISPLAY_ON;
