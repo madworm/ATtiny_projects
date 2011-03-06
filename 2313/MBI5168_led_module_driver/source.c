@@ -47,82 +47,135 @@ int main(void)
 	bubbleSort(&sorted[read_from_this][0], 8);
 	bubbleSort(&sorted[write_to_this][0], 8);
 	setup_hw();
+	delay(50000);
 	for (;;) {
 		loop();
 	}
 };
 
-static inline void loop(void)
+static void loop(void)
 {
-	/*
-	fader();
-	delay(10000);
+	// fader();
+	//
+	// fader is repeatably crashing the ATtiny2313.
+	// Either running out of RAM, or not enough decoupling...
+	// or the ISR timing is still too close to madness
+	//
 
-	glob_brightness[write_to_this][2].dutycycle = 64;
-	bubbleSort(&sorted[write_to_this][0], 8);
-	flip_req = 1;		// tell the ISR that we've changed things and sorting is done
-	delay(10000);
+	/*      
+	   glob_brightness[write_to_this][2].dutycycle = 64;
+	   bubbleSort(&sorted[write_to_this][0], 8);
+	   flip_req = 1;                // tell the ISR that we've changed things and sorting is done
+	   delay(10000);
 
-	glob_brightness[write_to_this][2].dutycycle = 0;
-	bubbleSort(&sorted[write_to_this][0], 8);
-	flip_req = 1;
-	delay(10000);
-	*/
-
+	   glob_brightness[write_to_this][2].dutycycle = 0;
+	   bubbleSort(&sorted[write_to_this][0], 8);
+	   flip_req = 1;
+	   delay(10000);
+	 */
 	kitchen_lights();
 }
 
 static void kitchen_lights(void)
 {
+	// 0: off or user has decreased brightness
+	// 1: on or user has increased brightness
+	static uint8_t lamp_state = 0;
+
 	uint8_t ctr1;
 	static uint8_t ctr2 = 64;
 
-	if( !(PIND & _BV(PD5)) ) {
-		__LED0_ON;
+	if (!(PIND & _BV(PD5))) {
+		lamp_state = 0;
+		__LED2_OFF;	// signal state
+
+		__LED0_ON;	// signal we're doing something
 		delay(800);
 		__LED0_OFF;
+
 		for (ctr1 = 0; ctr1 <= 7; ctr1++) {
 			glob_brightness[write_to_this][ctr1].dutycycle = ctr2;
 			bubbleSort(&sorted[write_to_this][0], 8);
 			flip_req = 1;
 		}
-		if(ctr2 < 64) {
+		if (ctr2 < 64) {
 			ctr2++;
 		}
 	}
-	if( !(PIND & _BV(PD6)) ) {
-		__LED0_ON;
+	if (!(PIND & _BV(PD6))) {
+		lamp_state = 1;
+		__LED2_ON;	// signal state
+
+		__LED0_ON;	// signal we're doing something
 		delay(800);
 		__LED0_OFF;
+
 		for (ctr1 = 0; ctr1 <= 7; ctr1++) {
 			glob_brightness[write_to_this][ctr1].dutycycle = ctr2;
 			bubbleSort(&sorted[write_to_this][0], 8);
 			flip_req = 1;
 		}
-		if(ctr2 > 0) {
+		if (ctr2 > 0) {
 			ctr2--;
 		}
+	}
+
+	if (!(PIND & _BV(PD4))) {
+
+		__LED0_ON;	// signal we're doing something
+		delay(800);
+		__LED0_OFF;
+
+		if (ctr2 == 64) {	// fully off
+			lamp_state = 1;	// we increased brightness
+			__LED2_ON;
+			fade_in(ctr2);
+			ctr2 = 0;
+		} else if (ctr2 == 0) {	// fully on
+			lamp_state = 0;	// we decreased brightness
+			__LED2_OFF;
+			fade_out(ctr2);
+			ctr2 = 64;
+		}
+
+		if (lamp_state == 0) {	// user pressed "-"
+			fade_out(ctr2);
+			ctr2 = 64;
+		}
+		if (lamp_state == 1) {	// user pressed "+"
+			fade_in(ctr2);
+			ctr2 = 0;
+		}
+		delay(20000);	// until I have debounced buttons...
 	}
 }
 
 static inline void setup_hw(void)
 {
-	DDRB |= _BV(PB0);	// set LED pin as output
+	DDRB |= _BV(PB0);	// set LED0 pin as output
 	__LED0_OFF;
 
-	DDRB |= _BV(PB1);	// 2nd LED pin
+	DDRB |= _BV(PB1);	// set LED1 pin as output
 	__LED1_OFF;
+
+	DDRD |= _BV(PD3);	// set LED2 pin as output
+	__LED2_OFF;
 
 	DDRB |= _BV(PB2);	// display enable pin as output
 	PORTB |= _BV(PB2);	// pullup on
 
-	DDRD &= ~_BV(PD5);	// set as input
+	DDRD &= ~_BV(PD4);	// button - set as input
+	PORTD |= _BV(PD4);	// pull-up on
+
+	DDRD &= ~_BV(PD5);	// button - set as input
 	PORTD |= _BV(PD5);	// pull-up on
 
-	DDRD &= ~_BV(PD6);	// set as input
+	DDRD &= ~_BV(PD6);	// button - set as input
 	PORTD |= _BV(PD6);	// pull-up on
 
 	// USI stuff
+
+	DDRB |= _BV(PB4);	// latch pin as output
 
 	DDRB |= _BV(PB6);	// as output (DO)
 	DDRB |= _BV(PB7);	// as output (USISCK)
@@ -177,19 +230,17 @@ static void no_isr_demo(void)
 	__DISPLAY_OFF;
 }
 
-static inline void fader(void)
+static void fader(void)
+{
+	fade_out(0);
+	fade_in(64);
+}
+
+static void fade_in(uint8_t start_at)
 {
 	uint8_t ctr1;
 	uint8_t ctr2;
-	for (ctr1 = 0; ctr1 <= 64; ctr1++) {
-		for (ctr2 = 0; ctr2 <= 7; ctr2++) {
-			glob_brightness[write_to_this][ctr2].dutycycle = ctr1;
-			bubbleSort(&sorted[write_to_this][0], 8);
-			flip_req = 1;
-		}
-		delay(__fade_delay);
-	}
-	for (ctr1 = 64; (ctr1 > 0); ctr1--) {
+	for (ctr1 = start_at; (ctr1 > 0); ctr1--) {
 		for (ctr2 = 0; ctr2 <= 7; ctr2++) {
 			glob_brightness[write_to_this][ctr2].dutycycle = ctr1;
 			bubbleSort(&sorted[write_to_this][0], 8);
@@ -199,7 +250,21 @@ static inline void fader(void)
 	}
 }
 
-static inline void current_calib(void)
+static void fade_out(uint8_t start_at)
+{
+	uint8_t ctr1;
+	uint8_t ctr2;
+	for (ctr1 = start_at; ctr1 <= 64; ctr1++) {
+		for (ctr2 = 0; ctr2 <= 7; ctr2++) {
+			glob_brightness[write_to_this][ctr2].dutycycle = ctr1;
+			bubbleSort(&sorted[write_to_this][0], 8);
+			flip_req = 1;
+		}
+		delay(__fade_delay);
+	}
+}
+
+static void current_calib(void)
 {
 	uint8_t ctr1;
 	for (ctr1 = 0; ctr1 <= 7; ctr1++) {
@@ -372,10 +437,8 @@ ISR(TIMER1_COMPA_vect)
 			    _BV((*sorted[read_from_this][(index - 1)]).number);
 		}
 		/* calculate when to turn everything off */
-		OCR1A =
-		    (uint16_t) (64 -
-				(*sorted[read_from_this]
-				 [(index - 1)]).dutycycle);
+		OCR1A = (uint16_t) (64 - (*sorted[read_from_this]
+					  [(index - 1)]).dutycycle);
 		index++;
 	} else if (index == 9) {
 		/* cycle completed, reset everything */
@@ -401,8 +464,8 @@ ISR(TIMER1_COMPA_vect)
 	}
 
 	__LATCH_LOW;
-	spi_transfer(data); // send the date for each MBI5168
-	spi_transfer(data); // same data for the 2nd chip in the chain as well
+	spi_transfer(data);	// send the date for each MBI5168
+	spi_transfer(data);	// same data for the 2nd chip in the chain as well
 	__LATCH_HIGH;
 
 	__DISPLAY_ON;
