@@ -4,7 +4,7 @@
 
 ## General Flags
 PROJECT = source
-MCU = attiny2313
+MCU = attiny4313
 TARGET = output/$(PROJECT).elf
 CC = avr-gcc
 CCXX = avr-g++
