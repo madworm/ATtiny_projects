@@ -1,0 +1,19 @@
+# depslib dependency file v1.0
+1299531932 source:/black_hole/home/robert/Arduino/arduino_projects/ATtiny_projects/2313/Kitchen_Lights/source.c
+	<avr/io.h>
+	<inttypes.h>
+	<avr/interrupt.h>
+	<stdlib.h>
+	"source.h"
+
+1299521330 /black_hole/home/robert/Arduino/arduino_projects/ATtiny_projects/2313/Kitchen_Lights/source.h
+
+1299625125 source:/black_hole/home/robert/Electronics/Arduino/arduino_projects/ATtiny_projects/2313/Kitchen_Lights/source.c
+	<avr/io.h>
+	<inttypes.h>
+	<avr/interrupt.h>
+	<stdlib.h>
+	"source.h"
+
+1299625128 /black_hole/home/robert/Electronics/Arduino/arduino_projects/ATtiny_projects/2313/Kitchen_Lights/source.h
+
