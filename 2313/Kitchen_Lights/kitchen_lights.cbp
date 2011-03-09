@@ -20,7 +20,6 @@
 			</Target>
 		</Build>
 		<Compiler>
-			<Add option="-mmcu=attiny2313" />
 			<Add option="-fexpensive-optimizations" />
 			<Add option="-Os" />
 			<Add option="-Wmain" />
@@ -28,10 +27,11 @@
 			<Add option="-ansi" />
 			<Add option="-g" />
 			<Add option="-gdwarf-2 -std=gnu99 -funsigned-bitfields -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -fno-exceptions" />
+			<Add option="-mmcu=attiny4313" />
 			<Add option="-DF_CPU=8000000UL" />
 		</Compiler>
 		<Linker>
-			<Add option="-mmcu=attiny2313" />
+			<Add option="-mmcu=attiny4313" />
 			<Add option="-Wl,-Map=$(TARGET_OUTPUT_FILE).map,--cref" />
 			<Add option="-Wl,--gc-sections" />
 			<Add library="/usr/local/avr/avr/lib/libc.a" />
