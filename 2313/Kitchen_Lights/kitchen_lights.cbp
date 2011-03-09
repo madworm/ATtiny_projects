@@ -31,7 +31,6 @@
 			<Add option="-DF_CPU=8000000UL" />
 		</Compiler>
 		<Linker>
-			<Add option="-s" />
 			<Add option="-mmcu=attiny2313" />
 			<Add option="-Wl,-Map=$(TARGET_OUTPUT_FILE).map,--cref" />
 			<Add option="-Wl,--gc-sections" />
