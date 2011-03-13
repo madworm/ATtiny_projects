@@ -15,8 +15,8 @@
 #define __fade_delay 512U
 
 typedef struct {
-	uint8_t number;
-	uint8_t dutycycle;
+        uint8_t number;
+        uint8_t dutycycle;
 } led_t;
 
 static inline void setup_hw(void);
@@ -34,6 +34,7 @@ static void current_calib(void);
 static void bubbleSort(led_t ** array, uint8_t size);
 static inline void setup_system_ticker(void);
 uint32_t time(void);
+static inline void signal_reset(void);
 static inline void setup_timer1_ctc(void);
 static inline uint8_t spi_transfer(uint8_t data);
 int main(void);
