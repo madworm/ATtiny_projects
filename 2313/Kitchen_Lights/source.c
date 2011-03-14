@@ -4,48 +4,12 @@
 #include <stdlib.h>
 #include "source.h"
 
-// the 2nd number is actually 1-dutycycle.
-// this array MUST be sorted ascendingly with respect to the 2nd number
-// or the framebuffer ISR will mess up.
-// the 2nd number determines when the signal line is supposed to go UP
-// and all of these must be staggered.
-// the array is split into 2 for double buffering
-led_t glob_brightness[2][8] = {
-        {       {0, 64}
-                , {1, 64}
-                , {2, 64}
-                , {3, 64}
-                , {4, 64}
-                , {5, 64}
-                , {6, 64}
-                , {7, 64}
-        }
-        ,
-        {       {0, 64}
-                , {1, 64}
-                , {2, 64}
-                , {3, 64}
-                , {4, 64}
-                , {5, 64}
-                , {6, 64}
-                , {7, 64}
-        }
-};
-
-// array of pointers, pointing to glob_brightness elements such that it appears sorted (keeping the original data untouched)!
-// initially unsorted, need bubbleSort at least once and for every order breaking manipulation to glob_brightness
-led_t *sorted[2][8];
-volatile uint8_t read_from_this = 0;
-volatile uint8_t write_to_this = 1;
-volatile uint8_t flip_req = 0;
+uint8_t brightness = 128; /* for all 8 channels. 128 is fully off, 0 is fully on */
 
 volatile uint32_t system_ticks = 0;
 
 int main(void)
 {
-        populate_sorted();
-        bubbleSort(&sorted[read_from_this][0], 8);
-        bubbleSort(&sorted[write_to_this][0], 8);
         setup_hw();
         delay(50000);
         for (;;) {
@@ -55,24 +19,6 @@ int main(void)
 
 static void loop(void)
 {
-        // fader();
-        //
-        // fader is repeatably crashing the ATtiny2313.
-        // Either running out of RAM, or not enough decoupling...
-        // or the ISR timing is still too close to madness
-        //
-
-        /*
-           glob_brightness[write_to_this][2].dutycycle = 64;
-           bubbleSort(&sorted[write_to_this][0], 8);
-           flip_req = 1;                // tell the ISR that we've changed things and sorting is done
-           delay(10000);
-
-           glob_brightness[write_to_this][2].dutycycle = 0;
-           bubbleSort(&sorted[write_to_this][0], 8);
-           flip_req = 1;
-           delay(10000);
-         */
         kitchen_lights();
 }
 
@@ -82,8 +28,7 @@ static void kitchen_lights(void)
         // 1: on or user has increased brightness
         static uint8_t lamp_state = 0;
 
-        uint8_t ctr1;
-        static uint8_t ctr2 = 64;
+        static uint8_t ctr2 = 128;
 
         if (!(PIND & _BV(PD5))) {
                 lamp_state = 0;
@@ -93,16 +38,9 @@ static void kitchen_lights(void)
                 delay(2*__fade_delay);
                 __LED1_OFF;
 
-                for (ctr1 = 0; ctr1 <= 7; ctr1++) {
-                        glob_brightness[write_to_this][ctr1].dutycycle = ctr2;
-                }
-                /*
-                 * in this case no sort is needed, all values are identical
-                 */
-                //bubbleSort(&sorted[write_to_this][0], 8);
-                flip_req = 1;
+                brightness = ctr2;
 
-                if (ctr2 < 64) {
+                if (ctr2 < 128) {
                         ctr2++;
                 }
         }
@@ -115,14 +53,7 @@ static void kitchen_lights(void)
                 delay(2*__fade_delay);
                 __LED1_OFF;
 
-                for (ctr1 = 0; ctr1 <= 7; ctr1++) {
-                        glob_brightness[write_to_this][ctr1].dutycycle = ctr2;
-                }
-                /*
-                 * in this case no sort is needed, all values are identical
-                 */
-                //bubbleSort(&sorted[write_to_this][0], 8);
-                flip_req = 1;
+                brightness = ctr2;
 
                 if (ctr2 > 0) {
                         ctr2--;
@@ -134,7 +65,7 @@ static void kitchen_lights(void)
                 delay(2*__fade_delay);
                 __LED1_OFF;
 
-                if (ctr2 == 64) {	// fully off
+                if (ctr2 == 128) {	// fully off
                         lamp_state = 1;	// we increased brightness
                         __LED2_ON;
                         fade_in(ctr2);
@@ -143,18 +74,18 @@ static void kitchen_lights(void)
                         lamp_state = 0;	// we decreased brightness
                         __LED2_OFF;
                         fade_out(ctr2);
-                        ctr2 = 64;
+                        ctr2 = 128;
                 }
 
                 if (lamp_state == 0) {	// user pressed "-"
                         fade_out(ctr2);
-                        ctr2 = 64;
+                        ctr2 = 128;
                 }
                 if (lamp_state == 1) {	// user pressed "+"
                         fade_in(ctr2);
                         ctr2 = 0;
                 }
-                delay(25000);	// until I have debounced buttons...
+                delay(2500);	// until I have debounced buttons...
         }
 }
 
@@ -240,60 +171,25 @@ static void no_isr_demo(void)
 static void fader(void)
 {
         fade_out(0);
-        fade_in(64);
+        fade_in(128);
 }
 
 static void fade_in(uint8_t start_at)
 {
         uint8_t ctr1;
-        uint8_t ctr2;
         for (ctr1 = start_at; (ctr1 > 0); ctr1--) {
-                for (ctr2 = 0; ctr2 <= 7; ctr2++) {
-                        glob_brightness[write_to_this][ctr2].dutycycle = ctr1;
-                        /*
-                         * in this case no sort is needed, all values are identical
-                         */
-                        //bubbleSort(&sorted[write_to_this][0], 8);
-                        //flip_req = 1;
-                }
-                /*
-                 * in this case no sort is needed, all values are identical
-                 */
-                //bubbleSort(&sorted[write_to_this][0], 8);
-                flip_req = 1;
+                brightness = ctr1;
                 delay(__fade_delay);
         }
-}
+ }
 
 static void fade_out(uint8_t start_at)
 {
         uint8_t ctr1;
-        uint8_t ctr2;
-        for (ctr1 = start_at; ctr1 <= 64; ctr1++) {
-                for (ctr2 = 0; ctr2 <= 7; ctr2++) {
-                        glob_brightness[write_to_this][ctr2].dutycycle = ctr1;
-                        /*
-                         * in this case no sort is needed, all values are identical
-                         */
-                        //bubbleSort(&sorted[write_to_this][0], 8);
-                        //flip_req = 1;
-                }
-                /*
-                 * in this case no sort is needed, all values are identical
-                 */
-                //bubbleSort(&sorted[write_to_this][0], 8);
-                flip_req = 1;
+        for (ctr1 = start_at; ctr1 <= 128; ctr1++) {
+                brightness = ctr1;
                 delay(__fade_delay);
         }
-}
-
-static void current_calib(void)
-{
-        uint8_t ctr1;
-        for (ctr1 = 0; ctr1 <= 7; ctr1++) {
-                // brightness[ctr1] = 255;
-        }
-        delay(50000);
 }
 
 uint32_t time(void)
@@ -312,54 +208,6 @@ static void delay(uint32_t ticks)
         while ((time() - start_time) < ticks) {
                 // just wait here
         }
-}
-
-static inline void populate_sorted(void)
-{
-        uint8_t index;
-        for (index = 0; index < 8; index++) {
-                sorted[0][index] = &glob_brightness[0][index];
-                sorted[1][index] = &glob_brightness[1][index];
-        }
-}
-
-static void bubbleSort(led_t ** array, uint8_t length)
-{
-        uint8_t i;
-        uint8_t j;
-        led_t *temp;
-        uint8_t test;
-
-        for (i = (length - 1); i > 0; i--) {
-                test = 0;
-                for (j = 0; j < i; j++) {
-                        if ((*array[j]).dutycycle > (*array[j + 1]).dutycycle) {
-                                temp = array[j];
-                                array[j] = array[j + 1];
-                                array[j + 1] = temp;
-                                test = 1;
-                        }
-                }
-                if (test == 0) {
-                        break;
-                }
-        }
-}
-
-static void clear_buffer(void)
-{
-        uint8_t ctr;
-        for (ctr = 0; ctr <= 7; ctr++) {
-                glob_brightness[write_to_this][ctr].dutycycle = 64;
-        }
-}
-
-static void flip_buffers(void)
-{
-        uint8_t temp;
-        temp = read_from_this;
-        read_from_this = write_to_this;
-        write_to_this = temp;
 }
 
 static void signal_reset(void)
@@ -419,9 +267,9 @@ static inline void setup_timer1_ctc(void)
         cli(); /* disable all interrupts while messing with the register setup */
 
         /* multiplexed TRUE-RGB PWM mode (quite dim) */
-        /* set prescaler to 1024 */
-        TCCR1B |= (_BV(CS10) | _BV(CS12));
-        TCCR1B &= ~(_BV(CS11));
+        /* set prescaler to 256 */
+        TCCR1B |= (_BV(CS12));
+        TCCR1B &= ~(_BV(CS11) | _BV(CS10));
         /* set WGM mode 4: CTC using OCR1A */
         TCCR1A &= ~(_BV(WGM11) | _BV(WGM10));
         TCCR1B |= _BV(WGM12);
@@ -450,7 +298,7 @@ ISR(TIMER1_COMPA_vect)
         __DISPLAY_OFF;
 
         /*
-         * init as off and accept that 64 = 0% and 0 = 100%
+         * init as off and accept that 128 = 0% and 0 = 100%
          * if inited as on, it won't go down to zero brightness
          * which is more annoying than not getting to 100%
          *
@@ -460,28 +308,24 @@ ISR(TIMER1_COMPA_vect)
         static uint16_t OCR1A_TMP = 0;
 
         /* starts with index = 0 */
-        /* now calculate when to run the next time and turn on LED0 */
+        /* now calculate when to run the next time and turn on all 8-ch */
 
         switch(index) {
         case 0:
-                if (flip_req == 1) {	// main has changed one of the buffers and sorted it. flip!
-                        flip_buffers();	// only do this at the beginning of a NEW cycle !
-                        flip_req = 0;	// reset flag
-                }
-                OCR1A_TMP = (uint16_t) ((*sorted[read_from_this][index]).dutycycle);
+                OCR1A_TMP = brightness;
                 index++;
                 break;
-        case 8:
-                if ((*sorted[read_from_this][(index - 1)]).dutycycle == 64) {
-                        /* if the led should be at 0%, do nothing */
+        case 1:
+                if ( brightness == 128) {
+                        /* if the leds should be at 0%, do nothing */
                 } else {
-                        data |= _BV((*sorted[read_from_this][(index - 1)]).number);
+                        data = 0xFF; // turn all 8-ch on
                 }
                 /* calculate when to turn everything off */
-                OCR1A_TMP = (uint16_t) (64 - (*sorted[read_from_this][(index - 1)]).dutycycle);
+                OCR1A_TMP = ( 128 - brightness );
                 index++;
                 break;
-        case 9:
+        case 2:
                 /* cycle completed, reset everything */
                 data = 0;
                 index = 0;
@@ -490,16 +334,6 @@ ISR(TIMER1_COMPA_vect)
                 /* DON'T increase the index counter ! */
                 break;
         default:
-                /* turn on the LED we deciced to turn on in the last invocation */
-                if ((*sorted[read_from_this][(index - 1)]).dutycycle == 64) {
-                        /* if the led should be at 0%, do nothing */
-                } else {
-                        data |= _BV((*sorted[read_from_this][(index - 1)]).number);
-                }
-                /* calculate when to run the next time and turn on the next LED */
-                OCR1A_TMP = (uint16_t) ((*sorted[read_from_this][index]).dutycycle - (*sorted[read_from_this][(index - 1)]).dutycycle);
-                index++;
-
                 break;
         }
 

@@ -11,8 +11,8 @@
 
 #define __step_delay 1500U	// used to let the amp-meter settle on a current value
 
-#define __OCR1A_max 64U		// DON'T change this
-#define __fade_delay 512U
+#define __OCR1A_max 128U		// DON'T change this
+#define __fade_delay 256U
 
 typedef struct {
         uint8_t number;
@@ -20,18 +20,13 @@ typedef struct {
 } led_t;
 
 static inline void setup_hw(void);
-static inline void populate_sorted(void);
 static void loop(void);
 static void no_isr_demo(void);
 static void kitchen_lights(void);
 static void fader(void);
 static void fade_in(uint8_t start_at);
 static void fade_out(uint8_t start_at);
-static void clear_buffer();
-static void flip_buffers();
 static void delay(uint32_t ticks);
-static void current_calib(void);
-static void bubbleSort(led_t ** array, uint8_t size);
 static inline void setup_system_ticker(void);
 uint32_t time(void);
 static inline void signal_reset(void);
