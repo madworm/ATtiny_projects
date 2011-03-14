@@ -1,6 +1,8 @@
 #include <avr/io.h>
-#include <inttypes.h>
+#include <avr/wdt.h>
+#include <avr/sleep.h>
 #include <avr/interrupt.h>
+#include <inttypes.h>
 #include <stdlib.h>
 #include "source.h"
 
@@ -14,6 +16,10 @@ int main(void)
         delay(50000);
         for (;;) {
                 loop();
+                // this saved about 2mA on my dev board
+                sleep_enable(); // make it possible to have some zzzzz-s
+                sleep_cpu();    // good night
+                sleep_disable(); // we've just woken up again
         }
 };
 
@@ -91,6 +97,40 @@ static void kitchen_lights(void)
 
 static inline void setup_hw(void)
 {
+        cli();              // turn interrupts off
+
+        /*
+         * power savings !
+         *
+         * total optimized power consumption of the cpu module: 2.2mA
+         * incl. status LED (PWMed)
+         *
+         * the MBI5168 LED drivers take about 15mA each in idle mode :-(
+         *
+         */
+        ACSR &= ~_BV(ACIE);     // turn off the analog comparator interrupt
+        ACSR |= _BV(ACD);       // turn off the analog comparator
+        PRR |= _BV(PRUSART);    // turn off the USART
+
+        // turn the watchdog off
+        wdt_reset();
+        MCUSR= 0x00;
+        WDTCR |= ( _BV(WDCE) | _BV(WDE) );  // for 2313 change to WDTCSR
+        WDTCR = 0x00;   // for 2313 change to WDTCSR
+
+        // turn all unused pins to inputs + pull-up on
+        // saved about another 0.5mA on my board
+        DDRA = 0x00;
+        DDRB = 0x00;
+        DDRD = 0x00;
+        PORTA = 0xFF;
+        PORTB = 0xFF;
+        PORTD = 0xFF;
+
+
+        /*
+         * now configure the pins we actually need
+         */
         DDRB |= _BV(PB0);	// set LED0 pin as output
         __LED0_OFF;
 
@@ -121,12 +161,17 @@ static inline void setup_hw(void)
         DDRB &= ~_BV(PB5);	// as input (DI)
         PORTB |= _BV(PB5);	// pullup on (DI)
 
-        sei();			// turn global irq flag on
+        // sleep mode
+        set_sleep_mode(SLEEP_MODE_IDLE);
+
+        /*
+         * getting ready
+         */
+        sei(); // turn global irq flag on
         setup_system_ticker();
         signal_reset();
         setup_timer1_ctc();
-        //current_calib();
- }
+}
 
 static void no_isr_demo(void)
 {
