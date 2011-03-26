@@ -23,12 +23,12 @@ int main(void)
         }
 };
 
-static void loop(void)
+void loop(void)
 {
         kitchen_lights();
 }
 
-static void kitchen_lights(void)
+void kitchen_lights(void)
 {
         // 0: off or user has decreased brightness
         // 1: on or user has increased brightness
@@ -115,7 +115,7 @@ static void kitchen_lights(void)
         }
 }
 
-static inline void setup_hw(void)
+inline void setup_hw(void)
 {
         cli();              // turn interrupts off
 
@@ -183,7 +183,7 @@ static inline void setup_hw(void)
         setup_timer1_ctc();
 }
 
-static void fade_in(uint8_t start_at)
+void fade_in(uint8_t start_at)
 {
         uint8_t ctr1;
         for (ctr1 = start_at; (ctr1 > 0); ctr1--) {
@@ -192,7 +192,7 @@ static void fade_in(uint8_t start_at)
         }
 }
 
-static void fade_out(uint8_t start_at)
+void fade_out(uint8_t start_at)
 {
         uint8_t ctr1;
         for (ctr1 = start_at; ctr1 <= 128; ctr1++) {
@@ -211,7 +211,7 @@ uint32_t time(void)
         return time;
 }
 
-static void delay(uint32_t ticks)
+void delay(uint32_t ticks)
 {
         uint32_t start_time = time();
         while ((time() - start_time) < ticks) {
@@ -219,7 +219,7 @@ static void delay(uint32_t ticks)
         }
 }
 
-static void signal_reset(void)
+void signal_reset(void)
 {
         __LED_ON;
         delay(10000);
@@ -259,7 +259,7 @@ static void signal_reset(void)
 Functions dealing with hardware specific jobs / settings
 */
 
-static inline uint8_t spi_transfer(uint8_t data)
+inline uint8_t spi_transfer(uint8_t data)
 {
         USIDR = data;
         USISR = _BV(USIOIF);	// clear flag
@@ -270,7 +270,7 @@ static inline uint8_t spi_transfer(uint8_t data)
         return USIDR;
 }
 
-static inline void setup_system_ticker(void)
+inline void setup_system_ticker(void)
 {
         /* save SREG and turn interrupts off globally */
         uint8_t _sreg = SREG;
@@ -290,7 +290,7 @@ static inline void setup_system_ticker(void)
         SREG = _sreg;
 }
 
-static inline void setup_timer1_ctc(void)
+inline void setup_timer1_ctc(void)
 {
         uint8_t _sreg = SREG; /* save SREG */
         cli(); /* disable all interrupts while messing with the register setup */

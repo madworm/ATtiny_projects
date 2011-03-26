@@ -10,15 +10,15 @@
 #define __OCR1A_max 128U		// DON'T change this
 #define __fade_delay 256U
 
-static inline void setup_hw(void);
-static void loop(void);
-static void kitchen_lights(void);
-static void fade_in(uint8_t start_at);
-static void fade_out(uint8_t start_at);
-static void delay(uint32_t ticks);
+inline void setup_hw(void);
+void loop(void);
+void kitchen_lights(void);
+void fade_in(uint8_t start_at);
+void fade_out(uint8_t start_at);
+void delay(uint32_t ticks);
 uint32_t time(void);
-static inline void signal_reset(void);
-static inline void setup_system_ticker(void);
-static inline void setup_timer1_ctc(void);
-static inline uint8_t spi_transfer(uint8_t data);
+inline void signal_reset(void);
+inline void setup_system_ticker(void);
+inline void setup_timer1_ctc(void);
+inline uint8_t spi_transfer(uint8_t data);
 int main(void);
