@@ -33,53 +33,83 @@ static void kitchen_lights(void)
         // 0: off or user has decreased brightness
         // 1: on or user has increased brightness
         static uint8_t lamp_state = 0;
+        static uint8_t switches_state = 0;
+        uint8_t adc_tmp = ADCH;
+        static uint8_t ctr = 128;
 
-        static uint8_t ctr2 = 128;
+        /*
+            switches pressed    voltage     ADCH    state
 
-        if (!(PINA & _BV(PA0))) {
+            none                5.12 (VCC)  255     0
+            3                   4.12        205     3
+            2                   3.44        171     2
+            2+3                 2.96        147     5
+            1                   2.60        129     1
+            1+3                 2.31        115     6
+            1+2                 2.08        103     4
+            all                 1.89         94     7
+        */
+
+        // evaluate ADCH and translate it to which buttons are pressed
+
+        switches_state = 0; // reset
+
+        if ( adc_tmp > 200 && adc_tmp < 210 ) {
+                switches_state = 3;
+        }
+
+        if ( adc_tmp > 166 && adc_tmp < 176 ) {
+                switches_state = 2;
+        }
+
+        if ( adc_tmp > 124 && adc_tmp < 134 ) {
+                switches_state = 1;
+        }
+
+        if ( switches_state == 1 ) {
                 lamp_state = 0;
                 __LED_OFF;
 
-                brightness = ctr2;
+                brightness = ctr;
 
-                if (ctr2 < 128) {
-                        ctr2++;
-                }
-                delay(2*__fade_delay);
-         }
-
-        if (!(PINA & _BV(PA2))) {
-                lamp_state = 1;
-                __LED_ON;
-
-                brightness = ctr2;
-
-                if (ctr2 > 0) {
-                        ctr2--;
+                if (ctr < 128) {
+                        ctr++;
                 }
                 delay(2*__fade_delay);
         }
 
-        if (!(PINA & _BV(PA1))) {
-                if (ctr2 == 128) {	// fully off
+        if ( switches_state == 3 ) {
+                lamp_state = 1;
+                __LED_ON;
+
+                brightness = ctr;
+
+                if (ctr > 0) {
+                        ctr--;
+                }
+                delay(2*__fade_delay);
+        }
+
+        if ( switches_state == 2 ) {
+                if (ctr == 128) {	// fully off
                         lamp_state = 1;	// we increased brightness
                         __LED_ON;
-                        fade_in(ctr2);
-                        ctr2 = 0;
-                } else if (ctr2 == 0) {	// fully on
+                        fade_in(ctr);
+                        ctr = 0;
+                } else if (ctr == 0) {	// fully on
                         lamp_state = 0;	// we decreased brightness
                         __LED_OFF;
-                        fade_out(ctr2);
-                        ctr2 = 128;
+                        fade_out(ctr);
+                        ctr = 128;
                 }
 
                 if (lamp_state == 0) {	// user pressed "-"
-                        fade_out(ctr2);
-                        ctr2 = 128;
+                        fade_out(ctr);
+                        ctr = 128;
                 }
                 if (lamp_state == 1) {	// user pressed "+"
-                        fade_in(ctr2);
-                        ctr2 = 0;
+                        fade_in(ctr);
+                        ctr = 0;
                 }
                 delay(2500);	// until I have debounced buttons...
         }
@@ -102,8 +132,8 @@ static inline void setup_hw(void)
         // turn the watchdog off
         wdt_reset();
         MCUSR= 0x00;
-        WDTCSR |= ( _BV(WDCE) | _BV(WDE) );  // for 2313 change to WDTCSR
-        WDTCSR = 0x00;   // for 2313 change to WDTCSR
+        WDTCSR |= ( _BV(WDCE) | _BV(WDE) ); // timed sequence !
+        WDTCSR = 0x00;
 
         // turn all pins to inputs + pull-up on
         // saved about another 0.5mA on my board
@@ -132,6 +162,15 @@ static inline void setup_hw(void)
 
         // setup ADC
 
+        ADCSRA |= _BV(ADEN);    // enable ADC
+        ADCSRB |= _BV(ADLAR);   // set to left-aligned. we only need 8-bit and read ADCH only
+        ADCSRB &= ~( _BV(ADTS2) | _BV(ADTS1) | _BV(ADTS0) );   // free running mode
+
+        ADMUX &= ~( _BV(REFS1) | _BV(REFS0) );          // VREF = VCC
+        ADMUX |= ( _BV(MUX2) | _BV(MUX1) | _BV(MUX0) ); // select PA7 as signal source
+
+        ADCSRA |= _BV(ADSC);    // start the first conversion
+
         // sleep mode
         set_sleep_mode(SLEEP_MODE_IDLE);
 
@@ -144,12 +183,6 @@ static inline void setup_hw(void)
         setup_timer1_ctc();
 }
 
-static void fader(void)
-{
-        fade_out(0);
-        fade_in(128);
-}
-
 static void fade_in(uint8_t start_at)
 {
         uint8_t ctr1;
@@ -157,7 +190,7 @@ static void fade_in(uint8_t start_at)
                 brightness = ctr1;
                 delay(__fade_delay);
         }
- }
+}
 
 static void fade_out(uint8_t start_at)
 {

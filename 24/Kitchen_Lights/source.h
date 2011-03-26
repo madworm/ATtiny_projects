@@ -13,7 +13,6 @@
 static inline void setup_hw(void);
 static void loop(void);
 static void kitchen_lights(void);
-static void fader(void);
 static void fade_in(uint8_t start_at);
 static void fade_out(uint8_t start_at);
 static void delay(uint32_t ticks);
