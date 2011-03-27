@@ -7,13 +7,14 @@
 #include "source.h"
 
 uint8_t brightness = 128; /* for all 8 channels. 128 is fully off, 0 is fully on */
+uint16_t auto_adj_fade_delay = (uint16_t)(__fade_delay); // this will be auto-adjusted by an LDR
 
-volatile uint32_t system_ticks = 0;
+volatile uint16_t system_ticks = 0;
 
 int main(void)
 {
         setup_hw();
-        delay(50000);
+        delay(6000);
         for (;;) {
                 loop();
                 // this saved about 2mA on my dev board
@@ -25,8 +26,9 @@ int main(void)
 
 void loop(void)
 {
-        kitchen_lights(1);
         //adc_test(1); // shows ADCH on the 8 LEDs. timer1 should be OFF (or it blinks like mad --> headache)
+        adjust_fade_delay(7); // read an LDR on PA7
+        kitchen_lights(1);
 }
 
 void kitchen_lights(uint8_t channel)
@@ -76,7 +78,7 @@ void kitchen_lights(uint8_t channel)
                 if (ctr < 128) {
                         ctr++;
                 }
-                delay(2*__fade_delay);
+                delay(2*__fade_delay); // manually fading out with fixed speed
         }
 
         if ( switches_state == 3 ) {
@@ -88,31 +90,31 @@ void kitchen_lights(uint8_t channel)
                 if (ctr > 0) {
                         ctr--;
                 }
-                delay(2*__fade_delay);
+                delay(4*__fade_delay); // manually fading in with fixed speed, but slower ( better for the eyes in the morning ;-) )
         }
 
         if ( switches_state == 2 ) {
                 if (ctr == 128) {	// fully off
                         lamp_state = 1;	// we increased brightness
                         __LED_ON;
-                        fade_in(ctr);
+                        fade_in(ctr,auto_adj_fade_delay); // auto-fadein adjusted by LDR
                         ctr = 0;
                 } else if (ctr == 0) {	// fully on
                         lamp_state = 0;	// we decreased brightness
                         __LED_OFF;
-                        fade_out(ctr);
+                        fade_out(ctr,2*__fade_delay); // auto-fadeout with fixed speed
                         ctr = 128;
                 }
 
                 if (lamp_state == 0) {	// user pressed "-"
-                        fade_out(ctr);
+                        fade_out(ctr,2*__fade_delay);
                         ctr = 128;
                 }
                 if (lamp_state == 1) {	// user pressed "+"
-                        fade_in(ctr);
+                        fade_in(ctr,auto_adj_fade_delay);
                         ctr = 0;
                 }
-                delay(2500);	// until I have debounced buttons...
+                delay(1500);	// until I have debounced buttons...
         }
 }
 
@@ -180,37 +182,37 @@ inline void setup_hw(void)
         setup_timer1_ctc(); // disable for adc_test()
 }
 
-void fade_in(uint8_t start_at)
+void fade_in(uint8_t start_at, uint16_t fade_delay)
 {
         uint8_t ctr1;
         for (ctr1 = start_at; (ctr1 > 0); ctr1--) {
                 brightness = ctr1;
-                delay(__fade_delay);
+                delay(fade_delay);
         }
 }
 
-void fade_out(uint8_t start_at)
+void fade_out(uint8_t start_at, uint16_t fade_delay)
 {
         uint8_t ctr1;
         for (ctr1 = start_at; ctr1 <= 128; ctr1++) {
                 brightness = ctr1;
-                delay(__fade_delay);
+                delay(fade_delay);
         }
 }
 
-uint32_t time(void)
+uint16_t time(void)
 {
         uint8_t _sreg = SREG;
-        uint32_t time;
+        uint16_t time;
         cli();
         time = system_ticks;
         SREG = _sreg;
         return time;
 }
 
-void delay(uint32_t ticks)
+void delay(uint16_t ticks)
 {
-        uint32_t start_time = time();
+        uint16_t start_time = time();
         while ((time() - start_time) < ticks) {
                 // just wait here
         }
@@ -219,13 +221,13 @@ void delay(uint32_t ticks)
 void signal_reset(void)
 {
         __TOGGLE_LED;
-        delay(10000);
+        delay(1000);
         __TOGGLE_LED;
-        delay(10000);
+        delay(1000);
         __TOGGLE_LED;
-        delay(10000);
+        delay(1000);
         __TOGGLE_LED;
-        delay(10000);
+        delay(1000);
         /*
         // only for debugging
         while(1) {
@@ -269,9 +271,9 @@ inline void setup_system_ticker(void)
         uint8_t _sreg = SREG;
         cli();
         /* using timer0 */
-        /* setting prescaler to 1 */
-        TCCR0B |= _BV(CS00);
-        TCCR0B &= ~(_BV(CS01) | _BV(CS02));
+        /* setting prescaler to 8 */
+        TCCR0B |= _BV(CS01);
+        TCCR0B &= ~(_BV(CS00) | _BV(CS02));
         /* set WGM mode 0 */
         TCCR0A &= ~(_BV(WGM01) | _BV(WGM00));
         TCCR0B &= ~_BV(WGM02);
@@ -368,16 +370,19 @@ ISR(TIM1_COMPA_vect) /* on attiny2313/4313 this is named TIMER1_COMPA_vect */
 void adc_test(uint8_t channel)
 {
         __TOGGLE_LED;
-        delay(100);
+        delay(50);
         __TOGGLE_LED;
-        delay(100);
+        delay(50);
         __TOGGLE_LED;
-        delay(100);
+        delay(50);
         __TOGGLE_LED;
+
+        uint8_t tmp = read_adc(channel);
 
         __DISPLAY_OFF;
         __LATCH_LOW;
-        spi_transfer(read_adc(channel));
+        spi_transfer(tmp);
+        spi_transfer(tmp); // 2nd line only necessary on my prototype...
         __LATCH_HIGH;
         __DISPLAY_ON;
 }
@@ -396,4 +401,9 @@ uint8_t read_adc(uint8_t channel)
                 // wait until ADC is done
         }
         return ADCH;
+}
+
+void adjust_fade_delay(uint8_t channel)
+{
+        auto_adj_fade_delay = 1024 - 4* (uint16_t)(read_adc(7));
 }
