@@ -25,16 +25,17 @@ int main(void)
 
 void loop(void)
 {
-        kitchen_lights();
+        kitchen_lights(1);
+        //adc_test(1); // shows ADCH on the 8 LEDs. timer1 should be OFF (or it blinks like mad --> headache)
 }
 
-void kitchen_lights(void)
+void kitchen_lights(uint8_t channel)
 {
         // 0: off or user has decreased brightness
         // 1: on or user has increased brightness
         static uint8_t lamp_state = 0;
         static uint8_t switches_state = 0;
-        uint8_t adc_tmp = ADCH;
+        uint8_t adc_tmp = read_adc(channel); // switches + resistor network connected to PA1
         static uint8_t ctr = 128;
 
         /*
@@ -160,16 +161,12 @@ inline void setup_hw(void)
         DDRA &= ~_BV(PA6);	// as input (DI)
         PORTA |= _BV(PA6);	// pullup on (DI)
 
-        // setup ADC
-
-        ADCSRA |= _BV(ADEN);    // enable ADC
-        ADCSRB |= _BV(ADLAR);   // set to left-aligned. we only need 8-bit and read ADCH only
-        ADCSRB &= ~( _BV(ADTS2) | _BV(ADTS1) | _BV(ADTS0) );   // free running mode
-
-        ADMUX &= ~( _BV(REFS1) | _BV(REFS0) );          // VREF = VCC
-        ADMUX |= ( _BV(MUX2) | _BV(MUX1) | _BV(MUX0) ); // select PA7 as signal source
-
-        ADCSRA |= _BV(ADSC);    // start the first conversion
+        /* setup ADC
+         *
+         *   using single conversion mode
+         *   --> setup in read_adc() for every conversion necessary!
+         *
+         */
 
         // sleep mode
         set_sleep_mode(SLEEP_MODE_IDLE);
@@ -180,7 +177,7 @@ inline void setup_hw(void)
         sei(); // turn global irq flag on
         setup_system_ticker();
         signal_reset();
-        setup_timer1_ctc();
+        setup_timer1_ctc(); // disable for adc_test()
 }
 
 void fade_in(uint8_t start_at)
@@ -221,17 +218,13 @@ void delay(uint32_t ticks)
 
 void signal_reset(void)
 {
-        __LED_ON;
+        __TOGGLE_LED;
         delay(10000);
-        __LED_OFF;
+        __TOGGLE_LED;
         delay(10000);
-        __LED_ON;
+        __TOGGLE_LED;
         delay(10000);
-        __LED_OFF;
-        delay(10000);
-        __LED_ON;
-        delay(10000);
-        __LED_OFF;
+        __TOGGLE_LED;
         delay(10000);
         /*
         // only for debugging
@@ -370,4 +363,37 @@ ISR(TIM1_COMPA_vect) /* on attiny2313/4313 this is named TIMER1_COMPA_vect */
         __DISPLAY_ON;
 
         OCR1A = OCR1A_TMP;
+}
+
+void adc_test(uint8_t channel)
+{
+        __TOGGLE_LED;
+        delay(100);
+        __TOGGLE_LED;
+        delay(100);
+        __TOGGLE_LED;
+        delay(100);
+        __TOGGLE_LED;
+
+        __DISPLAY_OFF;
+        __LATCH_LOW;
+        spi_transfer(read_adc(channel));
+        __LATCH_HIGH;
+        __DISPLAY_ON;
+}
+
+uint8_t read_adc(uint8_t channel)
+{
+        ADCSRA |= _BV(ADEN);    // enable ADC
+        ADCSRA |= ( _BV(ADPS2) | _BV(ADPS1) | _BV(ADPS0) ); // set prescaler to 128 for stable readings
+        ADCSRB |= _BV(ADLAR);   // set to left-aligned. we only need 8-bit and read ADCH only
+        ADMUX &= ~( _BV(REFS1) | _BV(REFS0) );          // VREF = VCC
+        ADMUX &= ~( _BV(MUX2) | _BV(MUX1) | _BV(MUX0) ); // reset to channel PA0
+
+        ADMUX |= channel; // valid values for this board: 0,1,2,3,7
+        ADCSRA |= _BV(ADSC);    // start conversion
+        while( ADCSRA & _BV(ADSC) ) {
+                // wait until ADC is done
+        }
+        return ADCH;
 }
