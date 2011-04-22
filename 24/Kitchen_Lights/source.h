@@ -18,7 +18,7 @@ void fade_in(uint8_t start_at, uint16_t fade_delay);
 void fade_out(uint8_t start_at, uint16_t fade_delay);
 void adc_test(uint8_t channel);
 uint8_t read_adc(uint8_t channel);
-void adjust_fade_delay(uint8_t channel);
+//void adjust_fade_delay(uint8_t channel);
 void delay(uint16_t ticks);
 uint16_t time(void);
 inline void signal_reset(void);

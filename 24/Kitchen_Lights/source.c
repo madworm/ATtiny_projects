@@ -27,7 +27,7 @@ int main(void)
 void loop(void)
 {
         //adc_test(1); // shows ADCH on the 8 LEDs. timer1 should be OFF (or it blinks like mad --> headache)
-        adjust_fade_delay(7); // read an LDR on PA7
+        //adjust_fade_delay(7); // read an LDR on PA7
         kitchen_lights(1);
 }
 
@@ -41,31 +41,38 @@ void kitchen_lights(uint8_t channel)
         static uint8_t ctr = 128;
 
         /*
+	    board 1: tested with adc_test(1) and timer1 OFF !
+
             switches pressed    voltage     ADCH    state
 
-            none                5.12 (VCC)  255     0
-            3                   4.12        205     3
-            2                   3.44        171     2
-            2+3                 2.96        147     5
-            1                   2.60        129     1
-            1+3                 2.31        115     6
-            1+2                 2.08        103     4
-            all                 1.89         94     7
+            3                   -.--        214     3
+            2                   -.--        184     2
+            1                   -.--        144     1
+        */
+
+        /*
+	    board 2: tested with adc_test(1) and timer1 OFF !
+
+            switches pressed    voltage     ADCH    state
+
+            3                   -.--        214     3
+            2                   -.--        185     2
+            1                   -.--        145     1
         */
 
         // evaluate ADCH and translate it to which buttons are pressed
 
         switches_state = 0; // reset
 
-        if ( adc_tmp > 200 && adc_tmp < 210 ) {
+        if ( adc_tmp > 209 && adc_tmp < 219 ) {
                 switches_state = 3;
         }
 
-        if ( adc_tmp > 166 && adc_tmp < 176 ) {
+        if ( adc_tmp > 180 && adc_tmp < 190 ) {
                 switches_state = 2;
         }
 
-        if ( adc_tmp > 124 && adc_tmp < 134 ) {
+        if ( adc_tmp > 140 && adc_tmp < 150 ) {
                 switches_state = 1;
         }
 
@@ -169,6 +176,8 @@ inline void setup_hw(void)
          *   --> setup in read_adc() for every conversion necessary!
          *
          */
+
+        PORTA &= _BV(PA1);  // turn internal pull-up off
 
         // sleep mode
         set_sleep_mode(SLEEP_MODE_IDLE);
@@ -382,7 +391,6 @@ void adc_test(uint8_t channel)
         __DISPLAY_OFF;
         __LATCH_LOW;
         spi_transfer(tmp);
-        spi_transfer(tmp); // 2nd line only necessary on my prototype...
         __LATCH_HIGH;
         __DISPLAY_ON;
 }
@@ -403,7 +411,9 @@ uint8_t read_adc(uint8_t channel)
         return ADCH;
 }
 
+/*
 void adjust_fade_delay(uint8_t channel)
 {
         auto_adj_fade_delay = 1024 - 4* (uint16_t)(read_adc(7));
 }
+*/
