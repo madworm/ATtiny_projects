@@ -45,9 +45,9 @@ void kitchen_lights(uint8_t channel)
 
             switches pressed    voltage     ADCH    state
 
-            3                   -.--        214     3
-            2                   -.--        184     2
-            1                   -.--        144     1
+            3                   -.--        205     3
+            2                   -.--        171     2
+            1                   -.--        128     1
         */
 
         /*
@@ -55,24 +55,34 @@ void kitchen_lights(uint8_t channel)
 
             switches pressed    voltage     ADCH    state
 
-            3                   -.--        214     3
-            2                   -.--        185     2
-            1                   -.--        145     1
+            3                   -.--        205     3
+            2                   -.--        170     2
+            1                   -.--        128     1
+        */
+
+        /*
+	    board 3: tested with adc_test(1) and timer1 OFF !
+
+            switches pressed    voltage     ADCH    state
+
+            3                   -.--        205     3
+            2                   -.--        170     2
+            1                   -.--        127     1
         */
 
         // evaluate ADCH and translate it to which buttons are pressed
 
         switches_state = 0; // reset
 
-        if ( adc_tmp > 209 && adc_tmp < 219 ) {
+        if ( adc_tmp > 200 && adc_tmp < 210 ) {
                 switches_state = 3;
         }
 
-        if ( adc_tmp > 180 && adc_tmp < 190 ) {
+        if ( adc_tmp > 165 && adc_tmp < 175 ) {
                 switches_state = 2;
         }
 
-        if ( adc_tmp > 140 && adc_tmp < 150 ) {
+        if ( adc_tmp > 122 && adc_tmp < 132 ) {
                 switches_state = 1;
         }
 
@@ -177,7 +187,7 @@ inline void setup_hw(void)
          *
          */
 
-        PORTA &= _BV(PA1);  // turn internal pull-up off
+        PORTA &= ~_BV(PA1);
 
         // sleep mode
         set_sleep_mode(SLEEP_MODE_IDLE);
