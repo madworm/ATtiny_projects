@@ -28,6 +28,7 @@ void loop(void)
 {
         //adc_test(1); // shows ADCH on the 8 LEDs. timer1 should be OFF (or it blinks like mad --> headache)
         //adjust_fade_delay(7); // read an LDR on PA7
+        __TOGGLE_LED; // make the lamps visible in the darkness
         kitchen_lights(1);
 }
 
@@ -187,7 +188,7 @@ inline void setup_hw(void)
          *
          */
 
-        PORTA &= ~_BV(PA1);
+        PORTA &= ~_BV(PA1); // internal pull-up off on switches pin
 
         // sleep mode
         set_sleep_mode(SLEEP_MODE_IDLE);
