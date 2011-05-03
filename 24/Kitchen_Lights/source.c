@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include "source.h"
 
-uint8_t brightness = 128; /* for all 8 channels. 128 is fully off, 0 is fully on */
+uint8_t brightness = __OCR1A_max; /* for all 8 channels. __OCR1A_max is fully off, 0 is fully on */
 uint16_t auto_adj_fade_delay = (uint16_t)(__fade_delay); // this will be auto-adjusted by an LDR
 
 volatile uint16_t system_ticks = 0;
@@ -39,7 +39,7 @@ void kitchen_lights(uint8_t channel)
         static uint8_t lamp_state = 0;
         static uint8_t switches_state = 0;
         uint8_t adc_tmp = read_adc(channel); // switches + resistor network connected to PA1
-        static uint8_t ctr = 128;
+        static uint8_t ctr = __OCR1A_max;
 
         /*
 	    board 1: tested with adc_test(1) and timer1 OFF !
@@ -93,7 +93,7 @@ void kitchen_lights(uint8_t channel)
 
                 brightness = ctr;
 
-                if (ctr < 128) {
+                if (ctr < __OCR1A_max) {
                         ctr++;
                 }
                 delay(2*__fade_delay); // manually fading out with fixed speed
@@ -112,7 +112,7 @@ void kitchen_lights(uint8_t channel)
         }
 
         if ( switches_state == 2 ) {
-                if (ctr == 128) {	// fully off
+                if (ctr == __OCR1A_max) {	// fully off
                         lamp_state = 1;	// we increased brightness
                         __LED_ON;
                         fade_in(ctr,auto_adj_fade_delay); // auto-fadein adjusted by LDR
@@ -121,12 +121,12 @@ void kitchen_lights(uint8_t channel)
                         lamp_state = 0;	// we decreased brightness
                         __LED_OFF;
                         fade_out(ctr,2*__fade_delay); // auto-fadeout with fixed speed
-                        ctr = 128;
+                        ctr = __OCR1A_max;
                 }
 
                 if (lamp_state == 0) {	// user pressed "-"
                         fade_out(ctr,2*__fade_delay);
-                        ctr = 128;
+                        ctr = __OCR1A_max;
                 }
                 if (lamp_state == 1) {	// user pressed "+"
                         fade_in(ctr,auto_adj_fade_delay);
@@ -200,6 +200,12 @@ inline void setup_hw(void)
         setup_system_ticker();
         signal_reset();
         setup_timer1_ctc(); // disable for adc_test()
+
+        __DISPLAY_OFF; // turn the driver off
+
+        __LATCH_LOW;
+        spi_transfer(0xFF);	// set wich channels are active
+        __LATCH_HIGH;
 }
 
 void fade_in(uint8_t start_at, uint16_t fade_delay)
@@ -214,7 +220,7 @@ void fade_in(uint8_t start_at, uint16_t fade_delay)
 void fade_out(uint8_t start_at, uint16_t fade_delay)
 {
         uint8_t ctr1;
-        for (ctr1 = start_at; ctr1 <= 128; ctr1++) {
+        for (ctr1 = start_at; ctr1 <= __OCR1A_max; ctr1++) {
                 brightness = ctr1;
                 delay(fade_delay);
         }
@@ -248,26 +254,6 @@ void signal_reset(void)
         delay(1000);
         __TOGGLE_LED;
         delay(1000);
-        /*
-        // only for debugging
-        while(1) {
-                if(!(PINA & _BV(PA0))) {
-                        __LED_ON;
-                } else {
-                        __LED_OFF;
-                }
-                if(!(PINA & _BV(PA1))) {
-                        __LED_ON;
-                } else {
-                        __LED_OFF;
-                }
-                if(!(PINA & _BV(PA2))) {
-                        __LED_ON;
-                } else {
-                        __LED_OFF;
-                }
-        }
-        */
 }
 
 /*
@@ -310,7 +296,6 @@ inline void setup_timer1_ctc(void)
         uint8_t _sreg = SREG; /* save SREG */
         cli(); /* disable all interrupts while messing with the register setup */
 
-        /* multiplexed TRUE-RGB PWM mode (quite dim) */
         /* set prescaler to 256 */
         TCCR1B |= (_BV(CS12));
         TCCR1B &= ~(_BV(CS11) | _BV(CS10));
@@ -339,12 +324,11 @@ ISR(TIM1_COMPA_vect) /* on attiny2313/4313 this is named TIMER1_COMPA_vect */
         __DISPLAY_OFF;
 
         /*
-         * init as off and accept that 128 = 0% and 0 = 100%
+         * init as off and accept that __OCR1A_max = 0% and 0 = 100%
          * if inited as on, it won't go down to zero brightness
          * which is more annoying than not getting to 100%
          *
          */
-        static uint8_t data = 0;
         static uint8_t index = 0;
         static uint16_t OCR1A_TMP = 0;
 
@@ -357,18 +341,17 @@ ISR(TIM1_COMPA_vect) /* on attiny2313/4313 this is named TIMER1_COMPA_vect */
                 index++;
                 break;
         case 1:
-                if ( brightness == 128) {
+                if ( brightness == __OCR1A_max) {
                         /* if the leds should be at 0%, do nothing */
                 } else {
-                        data = 0xFF; // turn all 8-ch on
+                        __DISPLAY_ON; // turn all 8-ch on
                 }
                 /* calculate when to turn everything off */
-                OCR1A_TMP = ( 128 - brightness );
+                OCR1A_TMP = ( __OCR1A_max - brightness );
                 index++;
                 break;
         case 2:
                 /* cycle completed, reset everything */
-                data = 0;
                 index = 0;
                 /* immediately restart */
                 OCR1A_TMP = 0;
@@ -377,12 +360,6 @@ ISR(TIM1_COMPA_vect) /* on attiny2313/4313 this is named TIMER1_COMPA_vect */
         default:
                 break;
         }
-
-        __LATCH_LOW;
-        spi_transfer(data);	// send the date for each MBI5168
-        __LATCH_HIGH;
-
-        __DISPLAY_ON;
 
         OCR1A = OCR1A_TMP;
 }

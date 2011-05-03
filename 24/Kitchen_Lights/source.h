@@ -8,7 +8,7 @@
 
 #define __step_delay 1500U	// used to let the amp-meter settle on a current value
 
-#define __OCR1A_max 128U		// DON'T change this
+#define __OCR1A_max 250U		// DON'T change this, must fit in an uint8_t
 #define __fade_delay 32U
 
 inline void setup_hw(void);
