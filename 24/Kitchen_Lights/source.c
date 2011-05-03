@@ -38,37 +38,48 @@ void kitchen_lights(uint8_t channel)
         // 1: on or user has increased brightness
         static uint8_t lamp_state = 0;
         static uint8_t switches_state = 0;
-        uint8_t adc_tmp = read_adc(channel); // switches + resistor network connected to PA1
         static uint8_t ctr = __OCR1A_max;
 
+        uint8_t adc_tmp = read_adc(channel); // switches + resistor network connected to PA1
+        uint8_t adc_tmp_2 = read_adc(0); // read PA0 which goes to / comes from other boards
+
         /*
-	    board 1: tested with adc_test(1) and timer1 OFF !
+            board 1: tested with adc_test(1) and timer1 OFF !
 
-            switches pressed    voltage     ADCH    state
+            switches pressed    voltage     binary MSB...LSB     ADCH    state
 
-            3                   -.--        205     3
-            2                   -.--        171     2
-            1                   -.--        128     1
+            none                -.--        11111111            255     0
+            1                   -.--        10000000            128     1
+            2                   -.--        10101010            170     2
+            3                   -.--        11001101            205     3
+            1+2                 -.--        01100110            102     4
+            3+2                 -.--        01001001            146     5
         */
 
         /*
-	    board 2: tested with adc_test(1) and timer1 OFF !
+            board 2: tested with adc_test(1) and timer1 OFF !
 
             switches pressed    voltage     ADCH    state
 
-            3                   -.--        205     3
-            2                   -.--        170     2
-            1                   -.--        128     1
+            none                -.--        11111111            255     0
+            1                   -.--        01111111            127     1
+            2                   -.--        10101010            170     2
+            3                   -.--        11001101            205     3
+            1+2                 -.--        01100110            102     4
+            3+2                 -.--        10010010            146     5
         */
 
         /*
-	    board 3: tested with adc_test(1) and timer1 OFF !
+            board 3: tested with adc_test(1) and timer1 OFF !
 
             switches pressed    voltage     ADCH    state
 
-            3                   -.--        205     3
-            2                   -.--        170     2
-            1                   -.--        127     1
+            none                -.--        11111111            255     0
+            1                   -.--        10000000            127     1
+            2                   -.--        10101011            171     2
+            3                   -.--        11001101            205     3
+            1+2                 -.--        01100110            102     4
+            3+2                 -.--        10010010            146     5
         */
 
         // evaluate ADCH and translate it to which buttons are pressed
@@ -85,6 +96,14 @@ void kitchen_lights(uint8_t channel)
 
         if ( adc_tmp > 122 && adc_tmp < 132 ) {
                 switches_state = 1;
+        }
+
+        if (adc_tmp > 141 && adc_tmp < 151) {
+                switches_state = 5;
+        }
+
+        if ( adc_tmp_2 < 200 ) { // other board has signalled fade-in/out toggle
+                switches_state = 2;
         }
 
         if ( switches_state == 1 ) {
@@ -133,6 +152,14 @@ void kitchen_lights(uint8_t channel)
                         ctr = 0;
                 }
                 delay(1500);	// until I have debounced buttons...
+        }
+
+        if ( switches_state == 5 ) { // signal other boards to toggle fade-in/out
+                DDRA |= _BV(PA0); // set pin as output
+                PORTA &= ~_BV(PA0); // pull it low
+                delay(200); // wait
+                DDRA &= ~_BV(PA0); // set pin as input
+                PORTA |= _BV(PA0); // pull-up on again
         }
 }
 
@@ -366,21 +393,41 @@ ISR(TIM1_COMPA_vect) /* on attiny2313/4313 this is named TIMER1_COMPA_vect */
 
 void adc_test(uint8_t channel)
 {
-        __TOGGLE_LED;
-        delay(50);
-        __TOGGLE_LED;
-        delay(50);
-        __TOGGLE_LED;
-        delay(50);
-        __TOGGLE_LED;
 
-        uint8_t tmp = read_adc(channel);
+        /* disable COMPA isr - prevents flickering */
+        TIMSK1 &= ~_BV(OCIE1A);
+
+        __TOGGLE_LED;
+        delay(50);
+        __TOGGLE_LED;
+        delay(50);
+        __TOGGLE_LED;
+        delay(50);
+        __TOGGLE_LED;
 
         __DISPLAY_OFF;
         __LATCH_LOW;
-        spi_transfer(tmp);
+        spi_transfer(0x01); // show LSB
         __LATCH_HIGH;
         __DISPLAY_ON;
+
+        delay(200);
+
+        while(1) {
+                uint8_t tmp = read_adc(channel);
+
+                __DISPLAY_OFF;
+                __LATCH_LOW;
+                spi_transfer(tmp); // show the data
+                __LATCH_HIGH;
+                __DISPLAY_ON;
+
+                __DISPLAY_OFF;
+                __LATCH_LOW;
+                spi_transfer(0x00); // turn it off to make it less blindingly bright
+                __LATCH_HIGH;
+                __DISPLAY_ON;
+        }
 }
 
 uint8_t read_adc(uint8_t channel)
