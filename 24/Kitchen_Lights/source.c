@@ -86,24 +86,41 @@ void kitchen_lights(uint8_t channel)
 
         switches_state = 0; // reset
 
-        if ( adc_tmp > 200 && adc_tmp < 210 ) {
-                switches_state = 3;
-        }
-
-        if ( adc_tmp > 165 && adc_tmp < 175 ) {
-                switches_state = 2;
-        }
-
         if ( adc_tmp > 122 && adc_tmp < 132 ) {
                 switches_state = 1;
         }
-
+        if ( adc_tmp > 165 && adc_tmp < 175 ) {
+                switches_state = 2;
+        }
+        if ( adc_tmp > 200 && adc_tmp < 210 ) {
+                switches_state = 3;
+        }
+        if (adc_tmp > 97 && adc_tmp < 107 ) {
+                switches_state = 4;
+        }
         if (adc_tmp > 141 && adc_tmp < 151) {
                 switches_state = 5;
         }
+        if ( adc_tmp_2 < 240 ) { // other board has signalled fade-in/out toggle
+                uint16_t start_time = time();
+                // measure how long it is pulled low to determine what to do
+                while( read_adc(0) < 240 ) {
+                        // just wait
+                        __LED_OFF;
+                }
+                uint16_t stop_time = time();
+                uint16_t elapsed_time = stop_time - start_time;
 
-        if ( adc_tmp_2 < 200 ) { // other board has signalled fade-in/out toggle
-                switches_state = 2;
+                if ( elapsed_time > 950 && elapsed_time < 1050 ) { // short pulse detected
+                        switches_state = 2; // toggle fade-in/out
+                }
+                if ( elapsed_time > 40 && elapsed_time < 60 ) { //
+                        switches_state = 3; // manual fade-in
+                }
+                if ( elapsed_time > 90 && elapsed_time < 110 ) { //
+                        switches_state = 1; // manual fade-out
+                }
+
         }
 
         if ( switches_state == 1 ) {
@@ -154,13 +171,62 @@ void kitchen_lights(uint8_t channel)
                 delay(1500);	// until I have debounced buttons...
         }
 
-        if ( switches_state == 5 ) { // signal other boards to toggle fade-in/out
-                DDRA |= _BV(PA0); // set pin as output
-                PORTA &= ~_BV(PA0); // pull it low
-                delay(200); // wait
-                DDRA &= ~_BV(PA0); // set pin as input
-                PORTA |= _BV(PA0); // pull-up on again
+        if ( switches_state == 4 ) { // remote fade-out
+                uint16_t start_time = time();
+                uint16_t elapsed_time = 0;
+                while ( read_adc(channel) < 240  ) { // any button is still pressed, most likely the ones for this case
+                        // wait to create pulse of certain length
+                        __LED_OFF;
+                        elapsed_time = time() - start_time;
+
+                        if ( elapsed_time > 5000 ) {
+                                while ( read_adc(channel) < 240 ) {
+                                        DDRA |= _BV(PA0); // set pin as output
+                                        PORTA &= ~_BV(PA0); // pull it low
+                                        delay(100); // send well defined pulse
+                                        DDRA &= ~_BV(PA0); // set pin as input
+                                        PORTA |= _BV(PA0); // pull-up on again
+                                }
+                        }
+                }
+                if ( elapsed_time > 1500 && elapsed_time < 5000 ) {
+                              // just a short press
+                                DDRA |= _BV(PA0); // set pin as output
+                                PORTA &= ~_BV(PA0); // pull it low
+                                delay(1000); // send well defined pulse
+                                DDRA &= ~_BV(PA0); // set pin as input
+                                PORTA |= _BV(PA0); // pull-up on again
+                }
         }
+
+        if ( switches_state == 5 ) { // remote fade-in
+                uint16_t start_time = time();
+                uint16_t elapsed_time = 0;
+                while ( read_adc(channel) < 240  ) { // any button is still pressed, most likely the ones for this case
+                        // wait to create pulse of certain length
+                        __LED_OFF;
+                        elapsed_time = time() - start_time;
+
+                        if ( elapsed_time > 5000 ) {
+                                while ( read_adc(channel) < 240 ) {
+                                        DDRA |= _BV(PA0); // set pin as output
+                                        PORTA &= ~_BV(PA0); // pull it low
+                                        delay(50); // send well defined pulse
+                                        DDRA &= ~_BV(PA0); // set pin as input
+                                        PORTA |= _BV(PA0); // pull-up on again
+                                }
+                        }
+                }
+                if ( elapsed_time > 1500 && elapsed_time < 5000 ) {
+                              // just a short press
+                                DDRA |= _BV(PA0); // set pin as output
+                                PORTA &= ~_BV(PA0); // pull it low
+                                delay(1000); // send well defined pulse
+                                DDRA &= ~_BV(PA0); // set pin as input
+                                PORTA |= _BV(PA0); // pull-up on again
+                }
+        }
+
 }
 
 inline void setup_hw(void)
