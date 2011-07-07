@@ -41,7 +41,6 @@ void kitchen_lights(uint8_t channel)
         static uint8_t ctr = __OCR1A_max;
 
         uint8_t adc_tmp = read_adc(channel); // switches + resistor network connected to PA1
-        uint8_t adc_tmp_2 = read_adc(0); // read PA0 which goes to / comes from other boards
 
         /*
             board 1: tested with adc_test(1) and timer1 OFF !
@@ -101,10 +100,10 @@ void kitchen_lights(uint8_t channel)
         if (adc_tmp > 141 && adc_tmp < 151) {
                 switches_state = 5;
         }
-        if ( adc_tmp_2 < 240 ) { // other board has signalled fade-in/out toggle
+        if ( !(PINA & _BV(PA0)) ) { // other board has signalled fade-in/out toggle
                 uint16_t start_time = time();
                 // measure how long it is pulled low to determine what to do
-                while( read_adc(0) < 240 ) {
+                while( !(PINA & _BV(PA0)) ) {
                         // just wait
                         __LED_OFF;
                 }
