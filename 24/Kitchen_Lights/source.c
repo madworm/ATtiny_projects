@@ -45,6 +45,13 @@ void loop(void)
 
 void kitchen_lights(uint8_t channel)
 {
+    // re-enable pin-change interrupts on group 0
+    GIMSK |= _BV(PCIE0);
+    // this will be disabled as soon as the ISR runs
+    // it is an attempt to prevent flooding of the
+    // receiver, which upsets the LED driver ISR it
+    // seems.
+
     // 0: off or user has decreased brightness
     // 1: on or user has increased brightness
     static uint8_t lamp_state = 0;
@@ -188,7 +195,7 @@ void kitchen_lights(uint8_t channel)
 
             if ( elapsed_time > 5000 ) {
                 soft_uart_tx('-');  // decrease by one step
-                delay(1000);        // don't flood the receiver
+                //delay(1000);        // don't flood the receiver
             }
         }
         if ( elapsed_time > 1500 && elapsed_time < 5000 ) {
@@ -207,7 +214,7 @@ void kitchen_lights(uint8_t channel)
 
             if ( elapsed_time > 5000 ) {
                 soft_uart_tx('+');  // increase by one step
-                delay(1000);        // don't flood the receiver
+                //delay(1000);        // don't flood the receiver
             }
         }
         if ( elapsed_time > 1500 && elapsed_time < 5000 ) {
@@ -449,7 +456,10 @@ ISR(TIM1_COMPA_vect) /* on attiny2313/4313 this is named TIMER1_COMPA_vect */
 
 ISR(PCINT0_vect) // pin-change interrupt group 0
 {
-    GIMSK &= ~_BV(PCIE0); // disable pin-change interrupts on group 0
+    // disable pin-change interrupts on group 0
+    // it should be re-enabled elsewhere, after the data
+    // has been processed
+    GIMSK &= ~_BV(PCIE0);
     // soft UART receiver
 
     /*
@@ -495,7 +505,6 @@ ISR(PCINT0_vect) // pin-change interrupt group 0
             soft_uart_rx_flag = 0;
         }
     }
-    GIMSK |= _BV(PCIE0); // re-enable pin-change interrupts on group 0
 }
 
 void setup_soft_uart_rx_isr(void)
