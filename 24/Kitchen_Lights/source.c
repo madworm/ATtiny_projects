@@ -8,12 +8,8 @@
 #include "source.h"
 
 // at 9600 one bit should take 0.104ms
-//#define HALF_BIT_DELAY 48  // tuned a bit after looking at the sample times
-//#define FULL_BIT_DELAY 100 // with my newly acquired OLS from Dangerous Prototypes ;-)
-
-// at 38400 one bit should take 0.026ms
-#define HALF_BIT_DELAY 12  // tuned a bit after looking at the sample times
-#define FULL_BIT_DELAY 24 // with my newly acquired OLS from Dangerous Prototypes ;-)
+#define HALF_BIT_DELAY 48  // tuned a bit after looking at the sample times
+#define FULL_BIT_DELAY 100 // with my newly acquired OLS from Dangerous Prototypes ;-)
 
 uint8_t brightness = __OCR1A_max; /* for all 8 channels. __OCR1A_max is fully off, 0 is fully on */
 
@@ -28,9 +24,9 @@ int main(void)
     for (;;) {
         loop();
         // this saved about 2mA on my dev board
-        // sleep_enable(); // make it possible to have some zzzzz-s
-        // sleep_cpu();    // good night
-        // sleep_disable(); // we've just woken up again
+        sleep_enable(); // make it possible to have some zzzzz-s
+        sleep_cpu();    // good night
+        sleep_disable(); // we've just woken up again
     }
 };
 
@@ -144,7 +140,7 @@ void kitchen_lights(uint8_t channel)
         brightness = ctr;
 
         if (ctr < __OCR1A_max) {
-            ctr = ctr + 10;
+            ctr = ctr + 5;
         }
         delay(2*__fade_delay); // manually fading out with fixed speed
     }
@@ -156,7 +152,7 @@ void kitchen_lights(uint8_t channel)
         brightness = ctr;
 
         if (ctr > 0) {
-            ctr = ctr - 10;
+            ctr = ctr - 5;
         }
         delay(4*__fade_delay); // manually fading in with fixed speed, but slower ( better for the eyes in the morning ;-) )
     }
@@ -195,7 +191,6 @@ void kitchen_lights(uint8_t channel)
 
             if ( elapsed_time > 5000 ) {
                 soft_uart_tx('-');  // decrease by one step
-                //delay(1000);        // don't flood the receiver
             }
         }
         if ( elapsed_time > 1500 && elapsed_time < 5000 ) {
@@ -214,7 +209,6 @@ void kitchen_lights(uint8_t channel)
 
             if ( elapsed_time > 5000 ) {
                 soft_uart_tx('+');  // increase by one step
-                //delay(1000);        // don't flood the receiver
             }
         }
         if ( elapsed_time > 1500 && elapsed_time < 5000 ) {
@@ -262,7 +256,6 @@ inline void setup_hw(void)
     PORTB |= _BV(PB2);  // led on
 
     // USI stuff
-
     DDRB |= _BV(PB1);   // latch pin as output
 
     DDRA |= _BV(PA5);	// as output (DO)
@@ -270,13 +263,21 @@ inline void setup_hw(void)
     DDRA &= ~_BV(PA6);	// as input (DI)
     PORTA |= _BV(PA6);	// pullup on (DI)
 
-    /* setup ADC
+    // only for debugging
+    //DDRA |= _BV(PA2);   // as output
+    //PORTA &= _BV(PA2);  // set LOW
+    //DDRA |= _BV(PA3);   // as output
+    //PORTA &= _BV(PA3);  // set LOW
+    //DDRA |= _BV(PA7);   // as output
+    //PORTA &= _BV(PA7);  // set LOW
+
+    /*
+     * setup ADC
      *
-     *   using single conversion mode
-     *   --> setup in read_adc() for every conversion necessary!
+     * using single conversion mode
+     * --> setup in read_adc() for every conversion necessary!
      *
      */
-
     PORTA &= ~_BV(PA1); // internal pull-up off on switches pin
 
     // sleep mode
@@ -410,6 +411,9 @@ ISR(TIM0_OVF_vect) /* on attiny2313/4313 this is named TIMER0_OVF_vect */
 
 ISR(TIM1_COMPA_vect) /* on attiny2313/4313 this is named TIMER1_COMPA_vect */
 {
+    // for debugging only
+    //__PA2_ON;
+
     /* Framebuffer interrupt routine */
     __DISPLAY_OFF;
 
@@ -452,40 +456,53 @@ ISR(TIM1_COMPA_vect) /* on attiny2313/4313 this is named TIMER1_COMPA_vect */
     }
 
     OCR1A = OCR1A_TMP;
+
+    // for debugging only
+    //__PA2_OFF;
 }
 
-ISR(PCINT0_vect) // pin-change interrupt group 0
+ISR(PCINT0_vect,ISR_NOBLOCK) // pin-change interrupt group 0
 {
-    // disable pin-change interrupts on group 0
+    /*
+     * It turns out that adding this ISR delayed the
+     * next execution of 'TIM1_COMPA_vect' long enough,
+     * that setting the OCR1A register came too late
+     * and the desired effect was delayed until TIMER1
+     * had wrapped around completely (about 2s) :-(
+     * by making this ISR interruptible, it is solved;
+     * for this constellation at least.
+     */
+
+    // for debugging only
+    //__PA3_ON;
+
+    // disable pin-change interrupts on group 0 - ASAP !
     // it should be re-enabled elsewhere, after the data
     // has been processed
     GIMSK &= ~_BV(PCIE0);
     // soft UART receiver
 
-    /*
-    __LED_OFF;
-    __LED_ON;
-    __LED_OFF;
-
-    __LED_OFF;
-    __LED_ON;
-    __LED_OFF;
-    */
-
     uint8_t ctr;
 
     if( !(PINA & _BV(PA0)) ) { // PA0 is low, start-bit
         // beginning of start-bit
-        _delay_us(FULL_BIT_DELAY);
+        _delay_us(HALF_BIT_DELAY);
+        // center of start-bit
+
+        // for debugging only
+        //__PA7_ON;
+        //__PA7_OFF;
+
+        _delay_us(HALF_BIT_DELAY);
         // end of start-bit
         _delay_us(HALF_BIT_DELAY);
         // center of data-bit 0
         for(ctr=0; ctr<=7; ctr++) { // receive byte LSB first
-            /*
-            __LED_OFF;
-            __LED_ON;
-            __LED_OFF;
-            */
+
+            // for debugging only
+            //__PA7_ON;
+            //__PA7_OFF;
+
             if( PINA & _BV(PA0) ) { // bit is set
                 soft_uart_rx_byte |= _BV(ctr); // enter a 1
             } else { // bit is not set
@@ -493,18 +510,21 @@ ISR(PCINT0_vect) // pin-change interrupt group 0
             }
             _delay_us(FULL_BIT_DELAY);
         }
-        /*
-        __LED_OFF;
-        __LED_ON;
-        __LED_OFF;
-        */
         // now we should be at the center of the stop bit
+
+        // for debugging only
+        //__PA7_ON;
+        //__PA7_OFF;
+
         if ( PINA & _BV(PA0) ) { //stop bit is HIGH as it should be
             soft_uart_rx_flag = 1;
         } else {
             soft_uart_rx_flag = 0;
         }
     }
+
+    // for debugging only
+    //__PA3_OFF;
 }
 
 void setup_soft_uart_rx_isr(void)
@@ -532,6 +552,9 @@ void soft_uart_tx(uint8_t byte)
     }
     PORTA |= _BV(PA0);  // pull it high: stop-bit
     DDRA &= ~_BV(PA0);  // make it an input again
+
+    _delay_us(10*FULL_BIT_DELAY); // don't flood the receiver
+    _delay_us(10*FULL_BIT_DELAY); // a soft-uart as well
 
     GIMSK |= _BV(PCIE0);    // re-enable pin-change interrupts on group 0
 }
