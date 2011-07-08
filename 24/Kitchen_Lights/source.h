@@ -6,6 +6,15 @@
 #define __LED_OFF PORTB &= ~_BV(PB2)
 #define __TOGGLE_LED PORTB ^= _BV(PB2)
 
+// only for debugging
+#define __PA2_ON PORTA |= _BV(PA2)
+#define __PA2_OFF PORTA &= ~_BV(PA2)
+#define __PA3_ON PORTA |= _BV(PA3)
+#define __PA3_OFF PORTA &= ~_BV(PA3)
+#define __PA7_ON PORTA |= _BV(PA7)
+#define __PA7_OFF PORTA &= ~_BV(PA7)
+
+
 #define __step_delay 1500U	// used to let the amp-meter settle on a current value
 
 #define __OCR1A_max 250U		// DON'T change this, must fit in an uint8_t
