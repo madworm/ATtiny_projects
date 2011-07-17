@@ -20,7 +20,7 @@
 // at 9600 one bit should take 0.104ms
 #define HALF_BIT_DELAY          48  // tuned a bit after looking at the sample times
 #define FULL_BIT_DELAY          96 // with my newly acquired OLS from Dangerous Prototypes ;-)
-#define THREE_HALFS_BIT_DELAY   150
+#define THREE_HALFS_BIT_DELAY   136
 
 #define ENABLE_PCINT0_VECT  GIMSK |= _BV(PCIE0);
 #define DISABLE_PCINT0_VECT GIMSK &= ~_BV(PCIE0);
