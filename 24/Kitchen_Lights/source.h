@@ -1,24 +1,34 @@
-#define __LATCH_LOW PORTB &= ~(1 << PB1)
-#define __LATCH_HIGH PORTB |= (1 << PB1)
-#define __DISPLAY_ON PORTB &= ~_BV(PB0)
-#define __DISPLAY_OFF PORTB |= _BV(PB0)
-#define __LED_ON PORTB |= _BV(PB2)
-#define __LED_OFF PORTB &= ~_BV(PB2)
-#define __TOGGLE_LED PORTB ^= _BV(PB2)
+#define LATCH_LOW PORTB &= ~(1 << PB1)
+#define LATCH_HIGH PORTB |= (1 << PB1)
+#define DISPLAY_ON PORTB &= ~_BV(PB0)
+#define DISPLAY_OFF PORTB |= _BV(PB0)
+#define LED_ON PORTB |= _BV(PB2)
+#define LED_OFF PORTB &= ~_BV(PB2)
+#define TOGGLE_LED PORTB ^= _BV(PB2)
 
 // only for debugging
-#define __PA2_ON PORTA |= _BV(PA2)
-#define __PA2_OFF PORTA &= ~_BV(PA2)
-#define __PA3_ON PORTA |= _BV(PA3)
-#define __PA3_OFF PORTA &= ~_BV(PA3)
-#define __PA7_ON PORTA |= _BV(PA7)
-#define __PA7_OFF PORTA &= ~_BV(PA7)
+#define PA2_ON PORTA |= _BV(PA2)
+#define PA2_OFF PORTA &= ~_BV(PA2)
+#define PA3_ON PORTA |= _BV(PA3)
+#define PA3_OFF PORTA &= ~_BV(PA3)
+#define PA7_ON PORTA |= _BV(PA7)
+#define PA7_OFF PORTA &= ~_BV(PA7)
 
+#define OCR1A_MAX 250U		// DON'T change this, must fit in an uint8_t
+#define FADE_DELAY 32U
 
-#define __step_delay 1500U	// used to let the amp-meter settle on a current value
+// at 9600 one bit should take 0.104ms
+#define HALF_BIT_DELAY          48  // tuned a bit after looking at the sample times
+#define FULL_BIT_DELAY          96 // with my newly acquired OLS from Dangerous Prototypes ;-)
+#define THREE_HALFS_BIT_DELAY   150
 
-#define __OCR1A_max 250U		// DON'T change this, must fit in an uint8_t
-#define __fade_delay 32U
+#define ENABLE_PCINT0_VECT  GIMSK |= _BV(PCIE0);
+#define DISABLE_PCINT0_VECT GIMSK &= ~_BV(PCIE0);
+#define CLEAR_PCINT0_FLAG   GIFR |= _BV(PCIF0);
+
+#define ENABLE_TIM0_COMPA_VECT  TIMSK0 |= _BV(OCIE0A)
+#define DISABLE_TIM0_COMPA_VECT TIMSK0 &= ~_BV(OCIE0A)
+#define CLEAR_TIM0_COMPA_FLAG   TIFR0 = _BV(OCF0A); // clear the flag by writing a 1 (see datasheet);
 
 inline void setup_hw(void);
 void loop(void);
