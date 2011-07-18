@@ -30,7 +30,6 @@ void loop(void)
 {
     //soft_uart_rx_test();
     //adc_test(1); // shows ADCH on the 8 LEDs. timer1 should be OFF (or it blinks like mad --> headache)
-    //adjust_fade_delay(7); // read an LDR on PA7
     TOGGLE_LED; // make the lamps visible in the darkness
     kitchen_lights(1);
 }
@@ -129,7 +128,7 @@ void kitchen_lights(uint8_t channel)
         if (ctr < OCR1A_MAX) {
             ctr = ctr + 5;
         }
-        delay(2*FADE_DELAY); // manually fading out with fixed speed
+        delay(MANUAL_FADE_OUT_DELAY); // manually fading out
     }
 
     if ( switches_state == 3 ) {
@@ -141,28 +140,28 @@ void kitchen_lights(uint8_t channel)
         if (ctr > 0) {
             ctr = ctr - 5;
         }
-        delay(4*FADE_DELAY); // manually fading in with fixed speed, but slower ( better for the eyes in the morning ;-) )
+        delay(MANUAL_FADE_IN_DELAY); // manually fading in
     }
 
     if ( switches_state == 2 ) {
         if (ctr == OCR1A_MAX) {	// fully off
             lamp_state = 1;	// we increased brightness
             LED_ON;
-            fade_in(ctr,FADE_DELAY); // auto-fadein adjusted by LDR
+            fade_in(ctr,AUTO_FADE_IN_DELAY); // auto-fade-in
             ctr = 0;
         } else if (ctr == 0) {	// fully on
             lamp_state = 0;	// we decreased brightness
             LED_OFF;
-            fade_out(ctr,2*FADE_DELAY); // auto-fadeout with fixed speed
+            fade_out(ctr,AUTO_FADE_OUT_DELAY); // auto-fade-out
             ctr = OCR1A_MAX;
         }
 
         if (lamp_state == 0) {	// user pressed "-"
-            fade_out(ctr,2*FADE_DELAY);
+            fade_out(ctr,MANUAL_FADE_OUT_DELAY);
             ctr = OCR1A_MAX;
         }
         if (lamp_state == 1) {	// user pressed "+"
-            fade_in(ctr,FADE_DELAY);
+            fade_in(ctr,MANUAL_FADE_IN_DELAY);
             ctr = 0;
         }
         delay(1500);	// until I have debounced buttons...
@@ -393,20 +392,19 @@ ISR(TIM0_COMPA_vect)
     // only for debugging
     PA7_ON;
 
-    static uint8_t bit = 0;
-    uint8_t bit_value = _BV(bit);
+    static uint8_t bit_value = 1;
 
-    if(bit <= 7) { // read data-bits 0...7
+    if( (bit_value > 0) && (bit_value <= 0x80) ) { // 0x80 = 0b10000000 - read data-bits 0...7
         if( (PINA & _BV(PA0)) ) {
             soft_uart_rx_byte |= bit_value;
         } else {
             soft_uart_rx_byte &= ~bit_value;
         }
-        bit++; // increment bit
+        bit_value <<= 1; // shift 1 bit to the left
         OCR0A = TCNT0 + FULL_BIT_DELAY; // when to run next time
     } else { // stop-bit
         DISABLE_TIM0_COMPA_VECT; // no further runs after this one
-        bit = 0; // reset bit counter
+        bit_value = 1; // reset bit counter
         if( (PINA & _BV(PA0)) ) { // stop-bit is HIGH
             soft_uart_rx_flag = 1; // set rx-flag
         } else {

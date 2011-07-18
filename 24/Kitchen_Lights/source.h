@@ -15,7 +15,10 @@
 #define PA7_OFF PORTA &= ~_BV(PA7)
 
 #define OCR1A_MAX 250U		// DON'T change this, must fit in an uint8_t
-#define FADE_DELAY 32U
+#define AUTO_FADE_IN_DELAY      64U
+#define AUTO_FADE_OUT_DELAY     128U
+#define MANUAL_FADE_IN_DELAY    128U // slow ( better for the eyes in the morning ;-) )
+#define MANUAL_FADE_OUT_DELAY   128U
 
 // at 9600 one bit should take 0.104ms
 #define HALF_BIT_DELAY          48  // tuned a bit after looking at the sample times
