@@ -549,17 +549,28 @@ void soft_uart_rx_test(void)
     delay(200);
 
     while(1) {
-        DISPLAY_OFF;
-        LATCH_LOW;
-        spi_transfer(soft_uart_rx_byte); // show the data
-        LATCH_HIGH;
-        DISPLAY_ON;
+        if(soft_uart_rx_flag) {
+            DISPLAY_OFF;
+            delay(100); // flicker to signal we got something
+            DISPLAY_ON;
 
-        DISPLAY_OFF;
-        LATCH_LOW;
-        spi_transfer(0x00); // turn it off to make it less blindingly bright
-        LATCH_HIGH;
-        DISPLAY_ON;
+            delay(500); // wait before we echo it back
+            soft_uart_tx('\n');
+            soft_uart_tx('\r');
+            soft_uart_tx('e');
+            soft_uart_tx(':');
+            soft_uart_tx(' ');
+            soft_uart_tx(soft_uart_rx_byte); // echo what we 'think' we got
+            soft_uart_tx('\n');
+            soft_uart_tx('\r');
+            soft_uart_rx_flag = 0;
+
+            DISPLAY_OFF;
+            LATCH_LOW;
+            spi_transfer(soft_uart_rx_byte); // show the data
+            LATCH_HIGH;
+            DISPLAY_ON;
+        }
     }
 }
 
