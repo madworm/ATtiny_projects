@@ -394,12 +394,13 @@ ISR(TIM0_COMPA_vect)
     PA7_ON;
 
     static uint8_t bit = 0;
+    uint8_t bit_value = _BV(bit);
 
     if(bit <= 7) { // read data-bits 0...7
         if( (PINA & _BV(PA0)) ) {
-            soft_uart_rx_byte |= _BV(bit);
+            soft_uart_rx_byte |= bit_value;
         } else {
-            soft_uart_rx_byte &= ~_BV(bit);
+            soft_uart_rx_byte &= ~bit_value;
         }
         bit++; // increment bit
         OCR0A = TCNT0 + FULL_BIT_DELAY; // when to run next time
