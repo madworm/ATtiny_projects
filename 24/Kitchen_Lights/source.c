@@ -115,31 +115,45 @@ void kitchen_lights(uint8_t channel)
         default:
             break;
         }
+
+        /*
+            // only for debugging
+            delay(500); // wait before we echo it back
+            soft_uart_tx('\n');
+            soft_uart_tx('\r');
+            soft_uart_tx('e');
+            soft_uart_tx(':');
+            soft_uart_tx(' ');
+            soft_uart_tx(soft_uart_rx_byte); // echo what we 'think' we got
+            soft_uart_tx('\n');
+            soft_uart_tx('\r');
+        */
+
         soft_uart_rx_flag = 0; // clear the flag
         soft_uart_rx_byte = 0; // clear the data
     }
 
-    if ( switches_state == 1 ) {
+    if ( switches_state == 1 ) { // reduce brightness
         lamp_state = 0;
         LED_OFF;
 
-        brightness = ctr;
-
         if (ctr < OCR1A_MAX) {
-            ctr = ctr + 5;
+            ctr = ctr + 5; // inversed logic, higher ctr is less brightness
         }
+
+        brightness = ctr; // write to volatile
         delay(MANUAL_FADE_OUT_DELAY); // manually fading out
     }
 
-    if ( switches_state == 3 ) {
+    if ( switches_state == 3 ) { // increase brightness
         lamp_state = 1;
         LED_ON;
 
-        brightness = ctr;
-
         if (ctr > 0) {
-            ctr = ctr - 5;
+            ctr = ctr - 5; // inversed logic, smaller ctr is more brightness
         }
+
+        brightness = ctr;
         delay(MANUAL_FADE_IN_DELAY); // manually fading in
     }
 
