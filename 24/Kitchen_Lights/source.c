@@ -41,8 +41,9 @@ void kitchen_lights(uint8_t channel)
     static uint8_t lamp_state = 0;
     static uint8_t switches_state = 0;
     static uint8_t ctr = OCR1A_MAX;
+    uint8_t rx_byte;
 
-    uint8_t adc_tmp = read_adc(channel); // switches + resistor network connected to PA1
+    uint8_t adc_tmp = adc_read(channel); // switches + resistor network connected to PA1
 
     /*
         board 1: tested with adc_test(1) and timer1 OFF !
@@ -85,24 +86,10 @@ void kitchen_lights(uint8_t channel)
 
     switches_state = 0; // reset
 
-    if ( adc_tmp > 122 && adc_tmp < 132 ) {
-        switches_state = 1;
-    }
-    if ( adc_tmp > 165 && adc_tmp < 175 ) {
-        switches_state = 2;
-    }
-    if ( adc_tmp > 200 && adc_tmp < 210 ) {
-        switches_state = 3;
-    }
-    if (adc_tmp > 97 && adc_tmp < 107 ) {
-        switches_state = 4;
-    }
-    if (adc_tmp > 141 && adc_tmp < 151) {
-        switches_state = 5;
-    }
-    if ( soft_uart_rx_flag ) {
+    if (soft_uart_rx_flag) {
+        rx_byte = soft_uart_read(); // read byte and reset flag (see internals)
         // other board has signalled fade-in/out toggle
-        switch(soft_uart_rx_byte) {
+        switch(rx_byte) {
         case '+':
             switches_state = 3; // manual fade-in
             break;
@@ -119,18 +106,33 @@ void kitchen_lights(uint8_t channel)
         /*
             // only for debugging
             delay(500); // wait before we echo it back
-            soft_uart_tx('\n');
-            soft_uart_tx('\r');
-            soft_uart_tx('e');
-            soft_uart_tx(':');
-            soft_uart_tx(' ');
-            soft_uart_tx(soft_uart_rx_byte); // echo what we 'think' we got
-            soft_uart_tx('\n');
-            soft_uart_tx('\r');
+            soft_uart_send('\n');
+            soft_uart_send('\r');
+            soft_uart_send('e');
+            soft_uart_send(':');
+            soft_uart_send(' ');
+            soft_uart_send(rx_byte); // echo what we 'think' we got
+            soft_uart_send('\n');
+            soft_uart_send('\r');
         */
+    }
 
-        soft_uart_rx_flag = 0; // clear the flag
-        soft_uart_rx_byte = 0; // clear the data
+    // the buttons are checked after serial, so they can override (when held pressed)
+
+    if ( adc_tmp > 122 && adc_tmp < 132 ) {
+        switches_state = 1;
+    }
+    if ( adc_tmp > 165 && adc_tmp < 175 ) {
+        switches_state = 2;
+    }
+    if ( adc_tmp > 200 && adc_tmp < 210 ) {
+        switches_state = 3;
+    }
+    if (adc_tmp > 97 && adc_tmp < 107 ) {
+        switches_state = 4;
+    }
+    if (adc_tmp > 141 && adc_tmp < 151) {
+        switches_state = 5;
     }
 
     if ( switches_state == 1 ) { // reduce brightness
@@ -184,36 +186,36 @@ void kitchen_lights(uint8_t channel)
     if ( switches_state == 4 ) { // remote fade-out
         uint16_t start_time = time();
         uint16_t elapsed_time = 0;
-        while ( read_adc(channel) < 240  ) { // any button is still pressed, most likely the ones for this case
+        while ( adc_read(channel) < 240  ) { // any button is still pressed, most likely the ones for this case
             // wait to create pulse of certain length
             LED_OFF;
             elapsed_time = time() - start_time;
 
             if ( elapsed_time > 5000 ) {
-                soft_uart_tx('-');  // decrease by one step
+                soft_uart_send('-');  // decrease by one step
             }
         }
         if ( elapsed_time > 1500 && elapsed_time < 5000 ) {
             // just a short press
-            soft_uart_tx('f'); // toggle fade in/out
+            soft_uart_send('f'); // toggle fade in/out
         }
     }
 
     if ( switches_state == 5 ) { // remote fade-in
         uint16_t start_time = time();
         uint16_t elapsed_time = 0;
-        while ( read_adc(channel) < 240  ) { // any button is still pressed, most likely the ones for this case
+        while ( adc_read(channel) < 240  ) { // any button is still pressed, most likely the ones for this case
             // wait to create pulse of certain length
             LED_OFF;
             elapsed_time = time() - start_time;
 
             if ( elapsed_time > 5000 ) {
-                soft_uart_tx('+');  // increase by one step
+                soft_uart_send('+');  // increase by one step
             }
         }
         if ( elapsed_time > 1500 && elapsed_time < 5000 ) {
             // just a short press
-            soft_uart_tx('f'); // toggle fade in/out
+            soft_uart_send('f'); // toggle fade in/out
         }
     }
 
@@ -275,7 +277,7 @@ inline void setup_hw(void)
      * setup ADC
      *
      * using single conversion mode
-     * --> setup in read_adc() for every conversion necessary!
+     * --> setup in adc_read() for every conversion necessary!
      *
      */
     PORTA &= ~_BV(PA1); // internal pull-up off on switches pin
@@ -420,10 +422,10 @@ ISR(TIM0_COMPA_vect)
         DISABLE_TIM0_COMPA_VECT; // no further runs after this one
         bit_value = 1; // reset bit counter
         if( (PINA & _BV(PA0)) ) { // stop-bit is HIGH
-            soft_uart_rx_flag = 1; // set rx-flag
+            soft_uart_rx_flag = 1; // new data! --> set rx-flag
         } else {
-            soft_uart_rx_flag = 0; // clear rx-flag
-            soft_uart_rx_byte = 0; // clear buffer
+            soft_uart_rx_flag = 0; // got junk! --> clear rx-flag
+            soft_uart_rx_byte = 0; // clear input buffer
         }
         CLEAR_PCINT0_FLAG;  // prevent premature execution
         ENABLE_PCINT0_VECT; // turn the receiver back on
@@ -431,6 +433,18 @@ ISR(TIM0_COMPA_vect)
 
     // only for debugging
     PA7_OFF;
+}
+
+uint8_t soft_uart_read(void)
+{
+    // nice effect: disable 'buffer clearing' and 'reset flag'
+    // the last command is processed again and again
+    // overrideable with buttons (while pressed)
+
+    uint8_t rx_byte = soft_uart_rx_byte; // get received byte from input buffer
+    soft_uart_rx_byte = 0; // clear input buffer
+    soft_uart_rx_flag = 0; // get ready for next incoming byte
+    return rx_byte; // send it to the user
 }
 
 ISR(TIM1_COMPA_vect) // on attiny2313/4313 this is named TIMER1_COMPA_vect
@@ -495,7 +509,10 @@ ISR(PCINT0_vect) // pin-change interrupt group 0
     // has been processed
     DISABLE_PCINT0_VECT;
 
-    if( !(PINA & _BV(PA0)) ) { // PA0 is low, valid start-bit
+    if( !(PINA & _BV(PA0)) && (soft_uart_rx_flag == 0) ) {
+	// PA0 is low (got a valid start-bit)
+	// AND
+	// the rx_flag was cleared by 'soft_uart_read()' (previous buffer content has been read, so we may now overwrite it)
         OCR0A = TCNT0 + THREE_HALFS_BIT_DELAY; // TIM0_COMPA_vect should start in the middle in the first data-bit
         CLEAR_TIM0_COMPA_FLAG; // prevent premature execution
         ENABLE_TIM0_COMPA_VECT; // enable the bit sampling
@@ -514,7 +531,7 @@ void setup_soft_uart_rx_isr(void)
     ENABLE_PCINT0_VECT;
 }
 
-void soft_uart_tx(uint8_t byte)
+void soft_uart_send(uint8_t byte)
 {
     DISABLE_PCINT0_VECT; // disable pin-change interrupts on group 0
 
@@ -546,6 +563,8 @@ void soft_uart_rx_test(void)
     // disable TIM1_COMPA_vect - prevents flickering
     TIMSK1 &= ~_BV(OCIE1A);
 
+    uint8_t rx_byte;
+
     TOGGLE_LED;
     delay(50);
     TOGGLE_LED;
@@ -564,24 +583,25 @@ void soft_uart_rx_test(void)
 
     while(1) {
         if(soft_uart_rx_flag) {
+            rx_byte = soft_uart_read();
+
             DISPLAY_OFF;
             delay(100); // flicker to signal we got something
             DISPLAY_ON;
 
             delay(500); // wait before we echo it back
-            soft_uart_tx('\n');
-            soft_uart_tx('\r');
-            soft_uart_tx('e');
-            soft_uart_tx(':');
-            soft_uart_tx(' ');
-            soft_uart_tx(soft_uart_rx_byte); // echo what we 'think' we got
-            soft_uart_tx('\n');
-            soft_uart_tx('\r');
-            soft_uart_rx_flag = 0;
+            soft_uart_send('\n');
+            soft_uart_send('\r');
+            soft_uart_send('e');
+            soft_uart_send(':');
+            soft_uart_send(' ');
+            soft_uart_send(rx_byte); // echo what we 'think' we got
+            soft_uart_send('\n');
+            soft_uart_send('\r');
 
             DISPLAY_OFF;
             LATCH_LOW;
-            spi_transfer(soft_uart_rx_byte); // show the data
+            spi_transfer(rx_byte); // show the data
             LATCH_HIGH;
             DISPLAY_ON;
         }
@@ -610,7 +630,7 @@ void adc_test(uint8_t channel)
     delay(200);
 
     while(1) {
-        uint8_t tmp = read_adc(channel);
+        uint8_t tmp = adc_read(channel);
 
         DISPLAY_OFF;
         LATCH_LOW;
@@ -626,7 +646,7 @@ void adc_test(uint8_t channel)
     }
 }
 
-uint8_t read_adc(uint8_t channel)
+uint8_t adc_read(uint8_t channel)
 {
     ADCSRA |= _BV(ADEN);    // enable ADC
     ADCSRA |= ( _BV(ADPS2) | _BV(ADPS1) | _BV(ADPS0) ); // set prescaler to 128 for stable readings

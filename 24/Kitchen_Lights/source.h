@@ -38,10 +38,14 @@ void loop(void);
 void kitchen_lights(uint8_t channel);
 void fade_in(uint8_t start_at, uint16_t fade_delay);
 void fade_out(uint8_t start_at, uint16_t fade_delay);
+
 void adc_test(uint8_t channel);
+uint8_t adc_read(uint8_t channel);
+
 void soft_uart_rx_test(void);
-void soft_uart_tx(uint8_t byte);
-uint8_t read_adc(uint8_t channel);
+void soft_uart_send(uint8_t byte);
+uint8_t soft_uart_read(void);
+
 void delay(uint16_t ticks);
 uint16_t time(void);
 inline void signal_reset(void);
