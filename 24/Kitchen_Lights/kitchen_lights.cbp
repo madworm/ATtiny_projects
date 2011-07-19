@@ -45,10 +45,34 @@
 			<Add after="avr-size $(TARGET_OUTPUT_FILE).hex" />
 			<Mode after="always" />
 		</ExtraCommands>
-		<Unit filename="source.c">
+		<Unit filename="adc.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="source.h" />
+		<Unit filename="adc.h" />
+		<Unit filename="led_driver.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="led_driver.h" />
+		<Unit filename="main.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="main.h" />
+		<Unit filename="spi.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="spi.h" />
+		<Unit filename="system_ticker.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="system_ticker.h" />
+		<Unit filename="uart.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="uart.h" />
+		<Unit filename="util.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="util.h" />
 		<Extensions>
 			<DoxyBlocks>
 				<comment_style block="0" line="0" />

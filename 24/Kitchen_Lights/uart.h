@@ -1,0 +1,24 @@
+#ifndef uart_h
+#define uart_h
+
+// at 9600 one bit should take 0.104ms
+#define HALF_BIT_DELAY          48  // tuned a bit after looking at the sample times
+#define FULL_BIT_DELAY          96 // with my newly acquired OLS from Dangerous Prototypes ;-)
+#define THREE_HALFS_BIT_DELAY   136
+
+#define ENABLE_PCINT0_VECT  GIMSK |= _BV(PCIE0);
+#define DISABLE_PCINT0_VECT GIMSK &= ~_BV(PCIE0);
+#define CLEAR_PCINT0_FLAG   GIFR |= _BV(PCIF0);
+
+#define ENABLE_TIM0_COMPA_VECT  TIMSK0 |= _BV(OCIE0A)
+#define DISABLE_TIM0_COMPA_VECT TIMSK0 &= ~_BV(OCIE0A)
+#define CLEAR_TIM0_COMPA_FLAG   TIFR0 = _BV(OCF0A); // clear the flag by writing a 1 (see datasheet);
+
+extern volatile uint8_t soft_uart_rx_flag; // global flag
+
+void setup_soft_uart_rx_isr(void);
+void soft_uart_rx_test(void);
+void soft_uart_send(uint8_t byte);
+uint8_t soft_uart_read(void);
+
+#endif
