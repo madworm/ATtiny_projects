@@ -14,7 +14,7 @@
 
 extern uint8_t brightness; // global variable
 
-void setup_timer1_ctc(void);
+void led_driver_setup(void);
 void fade_in(uint8_t start_at, uint16_t fade_delay);
 void fade_out(uint8_t start_at, uint16_t fade_delay);
 

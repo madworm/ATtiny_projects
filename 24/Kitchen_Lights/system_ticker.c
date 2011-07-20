@@ -2,9 +2,9 @@
 #include <stdint.h>
 #include "system_ticker.h"
 
-volatile uint16_t system_ticks = 0; // this is a global variable, see the header file !
+volatile uint16_t system_ticks = 0;
 
-void setup_system_ticker(void)
+void system_ticker_setup(void)
 {
     // using timer0
     // setting prescaler to 8

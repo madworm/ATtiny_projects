@@ -9,9 +9,9 @@
 #include "led_driver.h"
 
 volatile uint8_t soft_uart_rx_byte; // local to this file
-volatile uint8_t soft_uart_rx_flag; // global flag, see header file !
+volatile uint8_t soft_uart_rx_flag; // local to this file
 
-void setup_soft_uart_rx_isr(void)
+void soft_uart_setup(void)
 {
     PCMSK0 |= _BV(PCINT0); // select pin-change interrupt on PA0
     ENABLE_PCINT0_VECT;
@@ -54,6 +54,15 @@ void soft_uart_send(uint8_t byte)
 
     CLEAR_PCINT0_FLAG;
     ENABLE_PCINT0_VECT; // re-enable pin-change interrupts on group 0
+}
+
+uint8_t soft_uart_peek(void)
+{
+    if(soft_uart_rx_flag) {
+        return 1; // new data ready
+    } else {
+        return 0; // nothing new to read
+    }
 }
 
 void soft_uart_rx_test(void)

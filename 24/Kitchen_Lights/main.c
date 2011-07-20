@@ -18,21 +18,16 @@ int main(void)
     setup_hw();
     delay(6000);
     for (;;) {
-        loop();
+        //soft_uart_rx_test();
+        //adc_test(1); // shows ADCH on the 8 LEDs. timer1 should be OFF (or it blinks like mad --> headache)
+        TOGGLE_LED; // make the lamps visible in the darkness
+        kitchen_lights(1);
         // this saved about 2mA on my dev board
         sleep_enable(); // make it possible to have some zzzzz-s
         sleep_cpu();    // good night
         sleep_disable(); // we've just woken up again
     }
 };
-
-void loop(void)
-{
-    //soft_uart_rx_test();
-    //adc_test(1); // shows ADCH on the 8 LEDs. timer1 should be OFF (or it blinks like mad --> headache)
-    TOGGLE_LED; // make the lamps visible in the darkness
-    kitchen_lights(1);
-}
 
 void kitchen_lights(uint8_t channel)
 {
@@ -86,7 +81,7 @@ void kitchen_lights(uint8_t channel)
 
     switches_state = 0; // reset
 
-    if (soft_uart_rx_flag) {
+    if ( soft_uart_peek() ) {
         rx_byte = soft_uart_read(); // read byte and reset flag (see internals)
         // other board has signalled fade-in/out toggle
         switch(rx_byte) {
@@ -288,9 +283,9 @@ void setup_hw(void)
     /*
      * getting ready
      */
-    setup_system_ticker();
-    setup_timer1_ctc(); // disable for adc_test()
-    setup_soft_uart_rx_isr();
+    system_ticker_setup();
+    led_driver_setup(); // disable for adc_test()
+    soft_uart_setup();
 
     sei(); // turn global irq flag on
     signal_reset(); // needs the system_ticker to run and sei() as well !

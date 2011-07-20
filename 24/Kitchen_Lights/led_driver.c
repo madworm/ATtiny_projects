@@ -8,7 +8,7 @@
 // for all 8 channels. OCR1A_MAX is fully off, 0 is fully on
 uint8_t brightness = OCR1A_MAX; // global variable, see the header file !
 
-void setup_timer1_ctc(void)
+void led_driver_setup(void)
 {
     // set prescaler to 256
     TCCR1B |= (_BV(CS12));
