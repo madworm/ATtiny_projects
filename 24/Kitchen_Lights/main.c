@@ -27,7 +27,7 @@ int main(void)
         sleep_cpu();    // good night
         sleep_disable(); // we've just woken up again
     }
-};
+}
 
 void kitchen_lights(uint8_t channel)
 {
