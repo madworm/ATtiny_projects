@@ -8,24 +8,25 @@
 #include "system_ticker.h"
 #include "led_driver.h"
 
-volatile uint8_t soft_uart_rx_byte; // local to this file
-volatile uint8_t soft_uart_rx_flag; // local to this file
+volatile uint8_t soft_uart_rx_byte;     // instantly updated when new byte arrives
+volatile uint8_t soft_uart_rx_buffer;   // only overwritten if empty (flag = 0)
+volatile uint8_t soft_uart_rx_flag;     // set to 1 when new data in buffer
 
 void soft_uart_setup(void)
 {
     PCMSK0 |= _BV(PCINT0); // select pin-change interrupt on PA0
-    ENABLE_PCINT0_VECT;
+    ENABLE_PCINT0_VECT; // make it happen ;-)
 }
 
 uint8_t soft_uart_read(void)
 {
-    // nice effect: disable 'buffer clearing' and 'reset flag'
-    // the last command is processed again and again
-    // overrideable with buttons (while pressed)
+    uint8_t rx_byte = soft_uart_rx_buffer; // get received byte from input buffer
+    soft_uart_rx_buffer = 0; // clear input buffer
+    soft_uart_rx_flag = 0;  // get ready for next incoming byte
 
-    uint8_t rx_byte = soft_uart_rx_byte; // get received byte from input buffer
-    soft_uart_rx_byte = 0; // clear input buffer
-    soft_uart_rx_flag = 0; // get ready for next incoming byte
+    // only for debugging
+    // RX_FLAG_OFF;
+
     return rx_byte; // send it to the user
 }
 
@@ -63,6 +64,61 @@ uint8_t soft_uart_peek(void)
     } else {
         return 0; // nothing new to read
     }
+}
+
+ISR(PCINT0_vect) // pin-change interrupt group 0
+{
+    // for debugging only
+    // PA3_ON;
+
+    // disable pin-change interrupts on group 0 - ASAP !
+    // it will be re-enabled once the timer has read the byte
+    // or if it didn't get a start-bit
+    DISABLE_PCINT0_VECT;
+
+    if( !(PINA & _BV(PA0)) ) {
+	// PA0 is low (got a valid start-bit)
+        OCR0A = TCNT0 + THREE_HALFS_BIT_DELAY; // TIM0_COMPA_vect should start in the middle in the first data-bit
+        CLEAR_TIM0_COMPA_FLAG; // prevent premature execution
+        ENABLE_TIM0_COMPA_VECT; // enable the bit sampling
+    } else {
+        // didn't get a start-bit, re-enable
+        CLEAR_PCINT0_FLAG;
+        ENABLE_PCINT0_VECT;
+    }
+    // only for debugging
+    // PA3_OFF;
+}
+
+ISR(TIM0_COMPA_vect)
+{
+    // only for debugging
+    // PA7_ON;
+
+    static uint8_t bit_value = 1;
+
+    if( (bit_value > 0) && (bit_value <= 0x80) ) { // 0x80 = 0b10000000 - read data-bits 0...7
+        if( (PINA & _BV(PA0)) ) {
+            soft_uart_rx_byte |= bit_value;
+        } else {
+            soft_uart_rx_byte &= ~bit_value;
+        }
+        bit_value <<= 1; // shift 1 bit to the left
+        OCR0A = TCNT0 + FULL_BIT_DELAY; // when to run next time
+    } else { // stop-bit
+        DISABLE_TIM0_COMPA_VECT; // no further runs after this one
+        bit_value = 1; // reset bit counter
+        if( (PINA & _BV(PA0)) && (soft_uart_rx_flag == 0) ) { // stop-bit is HIGH and buffer empty
+            soft_uart_rx_buffer = soft_uart_rx_byte; // copy received byte to input buffer
+            soft_uart_rx_flag = 1; // new data! --> set rx-flag
+            // only for debugging
+            // RX_FLAG_ON;
+        }
+        CLEAR_PCINT0_FLAG;  // prevent premature execution
+        ENABLE_PCINT0_VECT; // turn the receiver back on
+    }
+    // only for debugging
+    // PA7_OFF;
 }
 
 void soft_uart_rx_test(void)
@@ -113,62 +169,4 @@ void soft_uart_rx_test(void)
             DISPLAY_ON;
         }
     }
-}
-
-ISR(PCINT0_vect) // pin-change interrupt group 0
-{
-    // for debugging only
-    PA3_ON;
-
-    // disable pin-change interrupts on group 0 - ASAP !
-    // it should be re-enabled elsewhere, after the data
-    // has been processed
-    DISABLE_PCINT0_VECT;
-
-    if( !(PINA & _BV(PA0)) && (soft_uart_rx_flag == 0) ) {
-	// PA0 is low (got a valid start-bit)
-	// AND
-	// the rx_flag was cleared by 'soft_uart_read()' (previous buffer content has been read, so we may now overwrite it)
-        OCR0A = TCNT0 + THREE_HALFS_BIT_DELAY; // TIM0_COMPA_vect should start in the middle in the first data-bit
-        CLEAR_TIM0_COMPA_FLAG; // prevent premature execution
-        ENABLE_TIM0_COMPA_VECT; // enable the bit sampling
-    } else {
-        // didn't get a start-bit, re-enable
-        CLEAR_PCINT0_FLAG;
-        ENABLE_PCINT0_VECT;
-    }
-
-    PA3_OFF;
-}
-
-ISR(TIM0_COMPA_vect)
-{
-    // only for debugging
-    PA7_ON;
-
-    static uint8_t bit_value = 1;
-
-    if( (bit_value > 0) && (bit_value <= 0x80) ) { // 0x80 = 0b10000000 - read data-bits 0...7
-        if( (PINA & _BV(PA0)) ) {
-            soft_uart_rx_byte |= bit_value;
-        } else {
-            soft_uart_rx_byte &= ~bit_value;
-        }
-        bit_value <<= 1; // shift 1 bit to the left
-        OCR0A = TCNT0 + FULL_BIT_DELAY; // when to run next time
-    } else { // stop-bit
-        DISABLE_TIM0_COMPA_VECT; // no further runs after this one
-        bit_value = 1; // reset bit counter
-        if( (PINA & _BV(PA0)) ) { // stop-bit is HIGH
-            soft_uart_rx_flag = 1; // new data! --> set rx-flag
-        } else {
-            soft_uart_rx_flag = 0; // got junk! --> clear rx-flag
-            soft_uart_rx_byte = 0; // clear input buffer
-        }
-        CLEAR_PCINT0_FLAG;  // prevent premature execution
-        ENABLE_PCINT0_VECT; // turn the receiver back on
-    }
-
-    // only for debugging
-    PA7_OFF;
 }

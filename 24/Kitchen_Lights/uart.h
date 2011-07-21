@@ -14,6 +14,11 @@
 #define DISABLE_TIM0_COMPA_VECT TIMSK0 &= ~_BV(OCIE0A)
 #define CLEAR_TIM0_COMPA_FLAG   TIFR0 = _BV(OCF0A); // clear the flag by writing a 1 (see datasheet);
 
+// only for RX_FLAG debugging, as on same pin as the status led
+// #define TOGGLE_LED
+// #define LED_ON
+// #define LED_OFF
+
 void soft_uart_setup(void);
 void soft_uart_send(uint8_t byte);
 uint8_t soft_uart_read(void);

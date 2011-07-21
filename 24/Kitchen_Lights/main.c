@@ -261,12 +261,12 @@ void setup_hw(void)
     PORTA |= _BV(PA6);	// pullup on (DI)
 
     // only for debugging
-    DDRA |= _BV(PA2);   // as output
-    PORTA &= _BV(PA2);  // set LOW
-    DDRA |= _BV(PA3);   // as output
-    PORTA &= _BV(PA3);  // set LOW
-    DDRA |= _BV(PA7);   // as output
-    PORTA &= _BV(PA7);  // set LOW
+    // DDRA |= _BV(PA2);   // as output
+    // PORTA &= _BV(PA2);  // set LOW
+    // DDRA |= _BV(PA3);   // as output
+    // PORTA &= _BV(PA3);  // set LOW
+    // DDRA |= _BV(PA7);   // as output
+    // PORTA &= _BV(PA7);  // set LOW
 
     /*
      * setup ADC

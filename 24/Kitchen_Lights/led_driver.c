@@ -28,7 +28,7 @@ void led_driver_setup(void)
 ISR(TIM1_COMPA_vect) // on attiny2313/4313 this is named TIMER1_COMPA_vect
 {
     // for debugging only
-    PA2_ON;
+    // PA2_ON;
 
     // Framebuffer interrupt routine
     DISPLAY_OFF;
@@ -74,7 +74,7 @@ ISR(TIM1_COMPA_vect) // on attiny2313/4313 this is named TIMER1_COMPA_vect
     OCR1A = OCR1A_TMP;
 
     // for debugging only
-    PA2_OFF;
+    // PA2_OFF;
 }
 
 void fade_in(uint8_t start_at, uint16_t fade_delay)
