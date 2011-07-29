@@ -6,7 +6,7 @@
 #include "system_ticker.h"
 
 // for all 8 channels. OCR1A_MAX is fully off, 0 is fully on
-uint8_t brightness = OCR1A_MAX; // global variable, see the header file !
+uint8_t brightness = OCR1A_MAX; // local variable
 
 void led_driver_setup(void)
 {
@@ -79,6 +79,8 @@ ISR(TIM1_COMPA_vect) // on attiny2313/4313 this is named TIMER1_COMPA_vect
 
 void fade_in(uint8_t start_at, uint16_t fade_delay)
 {
+    LED_ON;
+
     uint8_t ctr1;
     for (ctr1 = start_at; (ctr1 > 0); ctr1--) {
         brightness = ctr1;
@@ -88,9 +90,42 @@ void fade_in(uint8_t start_at, uint16_t fade_delay)
 
 void fade_out(uint8_t start_at, uint16_t fade_delay)
 {
+    LED_OFF;
+
     uint8_t ctr1;
     for (ctr1 = start_at; ctr1 <= OCR1A_MAX; ctr1++) {
         brightness = ctr1;
         delay(fade_delay);
     }
+}
+
+void up(uint16_t fade_delay)
+{
+    LED_ON;
+
+    if (brightness > (0 + MANUAL_FADE_STEPSIZE)) {
+        brightness = brightness - MANUAL_FADE_STEPSIZE; // inversed logic, smaller ctr is more brightness
+    } else {
+        brightness = 0;
+    }
+
+    delay(fade_delay); // manually fading in
+}
+
+void down(uint16_t fade_delay)
+{
+    LED_OFF;
+
+    if (brightness < (OCR1A_MAX - MANUAL_FADE_STEPSIZE)) {
+        brightness = brightness + MANUAL_FADE_STEPSIZE; // inversed logic, higher ctr is less brightness
+    } else {
+        brightness = OCR1A_MAX;
+    }
+
+    delay(fade_delay); // manually fading out
+}
+
+uint8_t get_brightness(void)
+{
+    return brightness;
 }

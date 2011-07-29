@@ -60,3 +60,27 @@ uint8_t adc_read(uint8_t channel)
     }
     return ADCH;
 }
+
+SWITCHES_STATE_t adc_read_state(uint8_t channel)
+{
+    uint8_t state = SW_ALL_OPEN;
+    uint8_t adc_tmp;
+    adc_tmp = adc_read(channel);
+
+    if ( adc_tmp > 122 && adc_tmp < 132 ) {
+        state = SW_LEFT_PRESSED;
+     }
+    if ( adc_tmp > 165 && adc_tmp < 175 ) {
+        state = SW_MIDDLE_PRESSED;
+     }
+    if ( adc_tmp > 200 && adc_tmp < 210 ) {
+        state = SW_RIGHT_PRESSED;
+     }
+    if (adc_tmp > 97 && adc_tmp < 107 ) {
+        state = SW_LEFT_MIDDLE_PRESSED;
+    }
+    if (adc_tmp > 141 && adc_tmp < 151) {
+        state = SW_RIGHT_MIDDLE_PRESSED;
+    }
+    return state;
+}

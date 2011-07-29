@@ -2,16 +2,16 @@
 #include <avr/wdt.h>
 #include <avr/sleep.h>
 #include <avr/interrupt.h>
+#include <util/delay.h>
 #include <inttypes.h>
 #include <stdlib.h>
-#include <util/delay.h>
-#include "main.h"
 #include "system_ticker.h"
 #include "spi.h"
 #include "util.h"
 #include "uart.h"
 #include "adc.h"
 #include "led_driver.h"
+#include "main.h"
 
 int main(void)
 {
@@ -31,68 +31,22 @@ int main(void)
 
 void kitchen_lights(uint8_t channel)
 {
-    // 0: off or user has decreased brightness
-    // 1: on or user has increased brightness
-    static uint8_t lamp_state = 0;
-    static uint8_t switches_state = 0;
-    static uint8_t ctr = OCR1A_MAX;
     uint8_t rx_byte;
-
-    uint8_t adc_tmp = adc_read(channel); // switches + resistor network connected to PA1
-
-    /*
-        board 1: tested with adc_test(1) and timer1 OFF !
-
-        switches pressed    voltage     binary MSB...LSB     ADCH    state
-
-        none                -.--        11111111            255     0
-        1                   -.--        10000000            128     1
-        2                   -.--        10101010            170     2
-        3                   -.--        11001101            205     3
-        1+2                 -.--        01100110            102     4
-        3+2                 -.--        01001001            146     5
-
-
-        board 2: tested with adc_test(1) and timer1 OFF !
-
-        switches pressed    voltage     ADCH    state
-
-        none                -.--        11111111            255     0
-        1                   -.--        01111111            127     1
-        2                   -.--        10101010            170     2
-        3                   -.--        11001101            205     3
-        1+2                 -.--        01100110            102     4
-        3+2                 -.--        10010010            146     5
-
-
-        board 3: tested with adc_test(1) and timer1 OFF !
-
-        switches pressed    voltage     ADCH    state
-
-        none                -.--        11111111            255     0
-        1                   -.--        10000000            127     1
-        2                   -.--        10101011            171     2
-        3                   -.--        11001101            205     3
-        1+2                 -.--        01100110            102     4
-        3+2                 -.--        10010010            146     5
-    */
-
-    // evaluate ADCH and translate it to which buttons are pressed
-
-    switches_state = 0; // reset
 
     if ( soft_uart_peek() ) {
         rx_byte = soft_uart_read(); // read byte and reset flag (see internals)
-        // other board has signalled fade-in/out toggle
         switch(rx_byte) {
         case '+':
-            switches_state = 3; // manual fade-in
+            process_lamp_job(LJ_RECVD_REMOTE_UP);
             break;
         case '-':
-            switches_state = 1; // manual fade-out
+            process_lamp_job(LJ_RECVD_REMOTE_DOWN);
+            break;
+        case 'F':
+            process_lamp_job(LJ_RECVD_REMOTE_FADE_IN);
             break;
         case 'f':
-            switches_state = 2; // toggle fade-in/out
+            process_lamp_job(LJ_RECVD_REMOTE_FADE_OUT);
             break;
         default:
             break;
@@ -112,108 +66,25 @@ void kitchen_lights(uint8_t channel)
         */
     }
 
-    // the buttons are checked after serial, so they can override (when held pressed)
+    SWITCHES_STATE_t switches_state = adc_read_state(1);
 
-    if ( adc_tmp > 122 && adc_tmp < 132 ) {
-        switches_state = 1;
+    switch(switches_state) {
+    case SW_RIGHT_PRESSED:
+        eval_switch_state(SW_RIGHT_PRESSED,LJ_MANUAL_UP,LJ_FADE_IN);
+        break;
+    case SW_LEFT_PRESSED:
+        eval_switch_state(SW_LEFT_PRESSED,LJ_MANUAL_DOWN,LJ_FADE_OUT);
+        break;
+    case SW_RIGHT_MIDDLE_PRESSED:
+        eval_switch_state(SW_RIGHT_MIDDLE_PRESSED,LJ_SEND_REMOTE_UP,LJ_SEND_REMOTE_FADE_IN);
+        break;
+    case SW_LEFT_MIDDLE_PRESSED:
+        eval_switch_state(SW_LEFT_MIDDLE_PRESSED,LJ_SEND_REMOTE_DOWN,LJ_SEND_REMOTE_FADE_OUT);
+        break;
+    default:
+        // SW_ALL_OPEN
+        break;
     }
-    if ( adc_tmp > 165 && adc_tmp < 175 ) {
-        switches_state = 2;
-    }
-    if ( adc_tmp > 200 && adc_tmp < 210 ) {
-        switches_state = 3;
-    }
-    if (adc_tmp > 97 && adc_tmp < 107 ) {
-        switches_state = 4;
-    }
-    if (adc_tmp > 141 && adc_tmp < 151) {
-        switches_state = 5;
-    }
-
-    if ( switches_state == 1 ) { // reduce brightness
-        lamp_state = 0;
-        LED_OFF;
-
-        if (ctr < OCR1A_MAX) {
-            ctr = ctr + 5; // inversed logic, higher ctr is less brightness
-        }
-
-        brightness = ctr; // write to volatile
-        delay(MANUAL_FADE_OUT_DELAY); // manually fading out
-    }
-
-    if ( switches_state == 3 ) { // increase brightness
-        lamp_state = 1;
-        LED_ON;
-
-        if (ctr > 0) {
-            ctr = ctr - 5; // inversed logic, smaller ctr is more brightness
-        }
-
-        brightness = ctr;
-        delay(MANUAL_FADE_IN_DELAY); // manually fading in
-    }
-
-    if ( switches_state == 2 ) {
-        if (ctr == OCR1A_MAX) {	// fully off
-            lamp_state = 1;	// we increased brightness
-            LED_ON;
-            fade_in(ctr,AUTO_FADE_IN_DELAY); // auto-fade-in
-            ctr = 0;
-        } else if (ctr == 0) {	// fully on
-            lamp_state = 0;	// we decreased brightness
-            LED_OFF;
-            fade_out(ctr,AUTO_FADE_OUT_DELAY); // auto-fade-out
-            ctr = OCR1A_MAX;
-        }
-
-        if (lamp_state == 0) {	// user pressed "-"
-            fade_out(ctr,MANUAL_FADE_OUT_DELAY);
-            ctr = OCR1A_MAX;
-        }
-        if (lamp_state == 1) {	// user pressed "+"
-            fade_in(ctr,MANUAL_FADE_IN_DELAY);
-            ctr = 0;
-        }
-        delay(1500);	// until I have debounced buttons...
-    }
-
-    if ( switches_state == 4 ) { // remote fade-out
-        uint16_t start_time = time();
-        uint16_t elapsed_time = 0;
-        while ( adc_read(channel) < 240  ) { // any button is still pressed, most likely the ones for this case
-            // wait to create pulse of certain length
-            LED_OFF;
-            elapsed_time = time() - start_time;
-
-            if ( elapsed_time > 5000 ) {
-                soft_uart_send('-');  // decrease by one step
-            }
-        }
-        if ( elapsed_time > 1500 && elapsed_time < 5000 ) {
-            // just a short press
-            soft_uart_send('f'); // toggle fade in/out
-        }
-    }
-
-    if ( switches_state == 5 ) { // remote fade-in
-        uint16_t start_time = time();
-        uint16_t elapsed_time = 0;
-        while ( adc_read(channel) < 240  ) { // any button is still pressed, most likely the ones for this case
-            // wait to create pulse of certain length
-            LED_OFF;
-            elapsed_time = time() - start_time;
-
-            if ( elapsed_time > 5000 ) {
-                soft_uart_send('+');  // increase by one step
-            }
-        }
-        if ( elapsed_time > 1500 && elapsed_time < 5000 ) {
-            // just a short press
-            soft_uart_send('f'); // toggle fade in/out
-        }
-    }
-
 }
 
 void setup_hw(void)
@@ -295,4 +166,67 @@ void setup_hw(void)
     LATCH_LOW;
     spi_transfer(0xFF);	// set wich channels are active
     LATCH_HIGH;
+}
+
+void process_lamp_job(LAMP_JOB_t job)
+{
+    switch(job) {
+    case LJ_MANUAL_UP:
+        up(MANUAL_FADE_IN_DELAY);
+        break;
+    case LJ_MANUAL_DOWN:
+        down(MANUAL_FADE_OUT_DELAY);
+        break;
+    case LJ_FADE_IN:
+        fade_in(get_brightness(),AUTO_FADE_IN_DELAY);
+        break;
+    case LJ_FADE_OUT:
+        fade_out(get_brightness(),AUTO_FADE_OUT_DELAY);
+        break;
+    case LJ_SEND_REMOTE_UP:
+        soft_uart_send('+');
+        break;
+    case LJ_SEND_REMOTE_DOWN:
+        soft_uart_send('-');
+        break;
+    case LJ_SEND_REMOTE_FADE_IN:
+        soft_uart_send('F');
+        break;
+    case LJ_SEND_REMOTE_FADE_OUT:
+        soft_uart_send('f');
+        break;
+    case LJ_RECVD_REMOTE_UP:
+        up(MANUAL_FADE_IN_DELAY);
+        break;
+    case LJ_RECVD_REMOTE_DOWN:
+        down(MANUAL_FADE_IN_DELAY);
+        break;
+    case LJ_RECVD_REMOTE_FADE_IN:
+        fade_in(get_brightness(),AUTO_FADE_IN_DELAY);
+        break;
+    case LJ_RECVD_REMOTE_FADE_OUT:
+        fade_out(get_brightness(),AUTO_FADE_OUT_DELAY);
+        break;
+    default:
+        // LJ_NOP
+        break;
+    }
+}
+
+void eval_switch_state(SWITCHES_STATE_t state, LAMP_JOB_t first_job, LAMP_JOB_t second_job)
+{
+    uint16_t start_time = time();
+    uint16_t elapsed_time = 0;
+    while ( adc_read_state(1) == state ) {
+        elapsed_time = time() - start_time;
+
+        if ( elapsed_time > 2500 ) {
+            // long press
+            process_lamp_job(first_job);
+        }
+    }
+    if ( elapsed_time > 150 && elapsed_time < 2500 ) {
+        // just a short press
+        process_lamp_job(second_job);
+    }
 }
