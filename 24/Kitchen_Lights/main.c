@@ -172,10 +172,10 @@ void process_lamp_job(LAMP_JOB_t job)
 {
     switch(job) {
     case LJ_MANUAL_UP:
-        up(MANUAL_FADE_IN_DELAY);
+        up(MANUAL_UP_DELAY);
         break;
     case LJ_MANUAL_DOWN:
-        down(MANUAL_FADE_OUT_DELAY);
+        down(MANUAL_DOWN_DELAY);
         break;
     case LJ_FADE_IN:
         fade_in(get_brightness(),AUTO_FADE_IN_DELAY);
@@ -196,10 +196,10 @@ void process_lamp_job(LAMP_JOB_t job)
         soft_uart_send('f');
         break;
     case LJ_RECVD_REMOTE_UP:
-        up(MANUAL_FADE_IN_DELAY);
+        up(MANUAL_UP_DELAY);
         break;
     case LJ_RECVD_REMOTE_DOWN:
-        down(MANUAL_FADE_IN_DELAY);
+        down(MANUAL_DOWN_DELAY);
         break;
     case LJ_RECVD_REMOTE_FADE_IN:
         fade_in(get_brightness(),AUTO_FADE_IN_DELAY);
@@ -225,7 +225,7 @@ void eval_switch_state(SWITCHES_STATE_t state, LAMP_JOB_t first_job, LAMP_JOB_t 
             process_lamp_job(first_job);
         }
     }
-    if ( elapsed_time > 150 && elapsed_time < 2500 ) {
+    if ( elapsed_time > 500 && elapsed_time < 2500 ) {
         // just a short press
         process_lamp_job(second_job);
     }
