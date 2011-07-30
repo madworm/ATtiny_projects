@@ -220,12 +220,12 @@ void eval_switch_state(SWITCHES_STATE_t state, LAMP_JOB_t first_job, LAMP_JOB_t 
     while ( adc_read_state(1) == state ) {
         elapsed_time = time() - start_time;
 
-        if ( elapsed_time > 2500 ) {
+        if ( elapsed_time > 3000 ) {
             // long press
             process_lamp_job(first_job);
         }
     }
-    if ( elapsed_time > 500 && elapsed_time < 2500 ) {
+    if ( elapsed_time > 1500 && elapsed_time < 3000 ) {
         // just a short press
         process_lamp_job(second_job);
     }
