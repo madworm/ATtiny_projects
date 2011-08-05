@@ -20,6 +20,7 @@
 			</Target>
 		</Build>
 		<Compiler>
+			<Add option="-mmcu=attiny2313" />
 			<Add option="-fexpensive-optimizations" />
 			<Add option="-Os" />
 			<Add option="-Wmain" />
@@ -27,11 +28,10 @@
 			<Add option="-ansi" />
 			<Add option="-g" />
 			<Add option="-gdwarf-2 -std=gnu99 -funsigned-bitfields -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -fno-exceptions" />
-			<Add option="-mmcu=attiny4313" />
 			<Add option="-DF_CPU=8000000UL" />
 		</Compiler>
 		<Linker>
-			<Add option="-mmcu=attiny4313" />
+			<Add option="-mmcu=attiny2313" />
 			<Add option="-Wl,-Map=$(TARGET_OUTPUT_FILE).map,--cref" />
 			<Add option="-Wl,--gc-sections" />
 			<Add library="/usr/local/avr/avr/lib/libc.a" />
@@ -45,10 +45,34 @@
 			<Add after="avr-size $(TARGET_OUTPUT_FILE).hex" />
 			<Mode after="always" />
 		</ExtraCommands>
-		<Unit filename="source.c">
+		<Unit filename="button.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="source.h" />
+		<Unit filename="button.h" />
+		<Unit filename="led_driver.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="led_driver.h" />
+		<Unit filename="main.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="main.h" />
+		<Unit filename="spi.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="spi.h" />
+		<Unit filename="system_ticker.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="system_ticker.h" />
+		<Unit filename="uart.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="uart.h" />
+		<Unit filename="util.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="util.h" />
 		<Extensions>
 			<DoxyBlocks>
 				<comment_style block="0" line="0" />
@@ -65,7 +89,7 @@
 			<debugger />
 			<AutoVersioning>
 				<Scheme minor_max="10" build_max="0" rev_max="0" rev_rand_max="10" build_times_to_increment_minor="100" />
-				<Settings autoincrement="1" date_declarations="1" do_auto_increment="0" ask_to_increment="0" language="C++" svn="0" svn_directory="" header_path="version.h" />
+				<Settings autoincrement="1" date_declarations="1" update_manifest="1" do_auto_increment="0" ask_to_increment="0" language="C++" svn="0" svn_directory="" header_path="version.h" />
 				<Changes_Log show_changes_editor="0" app_title="released version %M.%m.%b of %p" changeslog_path="ChangesLog.txt" />
 				<Code header_guard="VERSION_H" namespace="AutoVersion" prefix="" />
 			</AutoVersioning>
