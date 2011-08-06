@@ -15,10 +15,12 @@
 
 #define RX_LED_ON       PORTB |= _BV(PB2)
 #define RX_LED_OFF      PORTB &= ~_BV(PB2)
+#define RX_LED_BLINK    RX_LED_ON; RX_LED_OFF
 #define RX_LED_TOGGLE   PORTB ^= _BV(PB2)
 
 #define TX_LED_ON       PORTD |= _BV(PD6)
 #define TX_LED_OFF      PORTD &= ~_BV(PD6)
+#define TX_LED_BLINK    TX_LED_ON; TX_LED_OFF
 #define TX_LED_TOGGLE   PORTD ^= _BV(PD6)
 
 volatile uint8_t rx_buffer[RX_BUFFER_SIZE]; // this is where the RX-ISR writes to
@@ -31,6 +33,7 @@ volatile uint8_t tx_buffer_tail; // data is ALWAYS read at the tail
 void uart_setup(void)
 {
     // configure I/O pins
+
     DDRD &= ~_BV(PD0);  // RXI is an input
     DDRD |= _BV(PD1);   // TXO is an output
 
@@ -71,12 +74,14 @@ void uart_setup(void)
 uint8_t uart_avail(void)
 {
     // returns the number of available bytes in the rx_buffer
+
     return (RX_BUFFER_SIZE + rx_buffer_head - rx_buffer_tail) % RX_BUFFER_SIZE;
 }
 
 uint8_t uart_read(void)
 {
     // read one byte from the rx_buffer
+
     uint8_t read_this = rx_buffer_tail;
     if(rx_buffer_tail == rx_buffer_head) {
             // nothing new to read --> return the old data
@@ -92,6 +97,7 @@ void uart_send(uint8_t byte)
 {
     // tries to put 1 byte into the tx_buffer
     // and enables the sending ISR if successful
+
     uint8_t tx_buffer_head__incr = (tx_buffer_head + 1) % TX_BUFFER_SIZE;
     while( tx_buffer_head__incr == tx_buffer_tail) { // while increasing the head by 1 WOULD bite into the tail
         // wait until there is some space in the tx_buffer
@@ -110,8 +116,10 @@ void uart_rx_test(void)
 ISR(USART_RX_vect)
 {
     // executed when the hardware gets one byte
+
     uint8_t rx_buffer_head__incr = (rx_buffer_head + 1) % RX_BUFFER_SIZE;
     if( rx_buffer_head__incr != rx_buffer_tail) { // if increasing the head by 1 WOULD NOT bite into the tail
+        RX_LED_BLINK;
         // load the incoming byte into the rx_buffer
         rx_buffer[rx_buffer_head] = UDR;
         // advance the head by 1
@@ -124,7 +132,9 @@ ISR(USART_RX_vect)
 ISR(USART_UDRE_vect)
 {
     // executed when the hardware tx buffer is empty (ready to send some data)
+
     if( tx_buffer_tail != tx_buffer_head ) { // if there is some data to send in the software tx_buffer
+        TX_LED_BLINK;
         UDR = tx_buffer[tx_buffer_tail];
         tx_buffer_tail = (tx_buffer_tail + 1) % TX_BUFFER_SIZE;
     } else {
