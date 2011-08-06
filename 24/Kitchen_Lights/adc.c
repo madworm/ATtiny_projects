@@ -63,7 +63,7 @@ uint8_t adc_read(uint8_t channel)
 
 SWITCHES_STATE_t adc_read_state(uint8_t channel)
 {
-    uint8_t state = SW_ALL_OPEN;
+    SWITCHES_STATE_t state = SW_ALL_OPEN;
     uint8_t adc_tmp;
     adc_tmp = adc_read(channel);
 
