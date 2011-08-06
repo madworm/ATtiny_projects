@@ -2,9 +2,7 @@
 #include <avr/wdt.h>
 #include <avr/sleep.h>
 #include <avr/interrupt.h>
-#include <util/delay.h>
-#include <inttypes.h>
-#include <stdlib.h>
+#include <stdint.h>
 #include "system_ticker.h"
 #include "spi.h"
 #include "util.h"
@@ -20,8 +18,8 @@ int main(void)
     for (;;) {
         //uart_rx_test();
         //button_test(); // shows the button states on the 8 LEDs. timer1 should be OFF (or it blinks like mad --> headache)
-        TOGGLE_LED; // make the lamps visible in the darkness
-        kitchen_lights(1);
+        S_LED_TOGGLE; // make the lamps visible in the darkness
+        kitchen_lights();
         // this saved about 2mA on my dev board
         sleep_enable(); // make it possible to have some zzzzz-s
         sleep_cpu();    // good night
@@ -29,11 +27,11 @@ int main(void)
     }
 }
 
-void kitchen_lights(uint8_t channel)
+void kitchen_lights()
 {
     uint8_t rx_byte;
 
-    if ( uart_peek() ) {
+    if ( uart_avail() ) {
         rx_byte = uart_read(); // read byte and reset flag (see internals)
         switch(rx_byte) {
         case '+':
@@ -111,53 +109,29 @@ void setup_hw(void)
     // saved about another 0.5mA on my board
     DDRA = 0x00;
     DDRB = 0x00;
+    DDRD = 0x00;
     PORTA = 0xFF;
     PORTB = 0xFF;
+    PORTD = 0xFF;
 
     /*
      * now configure the pins we actually need
      */
-    DDRB |= _BV(PB0);	// display enable pin as output
-    PORTB |= _BV(PB0);	// pullup on
 
-    DDRB |= _BV(PB2);   // led pin as output
-    PORTB |= _BV(PB2);  // led on
-
-    // USI stuff
-    DDRB |= _BV(PB1);   // latch pin as output
-
-    // // DDRA |= _BV(PA5);	// as output (DO)
-    // // DDRA |= _BV(PA4);	// as output (USISCK)
-    // // DDRA &= ~_BV(PA6);	// as input (DI)
-    // // PORTA |= _BV(PA6);	// pullup on (DI)
-
-    // only for debugging
-    // DDRA |= _BV(PA2);   // as output
-    // PORTA &= _BV(PA2);  // set LOW
-    // DDRA |= _BV(PA3);   // as output
-    // PORTA &= _BV(PA3);  // set LOW
-    // DDRA |= _BV(PA7);   // as output
-    // PORTA &= _BV(PA7);  // set LOW
-
-    /*
-     * setup button pins
-     *
-     */
-
-    // sleep mode
-    // set_sleep_mode(SLEEP_MODE_IDLE);
+    DDRD |= _BV(PD5); // make the S_LED pin an output
 
     /*
      * getting ready
      */
+    set_sleep_mode(SLEEP_MODE_IDLE);
     system_ticker_setup();
-    led_driver_setup();
+    usi_setup();
     uart_setup();
+    led_driver_setup();
+    button_setup();
 
     sei(); // turn global irq flag on
     signal_reset(); // needs the system_ticker to run and sei() as well !
-
-    DISPLAY_OFF; // turn the driver off
 
     LATCH_LOW;
     spi_transfer(0xFF);	// set wich channels are active
@@ -213,7 +187,7 @@ void eval_switch_state(SWITCHES_STATE_t state, LAMP_JOB_t first_job, LAMP_JOB_t 
 {
     uint16_t start_time = time();
     uint16_t elapsed_time = 0;
-    while ( button_read_state(1) == state ) {
+    while ( button_read_state() == state ) {
         elapsed_time = time() - start_time;
 
         if ( elapsed_time > 3000 ) {

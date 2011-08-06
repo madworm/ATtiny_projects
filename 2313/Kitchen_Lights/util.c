@@ -5,12 +5,12 @@
 
 void signal_reset(void)
 {
-    TOGGLE_LED;
+    S_LED_TOGGLE;
     delay(1000);
-    TOGGLE_LED;
+    S_LED_TOGGLE;
     delay(1000);
-    TOGGLE_LED;
+    S_LED_TOGGLE;
     delay(1000);
-    TOGGLE_LED;
+    S_LED_TOGGLE;
     delay(1000);
 }

@@ -1,12 +1,10 @@
 #ifndef led_driver_h
 #define led_driver_h
 
-#define LATCH_LOW PORTB &= ~(1 << PB1)
-#define LATCH_HIGH PORTB |= (1 << PB1)
-#define DISPLAY_ON PORTB &= ~_BV(PB0)
-#define DISPLAY_OFF PORTB |= _BV(PB0)
+#define LATCH_LOW PORTB &= ~(1 << PB4)
+#define LATCH_HIGH PORTB |= (1 << PB4)
 
-#define OCR1A_MAX 250U		// DON'T change this, must fit in an uint8_t
+#define OCR1A_MAX 0x03FF		// DON'T change this
 
 #define AUTO_FADE_IN_DELAY      64U
 #define AUTO_FADE_OUT_DELAY     128U

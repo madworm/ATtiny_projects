@@ -1,3 +1,4 @@
+#include <avr/io.h>
 #include <avr/interrupt.h>
 #include <stdint.h>
 #include "system_ticker.h"
@@ -8,7 +9,6 @@ void system_ticker_setup(void)
 {
     // using timer0
     // setting prescaler to 8
-    // 1MHz clock is required for TIM0_COMPA_vect !!!!
     TCCR0B |= _BV(CS01);
     TCCR0B &= ~(_BV(CS00) | _BV(CS02));
     // set WGM mode 0
