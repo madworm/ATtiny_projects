@@ -77,7 +77,7 @@ ISR(PCINT0_vect) // pin-change interrupt group 0
     DISABLE_PCINT0_VECT;
 
     if( !(PINA & _BV(PA0)) ) {
-	// PA0 is low (got a valid start-bit)
+        // PA0 is low (got a valid start-bit)
         OCR0A = TCNT0 + THREE_HALFS_BIT_DELAY; // TIM0_COMPA_vect should start in the middle in the first data-bit
         CLEAR_TIM0_COMPA_FLAG; // prevent premature execution
         ENABLE_TIM0_COMPA_VECT; // enable the bit sampling
@@ -137,9 +137,8 @@ void soft_uart_rx_test(void)
     TOGGLE_LED;
 
     DISPLAY_OFF;
-    LATCH_LOW;
     spi_transfer(0x01); // show LSB
-    LATCH_HIGH;
+    LATCH;
     DISPLAY_ON;
 
     delay(200);
@@ -163,9 +162,8 @@ void soft_uart_rx_test(void)
             soft_uart_send('\r');
 
             DISPLAY_OFF;
-            LATCH_LOW;
             spi_transfer(rx_byte); // show the data
-            LATCH_HIGH;
+            LATCH;
             DISPLAY_ON;
         }
     }

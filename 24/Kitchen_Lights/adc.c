@@ -21,9 +21,8 @@ void adc_test(uint8_t channel)
     TOGGLE_LED;
 
     DISPLAY_OFF;
-    LATCH_LOW;
     spi_transfer(0x01); // show LSB
-    LATCH_HIGH;
+    LATCH;
     DISPLAY_ON;
 
     delay(200);
@@ -32,15 +31,13 @@ void adc_test(uint8_t channel)
         uint8_t tmp = adc_read(channel);
 
         DISPLAY_OFF;
-        LATCH_LOW;
         spi_transfer(tmp); // show the data
-        LATCH_HIGH;
+        LATCH;
         DISPLAY_ON;
 
         DISPLAY_OFF;
-        LATCH_LOW;
         spi_transfer(0x00); // turn it off to make it less blindingly bright
-        LATCH_HIGH;
+        LATCH;
         DISPLAY_ON;
     }
 }
@@ -69,13 +66,13 @@ SWITCHES_STATE_t adc_read_state(uint8_t channel)
 
     if ( adc_tmp > 122 && adc_tmp < 132 ) {
         state = SW_LEFT_PRESSED;
-     }
+    }
     if ( adc_tmp > 165 && adc_tmp < 175 ) {
         state = SW_MIDDLE_PRESSED;
-     }
+    }
     if ( adc_tmp > 200 && adc_tmp < 210 ) {
         state = SW_RIGHT_PRESSED;
-     }
+    }
     if (adc_tmp > 97 && adc_tmp < 107 ) {
         state = SW_LEFT_MIDDLE_PRESSED;
     }

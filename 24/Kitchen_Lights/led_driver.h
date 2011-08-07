@@ -3,6 +3,7 @@
 
 #define LATCH_LOW PORTB &= ~(1 << PB1)
 #define LATCH_HIGH PORTB |= (1 << PB1)
+#define LATCH LATCH_HIGH; LATCH_LOW
 #define DISPLAY_ON PORTB &= ~_BV(PB0)
 #define DISPLAY_OFF PORTB |= _BV(PB0)
 

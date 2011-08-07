@@ -125,6 +125,7 @@ void setup_hw(void)
 
     // USI stuff
     DDRB |= _BV(PB1);   // latch pin as output
+    PORTB &= ~_BV(PB1);	// latch low
 
     DDRA |= _BV(PA5);	// as output (DO)
     DDRA |= _BV(PA4);	// as output (USISCK)
@@ -163,9 +164,8 @@ void setup_hw(void)
 
     DISPLAY_OFF; // turn the driver off
 
-    LATCH_LOW;
     spi_transfer(0xFF);	// set wich channels are active
-    LATCH_HIGH;
+    LATCH;
 }
 
 void process_lamp_job(LAMP_JOB_t job)
