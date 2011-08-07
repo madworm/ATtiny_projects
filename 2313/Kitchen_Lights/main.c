@@ -2,6 +2,7 @@
 #include <avr/wdt.h>
 #include <avr/sleep.h>
 #include <avr/interrupt.h>
+#include <util/delay.h>
 #include <stdint.h>
 #include "system_ticker.h"
 #include "spi.h"
@@ -14,9 +15,8 @@
 int main(void)
 {
     setup_hw();
-    delay(6000);
+    delay(3000);
     for (;;) {
-        //uart_rx_test();
         //button_test(); // shows the button states on the 8 LEDs. timer1 should be OFF (or it blinks like mad --> headache)
         S_LED_TOGGLE; // make the lamps visible in the darkness
         kitchen_lights();
@@ -29,11 +29,8 @@ int main(void)
 
 void kitchen_lights()
 {
-    uint8_t rx_byte;
-
     if ( uart_avail() ) {
-        rx_byte = uart_read(); // read byte and reset flag (see internals)
-        switch(rx_byte) {
+        switch( uart_read() ) {
         case '+':
             process_lamp_job(LJ_RECVD_REMOTE_UP);
             break;
@@ -49,19 +46,6 @@ void kitchen_lights()
         default:
             break;
         }
-
-        /*
-            // only for debugging
-            delay(500); // wait before we echo it back
-            uart_send('\n');
-            uart_send('\r');
-            uart_send('e');
-            uart_send(':');
-            uart_send(' ');
-            uart_send(rx_byte); // echo what we 'think' we got
-            uart_send('\n');
-            uart_send('\r');
-        */
     }
 
     SWITCHES_STATE_t switches_state = button_read_state();
@@ -125,15 +109,16 @@ void setup_hw(void)
      */
     set_sleep_mode(SLEEP_MODE_IDLE);
     system_ticker_setup();
+    led_driver_setup();
     usi_setup();
     uart_setup();
-    led_driver_setup();
     button_setup();
 
     sei(); // turn global irq flag on
     signal_reset(); // needs the system_ticker to run and sei() as well !
 
     LATCH_LOW;
+    spi_transfer(0xFF);	// set wich channels are active
     spi_transfer(0xFF);	// set wich channels are active
     LATCH_HIGH;
 }

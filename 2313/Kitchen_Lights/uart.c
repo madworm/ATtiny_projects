@@ -108,11 +108,6 @@ void uart_send(uint8_t byte)
     UCSRB |= _BV(UDRIE); // turn on the ISR to send the stuff out
 }
 
-void uart_rx_test(void)
-{
-
-}
-
 ISR(USART_RX_vect)
 {
     // executed when the hardware gets one byte

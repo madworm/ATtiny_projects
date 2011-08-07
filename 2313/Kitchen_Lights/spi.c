@@ -5,6 +5,7 @@
 void usi_setup(void)
 {
     DDRB |= _BV(PB4);   // latch pin as output
+    PORTB |= _BV(PB4);  // latch high
     DDRB |= _BV(PB6);   // as output (DO)
     DDRB |= _BV(PB7);   // as output (USISCK)
     DDRB &= ~_BV(PB5);  // as input (DI)
