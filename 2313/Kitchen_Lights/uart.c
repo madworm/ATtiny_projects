@@ -23,19 +23,22 @@
 #define TX_LED_BLINK    TX_LED_ON; TX_LED_OFF
 #define TX_LED_TOGGLE   PORTD ^= _BV(PD6)
 
+#define HALF_DUPLEX // kills local echo when RXI and TXO are wired together
+
 volatile uint8_t rx_buffer[RX_BUFFER_SIZE]; // this is where the RX-ISR writes to
 volatile uint8_t rx_buffer_head; // data is ALWAYS written at the head
 volatile uint8_t rx_buffer_tail; // data is ALWAYS read at the tail
 volatile uint8_t tx_buffer[TX_BUFFER_SIZE]; // this is where the TX-ISR reads from
 volatile uint8_t tx_buffer_head; // data is ALWAYS written at the head
 volatile uint8_t tx_buffer_tail; // data is ALWAYS read at the tail
+#ifdef HALF_DUPLEX
+volatile uint8_t just_sent_a_byte = 0;
+#endif
 
 void uart_setup(void)
 {
     // configure I/O pins
-
-    DDRD &= ~_BV(PD0);  // RXI is an input
-    DDRD |= _BV(PD1);   // TXO is an output
+    // directions of the RXI / TXO pins are overridden by the RXEN / TXEN bits !
 
     DDRD |= _BV(PD6);   // TX_LED is an output
     DDRB |= _BV(PB2);   // RX_LED is an output
@@ -49,22 +52,20 @@ void uart_setup(void)
     // configure speed. 8N1 is the default
     UBRRL = (uint8_t)(UBRR_VAL);
     UBRRH = (uint8_t)(UBRR_VAL >> 8);
-    // enable RX / TX
-    UCSRB |= (_BV(RXEN) | _BV(TXEN));
+    // enable RX
+    UCSRB |= _BV(RXEN);
     // enable RX complete ISR
     UCSRB |= _BV(RXCIE);
 
     // clear all buffers
     uint8_t ctr;
-    for(ctr = 0; ctr <= RX_BUFFER_SIZE-1; ctr++)
-    {
+    for(ctr = 0; ctr <= RX_BUFFER_SIZE-1; ctr++) {
         rx_buffer[ctr] = 0;
     }
     rx_buffer_head = 0;
     rx_buffer_tail = rx_buffer_head;
 
-    for(ctr = 0; ctr <= TX_BUFFER_SIZE-1; ctr++)
-    {
+    for(ctr = 0; ctr <= TX_BUFFER_SIZE-1; ctr++) {
         tx_buffer[ctr] = 0;
     }
     tx_buffer_head = 0;
@@ -84,9 +85,9 @@ uint8_t uart_read(void)
 
     uint8_t read_this = rx_buffer_tail;
     if(rx_buffer_tail == rx_buffer_head) {
-            // nothing new to read --> return the old data
-            // the user should use uart_avail() to check for new data anyway
-            // DO NOT increase rx_buffer_tail
+        // nothing new to read --> return the old data
+        // the user should use uart_avail() to check for new data anyway
+        // DO NOT increase rx_buffer_tail
     } else {
         rx_buffer_tail = (rx_buffer_tail + 1) % RX_BUFFER_SIZE;
     }
@@ -103,6 +104,7 @@ void uart_send(uint8_t byte)
         // wait until there is some space in the tx_buffer
         // tx_buffer_tail is incremented by 'ISR(USART_UDRE_vect)'
     }
+    UCSRB |= _BV(TXEN); // only turn the hardware on when really needed, grab the TXO line
     tx_buffer[tx_buffer_head] = byte;
     tx_buffer_head = tx_buffer_head__incr;
     UCSRB |= _BV(UDRIE); // turn on the ISR to send the stuff out
@@ -112,16 +114,31 @@ ISR(USART_RX_vect)
 {
     // executed when the hardware gets one byte
 
+    uint8_t clear;
     uint8_t rx_buffer_head__incr = (rx_buffer_head + 1) % RX_BUFFER_SIZE;
-    if( rx_buffer_head__incr != rx_buffer_tail) { // if increasing the head by 1 WOULD NOT bite into the tail
+    #ifdef HALF_DUPLEX
+    // only receive when:
+    // * there is enough space in the rx_buffer
+    // * the tx_buffer is empty (we're not in the middle of sending out stuff)
+    // * we didn't just send out a byte
+    if( (rx_buffer_head__incr != rx_buffer_tail) && (tx_buffer_head == tx_buffer_tail) && !just_sent_a_byte) {
+    #else
+    if( (rx_buffer_head__incr != rx_buffer_tail) ) { // if increasing the head by 1 WOULD NOT bite into the tail
+    #endif
         RX_LED_BLINK;
         // load the incoming byte into the rx_buffer
         rx_buffer[rx_buffer_head] = UDR;
         // advance the head by 1
         rx_buffer_head = rx_buffer_head__incr;
     } else {
-        // rx_buffer full --> data was lost
+        // rx_buffer full --> data will not be read into the rx_buffer!
+        // perform a dummy read to clear UDR !!
+        // if this is not done, the ISR(USART_UDRE_vect) will not fire for sending --> BANG!
+        clear = UDR;
     }
+    #ifdef HALF_DUPLEX
+    just_sent_a_byte = 0;
+    #endif
 }
 
 ISR(USART_UDRE_vect)
@@ -132,7 +149,35 @@ ISR(USART_UDRE_vect)
         TX_LED_BLINK;
         UDR = tx_buffer[tx_buffer_tail];
         tx_buffer_tail = (tx_buffer_tail + 1) % TX_BUFFER_SIZE;
+        #ifdef HALF_DUPLEX
+        just_sent_a_byte = 1;
+        #endif
     } else {
-        UCSRB &= ~_BV(UDRIE); // all done, turn ISR off
+        UCSRB &= ~_BV(UDRIE);   // all done, turn ISR off
+        UCSRB &= ~_BV(TXEN);    // turn off the hardware, release the TXO line
+    }
+}
+
+void uart_half_duplex_test(void)
+{
+    uart_send('U');
+    delay(1000);
+    if( uart_avail() ) {
+        // only in full duplex mode whe should have got here
+        S_LED_ON;
+        delay(200);
+        uart_read();
+        S_LED_OFF;
+        delay(1000);
+    } else {
+        // in HALF_DUPLEX mode, the led should always blink 2
+        S_LED_ON;
+        delay(200);
+        S_LED_OFF;
+        delay(200);
+        S_LED_ON;
+        delay(200);
+        S_LED_OFF;
+        delay(1000);
     }
 }

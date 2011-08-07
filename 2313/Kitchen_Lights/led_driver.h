@@ -1,9 +1,6 @@
 #ifndef led_driver_h
 #define led_driver_h
 
-#define LATCH_LOW PORTB &= ~(1 << PB4)
-#define LATCH_HIGH PORTB |= (1 << PB4)
-
 #define OCR1A_MAX 0x03FF		// DON'T change this
 
 #define AUTO_FADE_IN_DELAY      32U

@@ -18,6 +18,7 @@ int main(void)
     delay(3000);
     for (;;) {
         //button_test(); // shows the button states on the 8 LEDs. timer1 should be OFF (or it blinks like mad --> headache)
+        //uart_half_duplex_test();
         S_LED_TOGGLE; // make the lamps visible in the darkness
         kitchen_lights();
         // this saved about 2mA on my dev board
@@ -117,10 +118,9 @@ void setup_hw(void)
     sei(); // turn global irq flag on
     signal_reset(); // needs the system_ticker to run and sei() as well !
 
-    LATCH_LOW;
     spi_transfer(0xFF);	// set wich channels are active
     spi_transfer(0xFF);	// set wich channels are active
-    LATCH_HIGH;
+    LATCH;
 }
 
 void process_lamp_job(LAMP_JOB_t job)

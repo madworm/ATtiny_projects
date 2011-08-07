@@ -32,40 +32,34 @@ void button_test()
 {
     switch(button_read_state()) {
     case SW_LEFT_PRESSED:
-        LATCH_LOW;
         spi_transfer(1);
         spi_transfer(1);
-        LATCH_HIGH;
+        LATCH;
         break;
     case SW_RIGHT_PRESSED:
-        LATCH_LOW;
         spi_transfer(128);
         spi_transfer(128);
-        LATCH_HIGH;
+	LATCH;
         break;
     case SW_MIDDLE_PRESSED:
-        LATCH_LOW;
         spi_transfer(24);
         spi_transfer(24);
-        LATCH_HIGH;
+	LATCH;
         break;
     case SW_LEFT_MIDDLE_PRESSED:
-        LATCH_LOW;
         spi_transfer(24+1);
         spi_transfer(24+1);
-        LATCH_HIGH;
+	LATCH;
         break;
     case SW_RIGHT_MIDDLE_PRESSED:
-        LATCH_LOW;
         spi_transfer(128+24);
         spi_transfer(128+24);
-        LATCH_HIGH;
+      	LATCH;
         break;
     default:
-        LATCH_LOW;
         spi_transfer(0x00);
         spi_transfer(0x00);
-        LATCH_HIGH;
+        LATCH;
         break;
     }
 }
