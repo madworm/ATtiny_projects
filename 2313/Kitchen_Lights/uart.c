@@ -31,9 +31,6 @@ volatile uint8_t rx_buffer_tail; // data is ALWAYS read at the tail
 volatile uint8_t tx_buffer[TX_BUFFER_SIZE]; // this is where the TX-ISR reads from
 volatile uint8_t tx_buffer_head; // data is ALWAYS written at the head
 volatile uint8_t tx_buffer_tail; // data is ALWAYS read at the tail
-#ifdef HALF_DUPLEX
-volatile uint8_t just_sent_a_byte = 0;
-#endif
 
 void uart_setup(void)
 {
@@ -117,11 +114,11 @@ ISR(USART_RX_vect)
     uint8_t clear;
     uint8_t rx_buffer_head__incr = (rx_buffer_head + 1) % RX_BUFFER_SIZE;
     #ifdef HALF_DUPLEX
-    // only receive when:
+    // only copy received data into the rx_buffer when:
     // * there is enough space in the rx_buffer
     // * the tx_buffer is empty (we're not in the middle of sending out stuff)
-    // * we didn't just send out a byte
-    if( (rx_buffer_head__incr != rx_buffer_tail) && (tx_buffer_head == tx_buffer_tail) && !just_sent_a_byte) {
+    // * we did NOT just send out a byte (TX-complete flag not set)
+    if( (rx_buffer_head__incr != rx_buffer_tail) && (tx_buffer_head == tx_buffer_tail) && !(UCSRA & _BV(TXC)) ) {
     #else
     if( (rx_buffer_head__incr != rx_buffer_tail) ) { // if increasing the head by 1 WOULD NOT bite into the tail
     #endif
@@ -137,7 +134,7 @@ ISR(USART_RX_vect)
         clear = UDR;
     }
     #ifdef HALF_DUPLEX
-    just_sent_a_byte = 0;
+    UCSRA |= _BV(TXC); // clear TX-complete flag by writing a 1 to it
     #endif
 }
 
@@ -149,9 +146,7 @@ ISR(USART_UDRE_vect)
         TX_LED_BLINK;
         UDR = tx_buffer[tx_buffer_tail];
         tx_buffer_tail = (tx_buffer_tail + 1) % TX_BUFFER_SIZE;
-        #ifdef HALF_DUPLEX
-        just_sent_a_byte = 1;
-        #endif
+        // when the transmission of a single byte is done, the TXC flag will be set in UCSRA
     } else {
         UCSRB &= ~_BV(UDRIE);   // all done, turn ISR off
         UCSRB &= ~_BV(TXEN);    // turn off the hardware, release the TXO line
@@ -160,6 +155,8 @@ ISR(USART_UDRE_vect)
 
 void uart_half_duplex_test(void)
 {
+    // test with RXI wired to TXO
+
     uart_send('U');
     delay(1000);
     if( uart_avail() ) {
