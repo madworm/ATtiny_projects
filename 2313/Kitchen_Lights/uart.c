@@ -1,5 +1,6 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <avr/pgmspace.h>
 #include <stdint.h>
 #include "uart.h"
 #include "util.h"
@@ -69,11 +70,18 @@ void uart_setup(void)
     tx_buffer_tail = tx_buffer_head;
 }
 
-uint8_t uart_avail(void)
+uint8_t uart_rx_buffer_fullness(void)
 {
     // returns the number of available bytes in the rx_buffer
 
     return (RX_BUFFER_SIZE + rx_buffer_head - rx_buffer_tail) % RX_BUFFER_SIZE;
+}
+
+uint8_t uart_tx_buffer_fullness(void)
+{
+    // returns the number of available bytes in the rx_buffer
+
+    return (TX_BUFFER_SIZE + tx_buffer_head - tx_buffer_tail) % TX_BUFFER_SIZE;
 }
 
 uint8_t uart_read(void)
@@ -105,6 +113,34 @@ void uart_send(uint8_t byte)
     tx_buffer[tx_buffer_head] = byte;
     tx_buffer_head = tx_buffer_head__incr;
     UCSRB |= _BV(UDRIE); // turn on the ISR to send the stuff out
+}
+
+void uart_send_string(const char * string)
+{
+    //
+    // define strings in RAM as such:
+    //
+    // const char string[] = "Hello World!\r\n"
+    //
+
+    while(*string != '\0') {
+        uart_send(*string);
+        string++;
+    }
+}
+
+void uart_send_pgm_string(const char * string)
+{
+    //
+    // define strings in flash as such:
+    //
+    // const PROGMEM char pgm_text[] = "PGM: Hello World!\r\n";
+    //
+
+    while(pgm_read_byte(string) != '\0') {
+        uart_send(pgm_read_byte(string));
+        string++;
+    }
 }
 
 ISR(USART_RX_vect)
@@ -157,8 +193,13 @@ void uart_half_duplex_test(void)
 {
     // test with RXI wired to TXO
 
-    uart_send('U');
-    delay(1000);
+    OCR1A = OCR1A_MAX - 10;
+
+    uart_send_pgm_string(PSTR("Hello World from an ATtiny2313!\r\n"));
+    //delay(100); // depending on the delay, the tx_buffer will show up more or less full/empty
+    spi_transfer(uart_rx_buffer_fullness());
+    spi_transfer(uart_tx_buffer_fullness());
+    LATCH;
     if( uart_avail() ) {
         // only in full duplex mode whe should have got here
         S_LED_ON;
