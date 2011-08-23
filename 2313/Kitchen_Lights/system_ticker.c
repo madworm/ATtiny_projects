@@ -24,6 +24,16 @@ void system_ticker_setup(void)
 ISR(TIMER0_OVF_vect) // on attiny2313/4313 this is named TIMER0_OVF_vect
 {
     system_ticks++;
+
+    static uint8_t loop = 0;
+    if( (PORTD & _BV(PD6)) || (PORTB & _BV(PB2)) ) { // RX or TX LED is on
+        loop++;
+    }
+    if(loop == 32) {
+        TX_LED_OFF;
+        RX_LED_OFF;
+        loop = 0;
+    }
 }
 
 uint16_t time(void)

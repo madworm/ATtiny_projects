@@ -14,17 +14,7 @@
 #define BAUDRATE 9600UL
 #define UBRR_VAL ( (F_CPU / (16UL * BAUDRATE)) - 1)
 
-#define RX_LED_ON       PORTB |= _BV(PB2)
-#define RX_LED_OFF      PORTB &= ~_BV(PB2)
-#define RX_LED_BLINK    RX_LED_ON; RX_LED_OFF
-#define RX_LED_TOGGLE   PORTB ^= _BV(PB2)
-
-#define TX_LED_ON       PORTD |= _BV(PD6)
-#define TX_LED_OFF      PORTD &= ~_BV(PD6)
-#define TX_LED_BLINK    TX_LED_ON; TX_LED_OFF
-#define TX_LED_TOGGLE   PORTD ^= _BV(PD6)
-
-#define HALF_DUPLEX // kills local echo when RXI and TXO are wired together
+//#define HALF_DUPLEX // kills local echo when RXI and TXO are wired together
 
 volatile uint8_t rx_buffer[RX_BUFFER_SIZE]; // this is where the RX-ISR writes to
 volatile uint8_t rx_buffer_head; // data is ALWAYS written at the head
@@ -41,11 +31,8 @@ void uart_setup(void)
     DDRD |= _BV(PD6);   // TX_LED is an output
     DDRB |= _BV(PB2);   // RX_LED is an output
 
-    TX_LED_TOGGLE;  // led test
-    TX_LED_TOGGLE;
-
-    RX_LED_TOGGLE;  // led test
-    RX_LED_TOGGLE;
+    RX_LED_ON;  // led test
+    TX_LED_ON;  // led test
 
     // configure speed. 8N1 is the default
     UBRRL = (uint8_t)(UBRR_VAL);
@@ -158,7 +145,7 @@ ISR(USART_RX_vect)
     #else
     if( (rx_buffer_head__incr != rx_buffer_tail) ) { // if increasing the head by 1 WOULD NOT bite into the tail
     #endif
-        RX_LED_BLINK;
+        RX_LED_ON; // it will be turned off by the system_ticker after some time
         // load the incoming byte into the rx_buffer
         rx_buffer[rx_buffer_head] = UDR;
         // advance the head by 1
@@ -179,7 +166,7 @@ ISR(USART_UDRE_vect)
     // executed when the hardware tx buffer is empty (ready to send some data)
 
     if( tx_buffer_tail != tx_buffer_head ) { // if there is some data to send in the software tx_buffer
-        TX_LED_BLINK;
+        TX_LED_ON; // it will be turned off by the system_ticker after some time
         UDR = tx_buffer[tx_buffer_tail];
         tx_buffer_tail = (tx_buffer_tail + 1) % TX_BUFFER_SIZE;
         // when the transmission of a single byte is done, the TXC flag will be set in UCSRA
