@@ -6,11 +6,12 @@
 #include <stdint.h>
 #include "system_ticker.h"
 #include "spi.h"
-#include "util.h"
 #include "uart.h"
 #include "button.h"
 #include "led_driver.h"
+#include "status_leds.h"
 #include "main.h"
+
 
 int main(void)
 {
@@ -116,7 +117,8 @@ void setup_hw(void)
     button_setup();
 
     sei(); // turn global irq flag on
-    signal_reset(); // needs the system_ticker to run and sei() as well !
+
+    status_leds_test(); // needs the system_ticker to run and sei() as well !
 
     spi_transfer(0xFF);	// set wich channels are active
     spi_transfer(0xFF);	// set wich channels are active

@@ -2,8 +2,8 @@
 #include <avr/interrupt.h>
 #include <stdint.h>
 #include "led_driver.h"
-#include "util.h"
 #include "system_ticker.h"
+#include "status_leds.h"
 
 void led_driver_setup(void)
 {

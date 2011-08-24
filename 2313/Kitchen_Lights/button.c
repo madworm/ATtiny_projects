@@ -2,30 +2,16 @@
 #include <avr/interrupt.h>
 #include <stdint.h>
 #include "button.h"
-#include "util.h"
 #include "system_ticker.h"
 #include "spi.h"
 #include "led_driver.h"
-
-#define LEFT_LED_ON     DDRD |= _BV(PD2); PORTD &= ~_BV(PD2)
-#define LEFT_LED_OFF    DDRD &= ~_BV(PD2); PORTD |= _BV(PD2)
-#define LEFT_LED_BLINK  LEFT_LED_OFF; LEFT_LED_ON; delay(1000); LEFT_LED_OFF
-
-#define MID_LED_ON      DDRD |= _BV(PD3); PORTD &= ~_BV(PD3)
-#define MID_LED_OFF     DDRD &= ~_BV(PD3); PORTD |= _BV(PD3)
-#define MID_LED_BLINK   MID_LED_OFF; MID_LED_ON; delay(1000); MID_LED_OFF
-
-#define RIGHT_LED_ON       DDRD |= _BV(PD4); PORTD &= ~_BV(PD4)
-#define RIGHT_LED_OFF      DDRD &= ~_BV(PD4); PORTD |= _BV(PD4)
-#define RIGHT_LED_BLINK    RIGHT_LED_OFF; RIGHT_LED_ON; delay(1000); RIGHT_LED_OFF
+#include "status_leds.h"
 
 void button_setup()
 {
-    sei();              // make the delay() of system_ticker work
-    LEFT_LED_BLINK;     // this also sets the pin direction and pull-up correctly
-    MID_LED_BLINK;
-    RIGHT_LED_BLINK;
-    cli();              // turn it off again
+    LEFT_LED_OFF;       // this also sets the pin direction and pull-up correctly
+    MID_LED_OFF;        // so the buttons can be read
+    RIGHT_LED_OFF;
 }
 
 void button_test()

@@ -3,10 +3,10 @@
 #include <avr/pgmspace.h>
 #include <stdint.h>
 #include "uart.h"
-#include "util.h"
 #include "spi.h"
 #include "system_ticker.h"
 #include "led_driver.h"
+#include "status_leds.h"
 
 #define RX_BUFFER_SIZE 8U
 #define TX_BUFFER_SIZE 8U
@@ -30,9 +30,6 @@ void uart_setup(void)
 
     DDRD |= _BV(PD6);   // TX_LED is an output
     DDRB |= _BV(PB2);   // RX_LED is an output
-
-    RX_LED_ON;  // led test
-    TX_LED_ON;  // led test
 
     // configure speed. 8N1 is the default
     UBRRL = (uint8_t)(UBRR_VAL);

@@ -2,7 +2,7 @@
 #include <avr/interrupt.h>
 #include <stdint.h>
 #include "system_ticker.h"
-#include "util.h"
+#include "status_leds.h"
 
 volatile uint16_t system_ticks = 0;
 
