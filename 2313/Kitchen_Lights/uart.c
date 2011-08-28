@@ -14,7 +14,7 @@
 #define BAUDRATE 9600UL
 #define UBRR_VAL ( (F_CPU / (16UL * BAUDRATE)) - 1)
 
-//#define HALF_DUPLEX // kills local echo when RXI and TXO are wired together
+#define HALF_DUPLEX // kills local echo when RXI and TXO are wired together
 
 volatile uint8_t rx_buffer[RX_BUFFER_SIZE]; // this is where the RX-ISR writes to
 volatile uint8_t rx_buffer_head; // data is ALWAYS written at the head
@@ -166,7 +166,13 @@ ISR(USART_UDRE_vect)
         TX_LED_ON; // it will be turned off by the system_ticker after some time
         UDR = tx_buffer[tx_buffer_tail];
         tx_buffer_tail = (tx_buffer_tail + 1) % TX_BUFFER_SIZE;
-        // when the transmission of a single byte is done, the TXC flag will be set in UCSRA
+        while( !(UCSRA & _BV(TXC)) ) {
+            // when the transmission of a single byte is done, the TXC flag will be set in UCSRA
+            // if we do not wait for this to be set here, the RX ISR will get confused in half duplex
+            // mode, as it checks for TXC too early.
+            // without waiting for the TXC flag, the 'echo ignore' only works for 1 character
+            // as soon as there are 2 or more it fails (UDR FIFO of 2 ?).
+        }
     } else {
         UCSRB &= ~_BV(UDRIE);   // all done, turn ISR off
         UCSRB &= ~_BV(TXEN);    // turn off the hardware, release the TXO line
