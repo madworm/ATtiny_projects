@@ -5,8 +5,8 @@
 
 #define AUTO_FADE_IN_DELAY      32U
 #define AUTO_FADE_OUT_DELAY     32U
-#define MANUAL_UP_DELAY         32U // slow ( better for the eyes in the morning ;-) )
-#define MANUAL_DOWN_DELAY       32U
+#define MANUAL_UP_DELAY         128U // slow ( better for the eyes in the morning ;-) )
+#define MANUAL_DOWN_DELAY       128U
 #define MANUAL_FADE_STEPSIZE    4U
 
 void led_driver_setup(void);
