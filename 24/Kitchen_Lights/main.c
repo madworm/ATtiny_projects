@@ -229,4 +229,8 @@ void eval_switch_state(SWITCHES_STATE_t state, LAMP_JOB_t first_job, LAMP_JOB_t 
         // just a short press
         process_lamp_job(second_job);
     }
+    if ( (elapsed_time > 50) && (elapsed_time < 500) ) {
+        // short press
+        process_lamp_job(first_job);
+    }
 }
