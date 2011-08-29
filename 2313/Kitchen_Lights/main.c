@@ -101,7 +101,9 @@ void setup_hw(void)
     PORTD = 0xFF;
 
     /*
-     * now configure the pins we actually need
+     *
+
+      now configure the pins we actually need
      */
 
     DDRD |= _BV(PD5); // make the S_LED pin an output
@@ -109,20 +111,20 @@ void setup_hw(void)
     /*
      * getting ready
      */
+
     set_sleep_mode(SLEEP_MODE_IDLE);
     system_ticker_setup();
-    led_driver_setup();
     usi_setup();
     uart_setup();
     button_setup();
 
     sei(); // turn global irq flag on
 
-    status_leds_test(); // needs the system_ticker to run and sei() as well !
-
-    spi_transfer(0xFF);	// set wich channels are active
-    spi_transfer(0xFF);	// set wich channels are active
+    spi_transfer(0xFF); // all channels on
     LATCH;
+    led_driver_setup();
+
+    status_leds_test(); // needs the system_ticker to run and sei() as well !
 }
 
 void process_lamp_job(LAMP_JOB_t job)

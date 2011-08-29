@@ -187,9 +187,9 @@ void uart_half_duplex_test(void)
 
     uart_send_pgm_string(PSTR("Hello World from an ATtiny2313!\r\n"));
     //delay(100); // depending on the delay, the tx_buffer will show up more or less full/empty
-    spi_transfer(uart_rx_buffer_fullness());
-    spi_transfer(uart_tx_buffer_fullness());
-    LATCH;
+    //spi_transfer(uart_rx_buffer_fullness());
+    //spi_transfer(uart_tx_buffer_fullness());
+    //LATCH;
     if( uart_avail() ) {
         // only in full duplex mode whe should have got here
         S_LED_ON;

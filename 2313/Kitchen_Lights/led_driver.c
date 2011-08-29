@@ -24,10 +24,11 @@
 
 void led_driver_setup(void)
 {
+    DDRB |= _BV(PB3);       // make OC1A (PB3) an output
+    PORTB |= _BV(PB3);      // set PB3 HIGH
+    OCR1A = OCR1A_MAX;      // set compare match value for TCNT1 - 100% duty cycle - all off
     TCCR1A = TCCR1A_val;    // doing it this way saves flash space ;-)
     TCCR1B = TCCR1B_val;
-    DDRB |= _BV(PB3);       // make OC1A (PB3) an output
-    OCR1A = OCR1A_MAX;      // set compare match value for TCNT1 - 100% duty cycle - all off
 }
 
 void fade_in(uint16_t start_at, uint16_t fade_delay)
