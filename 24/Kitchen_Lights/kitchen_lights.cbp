@@ -33,7 +33,7 @@
 		<Linker>
 			<Add option="-mmcu=attiny24" />
 			<Add option="-Wl,-Map=$(TARGET_OUTPUT_FILE).map,--cref" />
-			<Add option="-Wl,--gc-sections" />
+			<Add option="-Wl,--gc-sections,--print-gc-sections" />
 			<Add library="/usr/local/avr/avr/lib/libc.a" />
 			<Add library="/usr/local/avr/avr/lib/libm.a" />
 		</Linker>
