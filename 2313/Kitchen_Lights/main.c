@@ -12,6 +12,7 @@
 #include "status_leds.h"
 #include "main.h"
 
+LAMP_STATE_t lamp_state = LS_OFF;
 
 int main(void)
 {
@@ -53,17 +54,28 @@ void kitchen_lights()
     SWITCHES_STATE_t switches_state = button_read_state();
 
     switch(switches_state) {
-    case SW_RIGHT_PRESSED:
-        eval_switch_state(SW_RIGHT_PRESSED,LJ_MANUAL_UP,LJ_FADE_IN);
-        break;
     case SW_LEFT_PRESSED:
         eval_switch_state(SW_LEFT_PRESSED,LJ_MANUAL_DOWN,LJ_FADE_OUT);
         break;
-    case SW_RIGHT_MIDDLE_PRESSED:
-        eval_switch_state(SW_RIGHT_MIDDLE_PRESSED,LJ_SEND_REMOTE_UP,LJ_SEND_REMOTE_FADE_IN);
+    case SW_MIDDLE_PRESSED:
+        if(lamp_state == LS_OFF) {
+            eval_switch_state(SW_MIDDLE_PRESSED,LJ_BLINK_RIGHT_LED,LJ_BLINK_RIGHT_LED); // show what should be pressed (up button)
+            break;
+        }
+        if(lamp_state == LS_FULLY_ON) {
+            eval_switch_state(SW_MIDDLE_PRESSED,LJ_BLINK_LEFT_LED,LJ_BLINK_LEFT_LED); // show what should be pressed (down button)
+            break;
+        }
+        eval_switch_state(SW_MIDDLE_PRESSED,LJ_BLINK_LEFT_RIGHT_LED,LJ_BLINK_LEFT_RIGHT_LED); // show what should be pressed (up/down button)
+        break;
+    case SW_RIGHT_PRESSED:
+        eval_switch_state(SW_RIGHT_PRESSED,LJ_MANUAL_UP,LJ_FADE_IN);
         break;
     case SW_LEFT_MIDDLE_PRESSED:
         eval_switch_state(SW_LEFT_MIDDLE_PRESSED,LJ_SEND_REMOTE_DOWN,LJ_SEND_REMOTE_FADE_OUT);
+        break;
+    case SW_RIGHT_MIDDLE_PRESSED:
+        eval_switch_state(SW_RIGHT_MIDDLE_PRESSED,LJ_SEND_REMOTE_UP,LJ_SEND_REMOTE_FADE_IN);
         break;
     default:
         // SW_ALL_OPEN
@@ -130,17 +142,51 @@ void setup_hw(void)
 void process_lamp_job(LAMP_JOB_t job)
 {
     switch(job) {
+    case LJ_BLINK_LEFT_LED:
+        LEFT_LED_BLINK;
+        LEFT_LED_BLINK;
+        break;
+    case LJ_BLINK_RIGHT_LED:
+        RIGHT_LED_BLINK;
+        RIGHT_LED_BLINK;
+        break;
+    case LJ_BLINK_LEFT_RIGHT_LED:
+        LEFT_LED_BLINK;
+        LEFT_LED_BLINK;
+        RIGHT_LED_BLINK;
+        RIGHT_LED_BLINK;
+        break;
     case LJ_MANUAL_UP:
+        if(lamp_state == LS_FULLY_ON) {
+            process_lamp_job(LJ_BLINK_LEFT_LED); // show what should be pressed (down button)
+            break;
+        }
         up(MANUAL_UP_DELAY);
+        if(get_brightness() == 0) {
+            lamp_state = LS_FULLY_ON;
+        } else {
+            lamp_state = LS_ON;
+        }
         break;
     case LJ_MANUAL_DOWN:
+        if(lamp_state == LS_OFF) {
+            process_lamp_job(LJ_BLINK_RIGHT_LED); // show what should be pressed (up button)
+            break;
+        }
         down(MANUAL_DOWN_DELAY);
+        if(get_brightness() == OCR1A_MAX) {
+            lamp_state = LS_OFF;
+        } else {
+            lamp_state = LS_ON;
+        }
         break;
     case LJ_FADE_IN:
         fade_in(get_brightness(),AUTO_FADE_IN_DELAY);
+        lamp_state = LS_FULLY_ON;
         break;
     case LJ_FADE_OUT:
         fade_out(get_brightness(),AUTO_FADE_OUT_DELAY);
+        lamp_state = LS_OFF;
         break;
     case LJ_SEND_REMOTE_UP:
         uart_send('+');
@@ -156,15 +202,27 @@ void process_lamp_job(LAMP_JOB_t job)
         break;
     case LJ_RECVD_REMOTE_UP:
         up(MANUAL_UP_DELAY);
+        if(get_brightness() == 0) {
+            lamp_state = LS_FULLY_ON;
+        } else {
+            lamp_state = LS_ON;
+        }
         break;
     case LJ_RECVD_REMOTE_DOWN:
         down(MANUAL_DOWN_DELAY);
+        if(get_brightness() == OCR1A_MAX) {
+            lamp_state = LS_OFF;
+        } else {
+            lamp_state = LS_ON;
+        }
         break;
     case LJ_RECVD_REMOTE_FADE_IN:
         fade_in(get_brightness(),AUTO_FADE_IN_DELAY);
+        lamp_state = LS_FULLY_ON;
         break;
     case LJ_RECVD_REMOTE_FADE_OUT:
         fade_out(get_brightness(),AUTO_FADE_OUT_DELAY);
+        lamp_state = LS_OFF;
         break;
     default:
         // LJ_NOP
