@@ -88,8 +88,16 @@ void setup_hw(void)
     // turn the watchdog off
     wdt_reset();
     MCUSR= 0x00;
-    WDTCSR |= ( _BV(WDCE) | _BV(WDE) ); // timed sequence !
-    WDTCSR = 0x00;
+
+    #ifdef _AVR_IOTN2313_H_
+      #define WATCHDOG_CTRL_REG WDTCSR
+    #endif
+    #ifdef _AVR_ATtiny4313_H_
+      #define WATCHDOG_CTRL_REG WDTCR
+    #endif
+
+    WATCHDOG_CTRL_REG |= ( _BV(WDCE) | _BV(WDE) ); // timed sequence !
+    WATCHDOG_CTRL_REG = 0x00;
 
     // turn all pins to inputs + pull-up on
     // saved about another 0.5mA on my board
