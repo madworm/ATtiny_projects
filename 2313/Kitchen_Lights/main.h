@@ -27,7 +27,7 @@ void eval_switch_state(SWITCHES_STATE_t state,LAMP_JOB_t first_job,LAMP_JOB_t se
 void process_lamp_job(LAMP_JOB_t job);
 
 void setup_hw(void);
-void kitchen_lights();
+void kitchen_lights(void);
 
 int main(void);
 

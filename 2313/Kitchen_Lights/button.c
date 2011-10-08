@@ -7,14 +7,14 @@
 #include "led_driver.h"
 #include "status_leds.h"
 
-void button_setup()
+void button_setup(void)
 {
     LEFT_LED_OFF;       // this also sets the pin direction and pull-up correctly
     MID_LED_OFF;        // so the buttons can be read
     RIGHT_LED_OFF;
 }
 
-void button_test()
+void button_test(void)
 {
     switch(button_read_state()) {
     case SW_LEFT_PRESSED:
@@ -44,7 +44,7 @@ void button_test()
     }
 }
 
-SWITCHES_STATE_t button_read_state()
+SWITCHES_STATE_t button_read_state(void)
 {
     SWITCHES_STATE_t state = SW_ALL_OPEN;
 

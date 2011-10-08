@@ -10,8 +10,8 @@ typedef enum SWITCHES_STATE {
     SW_RIGHT_MIDDLE_PRESSED
 } SWITCHES_STATE_t;
 
-void button_setup();
-void button_test();
-SWITCHES_STATE_t button_read_state();
+void button_setup(void);
+void button_test(void);
+SWITCHES_STATE_t button_read_state(void);
 
 #endif

@@ -29,7 +29,7 @@ int main(void)
     }
 }
 
-void kitchen_lights()
+void kitchen_lights(void)
 {
     if ( uart_avail() ) {
         switch( uart_read() ) {

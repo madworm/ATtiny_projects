@@ -2,7 +2,7 @@
 #define uart_h
 
 void uart_setup(void);
-void uart_half_duplex_test();
+void uart_half_duplex_test(void);
 void uart_send(uint8_t byte);
 void uart_send_string(const char * string);
 void uart_send_pgm_string(const char * string);
