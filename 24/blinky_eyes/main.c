@@ -12,21 +12,15 @@ int main(void)
     setup_hw();
     delay(6000);
     srand(42);
+    uint16_t hue = 0;
     for (;;) {
-        DISPLAY_ON;
         PORTA |= 0x03;
-        spi_transfer(0x07);
-        LATCH;
         delay(rand()/8);
         PORTA &= ~0x03;
-        spi_transfer(0x00);
-        LATCH;
         delay(rand()/8);
-        DISPLAY_OFF;
+        set_led_hsv(hue++,255,255);
     }
 }
-
-
 
 void setup_hw(void)
 {
