@@ -161,11 +161,6 @@ void setup_hw(void)
 
     sei(); // turn global irq flag on
     signal_reset(); // needs the system_ticker to run and sei() as well !
-
-    DISPLAY_OFF; // turn the driver off
-
-    spi_transfer(0xFF);	// set wich channels are active
-    LATCH;
 }
 
 void process_lamp_job(LAMP_JOB_t job)
