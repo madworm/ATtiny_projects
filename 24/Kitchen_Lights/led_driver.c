@@ -8,14 +8,8 @@
 
 // for all 8 channels. OCR1A_MAX is fully off, 0 is fully on
 uint16_t lamp_brightness = 0; // variable is mapped down to individual channels
+uint8_t led_brightness[8] = {0,0,0,0,0,0,0,0};
 
-// double buffering
-uint8_t led_brightness_a[8] = {0,0,0,0,0,0,0,0};
-uint8_t led_brightness_b[8] = {0,0,0,0,0,0,0,0};
-
-// pointers to the buffers
-uint8_t * led_brightness_read = led_brightness_a;
-uint8_t * led_brightness_write = led_brightness_b;
 
 static void set_led_pattern(void);
 
@@ -48,9 +42,8 @@ ISR(TIM1_COMPA_vect) // on attiny2313/4313 this is named TIMER1_COMPA_vect
     uint8_t led;
     uint8_t tmp_val = 0b00000000;	// off
 
-    // only read from the read-buffer
     for (led = 0; led <= 7; led++) {
-        if ( led_brightness_read[led] & bitmask ) {
+        if ( led_brightness[led] & bitmask ) {
             tmp_val |= _BV(led);
         }
     }
@@ -75,14 +68,6 @@ ISR(TIM1_COMPA_vect) // on attiny2313/4313 this is named TIMER1_COMPA_vect
 
     // for debugging only
     // PA2_OFF;
-}
-
-void flip_buffers(void)
-{
-    uint8_t * tmp;
-    tmp = led_brightness_write;
-    led_brightness_write = led_brightness_read;
-    led_brightness_read = tmp;
 }
 
 void fade_in(uint16_t start_at, uint16_t fade_delay)
@@ -143,20 +128,40 @@ void down(uint16_t fade_delay)
     delay(fade_delay); // manually fading out
 }
 
-static void set_led_pattern(void) {
-    // only write to the write buffer
-    led_brightness_write[3] = ((lamp_brightness / 63) > 0) ? 63 : (lamp_brightness % 63);
-    led_brightness_write[4] = led_brightness_write[3];
+static void set_led_pattern(void)
+{
+    if( (lamp_brightness >=0) && (lamp_brightness <=63) ) {
+        led_brightness[3] = lamp_brightness;
+        led_brightness[2] = 0;
+        led_brightness[1] = 0;
+        led_brightness[0] = 0;
+    }
 
-    led_brightness_write[2] = ((lamp_brightness / 127) > 0) ? 63 : ( ((lamp_brightness / 63) > 0) ? (lamp_brightness % 63) : 0 );
-    led_brightness_write[5] = led_brightness_write[2];
+    if( (lamp_brightness >=64) && (lamp_brightness <=127) ) {
+        led_brightness[3] = 63;
+        led_brightness[2] = lamp_brightness - 64;
+        led_brightness[1] = 0;
+        led_brightness[0] = 0;
+    }
 
-    led_brightness_write[1] = ((lamp_brightness / 191) > 0) ? 63 : ( ((lamp_brightness / 127) > 0) ? (lamp_brightness % 63) : 0 );
-    led_brightness_write[6] = led_brightness_write[1];
+    if( (lamp_brightness >=128) && (lamp_brightness <=191) ) {
+        led_brightness[3] = 63;
+        led_brightness[2] = 63;
+        led_brightness[1] = lamp_brightness - 128;
+        led_brightness[0] = 0;
+    }
 
-    led_brightness_write[0] = ((lamp_brightness / 255) > 0) ? 63 : ( ((lamp_brightness / 191) > 0) ? (lamp_brightness % 63) : 0 );
-    led_brightness_write[7] = led_brightness_write[0];
-    flip_buffers();
+    if( (lamp_brightness >=192) && (lamp_brightness <=255) ) {
+        led_brightness[3] = 63;
+        led_brightness[2] = 63;
+        led_brightness[1] = 63;
+        led_brightness[0] = lamp_brightness - 192;
+    }
+
+    led_brightness[4] = led_brightness[3];
+    led_brightness[5] = led_brightness[2];
+    led_brightness[6] = led_brightness[1];
+    led_brightness[7] = led_brightness[0];
 }
 
 uint16_t get_brightness(void)
