@@ -15,9 +15,9 @@ static void set_led_pattern(void);
 
 void led_driver_setup(void)
 {
-    // set prescaler to 64
-    TCCR1B |= (_BV(CS10) | _BV(CS11));
-    TCCR1B &= ~(_BV(CS12));
+    // set prescaler to 256
+    TCCR1B |= (_BV(CS12));
+    TCCR1B &= ~(_BV(CS10) | _BV(CS11));
     // set WGM mode 4: CTC using OCR1A
     TCCR1A &= ~(_BV(WGM11) | _BV(WGM10));
     TCCR1B |= _BV(WGM12);

@@ -1,6 +1,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
+#include <util/atomic.h>
 #include <stdint.h>
 #include "uart.h"
 #include "util.h"
@@ -36,6 +37,11 @@ void soft_uart_send(uint8_t byte)
 
     uint8_t ctr;
 
+    // the atomic block is needed to make sure this happens
+    // _uninterrupted_ by the LED ISR !
+
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+    {
     DDRA |= _BV(PA0); // make it an output
     PORTA &= ~_BV(PA0); // pull it low: start-bit
     _delay_us(FULL_BIT_DELAY);
@@ -49,6 +55,7 @@ void soft_uart_send(uint8_t byte)
     }
     PORTA |= _BV(PA0);  // pull it high: stop-bit
     DDRA &= ~_BV(PA0);  // make it an input again
+    }
 
     _delay_us(10*FULL_BIT_DELAY); // don't flood the receiver
     _delay_us(10*FULL_BIT_DELAY); // a soft-uart as well
