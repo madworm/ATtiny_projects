@@ -8,15 +8,22 @@
 
 // for all 8 channels. OCR1A_MAX is fully off, 0 is fully on
 uint16_t lamp_brightness = 0; // variable is mapped down to individual channels
-uint8_t led_brightness[8] = {0,0,0,0,0,0,0,0};
+
+// double buffering
+uint8_t led_brightness_a[8] = {0,0,0,0,0,0,0,0};
+uint8_t led_brightness_b[8] = {0,0,0,0,0,0,0,0};
+
+// pointers to the buffers
+uint8_t * led_brightness_read = led_brightness_a;
+uint8_t * led_brightness_write = led_brightness_b;
 
 static void set_led_pattern(void);
 
 void led_driver_setup(void)
 {
-    // set prescaler to 256
-    TCCR1B |= (_BV(CS12));
-    TCCR1B &= ~(_BV(CS11) | _BV(CS10));
+    // set prescaler to 64
+    TCCR1B |= (_BV(CS10) | _BV(CS11));
+    TCCR1B &= ~(_BV(CS12));
     // set WGM mode 4: CTC using OCR1A
     TCCR1A &= ~(_BV(WGM11) | _BV(WGM10));
     TCCR1B |= _BV(WGM12);
@@ -41,8 +48,9 @@ ISR(TIM1_COMPA_vect) // on attiny2313/4313 this is named TIMER1_COMPA_vect
     uint8_t led;
     uint8_t tmp_val = 0b00000000;	// off
 
+    // only read from the read-buffer
     for (led = 0; led <= 7; led++) {
-        if ( led_brightness[led] & bitmask ) {
+        if ( led_brightness_read[led] & bitmask ) {
             tmp_val |= _BV(led);
         }
     }
@@ -56,7 +64,7 @@ ISR(TIM1_COMPA_vect) // on attiny2313/4313 this is named TIMER1_COMPA_vect
 
     if ( bitmask == _BV(BCM_BIT_DEPTH + 1) ) {
         bitmask = 0x0001;
-        OCR1A_next = 1;
+        OCR1A_next = 2;
     }
 
     OCR1A = OCR1A_next; // when to run next time
@@ -69,13 +77,21 @@ ISR(TIM1_COMPA_vect) // on attiny2313/4313 this is named TIMER1_COMPA_vect
     // PA2_OFF;
 }
 
+void flip_buffers(void)
+{
+    uint8_t * tmp;
+    tmp = led_brightness_write;
+    led_brightness_write = led_brightness_read;
+    led_brightness_read = tmp;
+}
+
 void fade_in(uint16_t start_at, uint16_t fade_delay)
 {
     LED_ON;
 
     uint16_t ctr;
 
-    for(ctr = start_at; ctr <= LAMP_BRIGHTNESS_MAX; ctr++) {
+    for(ctr = start_at; ctr <= (LAMP_BRIGHTNESS_MAX - MANUAL_FADE_STEPSIZE); ctr += MANUAL_FADE_STEPSIZE) {
         lamp_brightness = ctr;
         set_led_pattern();
         delay(fade_delay);
@@ -88,7 +104,7 @@ void fade_out(uint16_t start_at, uint16_t fade_delay)
 
     int16_t ctr;
 
-    for(ctr = start_at; ctr >= 0; ctr--) {
+    for(ctr = start_at; ctr >= 0; ctr -= MANUAL_FADE_STEPSIZE) {
         lamp_brightness = ctr;
         set_led_pattern();
         delay(fade_delay);
@@ -99,11 +115,12 @@ void up(uint16_t fade_delay)
 {
     LED_ON;
 
-    if (lamp_brightness < (LAMP_BRIGHTNESS_MAX - MANUAL_FADE_STEPSIZE)) {
+    if (lamp_brightness <= (LAMP_BRIGHTNESS_MAX - MANUAL_FADE_STEPSIZE)) {
         lamp_brightness = lamp_brightness + MANUAL_FADE_STEPSIZE;
-    } else {
-        lamp_brightness = LAMP_BRIGHTNESS_MAX;
     }
+    //} else {
+    //    lamp_brightness = LAMP_BRIGHTNESS_MAX;
+    //}
 
     set_led_pattern();
 
@@ -114,11 +131,12 @@ void down(uint16_t fade_delay)
 {
     LED_OFF;
 
-    if (lamp_brightness > (0 + MANUAL_FADE_STEPSIZE)) {
+    if (lamp_brightness >= (0 + MANUAL_FADE_STEPSIZE)) {
         lamp_brightness = lamp_brightness - MANUAL_FADE_STEPSIZE;
-    } else {
-        lamp_brightness = 0;
     }
+    //} else {
+    //    lamp_brightness = 0;
+    //}
 
     set_led_pattern();
 
@@ -126,17 +144,19 @@ void down(uint16_t fade_delay)
 }
 
 static void set_led_pattern(void) {
-    led_brightness[3] = ((lamp_brightness / 63) > 0) ? 63 : (lamp_brightness % 63);
-    led_brightness[4] = led_brightness[3];
+    // only write to the write buffer
+    led_brightness_write[3] = ((lamp_brightness / 63) > 0) ? 63 : (lamp_brightness % 63);
+    led_brightness_write[4] = led_brightness_write[3];
 
-    led_brightness[2] = ((lamp_brightness / 127) > 0) ? 63 : ( ((lamp_brightness / 63) > 0) ? (lamp_brightness % 63) : 0 );
-    led_brightness[5] = led_brightness[2];
+    led_brightness_write[2] = ((lamp_brightness / 127) > 0) ? 63 : ( ((lamp_brightness / 63) > 0) ? (lamp_brightness % 63) : 0 );
+    led_brightness_write[5] = led_brightness_write[2];
 
-    led_brightness[1] = ((lamp_brightness / 191) > 0) ? 63 : ( ((lamp_brightness / 127) > 0) ? (lamp_brightness % 63) : 0 );
-    led_brightness[6] = led_brightness[1];
+    led_brightness_write[1] = ((lamp_brightness / 191) > 0) ? 63 : ( ((lamp_brightness / 127) > 0) ? (lamp_brightness % 63) : 0 );
+    led_brightness_write[6] = led_brightness_write[1];
 
-    led_brightness[0] = ((lamp_brightness / 255) > 0) ? 63 : ( ((lamp_brightness / 191) > 0) ? (lamp_brightness % 63) : 0 );
-    led_brightness[7] = led_brightness[0];
+    led_brightness_write[0] = ((lamp_brightness / 255) > 0) ? 63 : ( ((lamp_brightness / 191) > 0) ? (lamp_brightness % 63) : 0 );
+    led_brightness_write[7] = led_brightness_write[0];
+    flip_buffers();
 }
 
 uint16_t get_brightness(void)

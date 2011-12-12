@@ -12,8 +12,8 @@
 #define MANUAL_UP_DELAY         128U // slow ( better for the eyes in the morning ;-) )
 #define MANUAL_DOWN_DELAY       128U
 #define MANUAL_FADE_STEPSIZE    4U
-#define BCM_BIT_DEPTH 6
-#define LAMP_BRIGHTNESS_MAX 255 // ( 2^(BCM_BIT_DEPTH + 2) - 1 )
+#define BCM_BIT_DEPTH 6U
+#define LAMP_BRIGHTNESS_MAX 251U // ( 2^(BCM_BIT_DEPTH + 2) - 1 )
 
 void led_driver_setup(void);
 void fade_in(uint16_t start_at, uint16_t fade_delay);
@@ -21,5 +21,6 @@ void fade_out(uint16_t start_at, uint16_t fade_delay);
 void up(uint16_t fade_delay);
 void down(uint16_t fade_delay);
 uint16_t get_brightness(void);
+void flip_buffers(void);
 
 #endif
