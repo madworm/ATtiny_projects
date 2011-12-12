@@ -183,7 +183,10 @@ void uart_half_duplex_test(void)
 {
     // test with RXI wired to TXO
 
-    OCR1A = OCR1A_MAX - 10;
+    // disable COMPA isr !
+    TIMSK &= ~_BV(OCIE1A);
+
+    DISPLAY_ON;
 
     uart_send_pgm_string(PSTR("Hello World from an ATtiny2313!\r\n"));
     //delay(100); // depending on the delay, the tx_buffer will show up more or less full/empty

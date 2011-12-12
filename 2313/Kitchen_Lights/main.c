@@ -110,11 +110,11 @@ void setup_hw(void)
 
     /*
      *
-
       now configure the pins we actually need
      */
 
     DDRD |= _BV(PD5); // make the S_LED pin an output
+    DDRB |= _BV(PB3); // output enable pin should be an output as well
 
     /*
      * getting ready
@@ -128,8 +128,6 @@ void setup_hw(void)
 
     sei(); // turn global irq flag on
 
-    spi_transfer(0xFF); // all channels on
-    LATCH;
     led_driver_setup();
 
     status_leds_test(); // needs the system_ticker to run and sei() as well !
