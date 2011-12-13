@@ -13,6 +13,8 @@
 #include "led_driver.h"
 #include "main.h"
 
+//#define USE_SOFT_UART
+
 int main(void)
 {
     setup_hw();
@@ -31,6 +33,7 @@ int main(void)
 
 void kitchen_lights(uint8_t channel)
 {
+    #ifdef USE_SOFT_UART
     uint8_t rx_byte;
 
     if ( soft_uart_peek() ) {
@@ -65,6 +68,7 @@ void kitchen_lights(uint8_t channel)
             soft_uart_send('\r');
         */
     }
+    #endif
 
     SWITCHES_STATE_t switches_state = adc_read_state(1);
 
@@ -75,12 +79,14 @@ void kitchen_lights(uint8_t channel)
     case SW_LEFT_PRESSED:
         eval_switch_state(SW_LEFT_PRESSED,LJ_MANUAL_DOWN,LJ_FADE_OUT);
         break;
+    #ifdef USE_SOFT_UART
     case SW_RIGHT_MIDDLE_PRESSED:
         eval_switch_state(SW_RIGHT_MIDDLE_PRESSED,LJ_SEND_REMOTE_UP,LJ_SEND_REMOTE_FADE_IN);
         break;
     case SW_LEFT_MIDDLE_PRESSED:
         eval_switch_state(SW_LEFT_MIDDLE_PRESSED,LJ_SEND_REMOTE_DOWN,LJ_SEND_REMOTE_FADE_OUT);
         break;
+    #endif
     default:
         // SW_ALL_OPEN
         break;
@@ -157,7 +163,9 @@ void setup_hw(void)
      */
     system_ticker_setup();
     led_driver_setup(); // disable for adc_test()
+    #ifdef USE_SOFT_UART
     soft_uart_setup();
+    #endif
 
     sei(); // turn global irq flag on
     signal_reset(); // needs the system_ticker to run and sei() as well !
@@ -178,6 +186,7 @@ void process_lamp_job(LAMP_JOB_t job)
     case LJ_FADE_OUT:
         fade_out(get_brightness(),AUTO_FADE_OUT_DELAY);
         break;
+    #ifdef USE_SOFT_UART
     case LJ_SEND_REMOTE_UP:
         soft_uart_send('+');
         break;
@@ -202,6 +211,7 @@ void process_lamp_job(LAMP_JOB_t job)
     case LJ_RECVD_REMOTE_FADE_OUT:
         fade_out(get_brightness(),AUTO_FADE_OUT_DELAY);
         break;
+    #endif
     default:
         // LJ_NOP
         break;

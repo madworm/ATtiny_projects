@@ -130,6 +130,8 @@ void down(uint16_t fade_delay)
 
 static void set_led_pattern(void)
 {
+    uint8_t ctr;
+#ifdef PATTERN_A
     if( (lamp_brightness >=0) && (lamp_brightness <=63) ) {
         led_brightness[3] = lamp_brightness;
         led_brightness[2] = 0;
@@ -157,11 +159,79 @@ static void set_led_pattern(void)
         led_brightness[1] = 63;
         led_brightness[0] = lamp_brightness - 192;
     }
-
     led_brightness[4] = led_brightness[3];
     led_brightness[5] = led_brightness[2];
     led_brightness[6] = led_brightness[1];
     led_brightness[7] = led_brightness[0];
+#endif
+
+#ifdef PATTERN_B
+    if( (lamp_brightness >=0) && (lamp_brightness <=63) ) {
+        led_brightness[0] = lamp_brightness;
+        for(ctr=1; ctr<=7; ctr++) {
+            led_brightness[ctr] = 0;
+        }
+    }
+
+    if( (lamp_brightness >=64) && (lamp_brightness <=127) ) {
+        led_brightness[0] = 63;
+        led_brightness[1] = lamp_brightness - 64;
+        for(ctr=2; ctr<=7; ctr++) {
+            led_brightness[ctr] = 0;
+        }
+    }
+
+    if( (lamp_brightness >=128) && (lamp_brightness <=191) ) {
+        for(ctr=0; ctr<=1; ctr++) {
+            led_brightness[ctr] = 63;
+        }
+        led_brightness[2] = lamp_brightness - 64;
+        for(ctr=3; ctr<=7; ctr++) {
+            led_brightness[ctr] = 0;
+        }
+    }
+
+    if( (lamp_brightness >=192) && (lamp_brightness <=255) ) {
+        for(ctr=0; ctr<=2; ctr++) {
+            led_brightness[ctr] = 63;
+        }
+        led_brightness[3] = lamp_brightness - 64;
+        for(ctr=4; ctr<=7; ctr++) {
+            led_brightness[ctr] = 0;
+        }
+    }
+    if( (lamp_brightness >=256) && (lamp_brightness <=319) ) {
+        for(ctr=0; ctr<=3; ctr++) {
+            led_brightness[ctr] = 63;
+        }
+        led_brightness[4] = lamp_brightness - 64;
+        for(ctr=5; ctr<=7; ctr++) {
+            led_brightness[ctr] = 0;
+        }
+    }
+    if( (lamp_brightness >=320) && (lamp_brightness <=383) ) {
+        for(ctr=0; ctr<=4; ctr++) {
+            led_brightness[ctr] = 63;
+        }
+        led_brightness[5] = lamp_brightness - 64;
+        for(ctr=6; ctr<=7; ctr++) {
+            led_brightness[ctr] = 0;
+        }
+    }
+    if( (lamp_brightness >=384) && (lamp_brightness <=447) ) {
+        for(ctr=0; ctr<=5; ctr++) {
+            led_brightness[ctr] = 63;
+        }
+        led_brightness[6] = lamp_brightness - 64;
+        led_brightness[7] = 0;
+    }
+    if( (lamp_brightness >=448) && (lamp_brightness <=511) ) {
+        for(ctr=0; ctr<=6; ctr++) {
+            led_brightness[ctr] = 63;
+        }
+        led_brightness[7] = lamp_brightness - 64;
+    }
+#endif
 }
 
 uint16_t get_brightness(void)
