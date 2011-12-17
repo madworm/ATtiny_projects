@@ -130,7 +130,6 @@ void down(uint16_t fade_delay)
 
 static void set_led_pattern(void)
 {
-    uint8_t ctr;
 #ifdef PATTERN_A
     if( (lamp_brightness >=0) && (lamp_brightness <=63) ) {
         led_brightness[3] = lamp_brightness;
@@ -166,6 +165,7 @@ static void set_led_pattern(void)
 #endif
 
 #ifdef PATTERN_B
+    uint8_t ctr;
     if( (lamp_brightness >=0) && (lamp_brightness <=63) ) {
         led_brightness[0] = lamp_brightness;
         for(ctr=1; ctr<=7; ctr++) {
