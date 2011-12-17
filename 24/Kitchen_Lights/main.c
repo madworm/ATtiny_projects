@@ -13,7 +13,7 @@
 #include "led_driver.h"
 #include "main.h"
 
-//#define USE_SOFT_UART
+#define USE_SOFT_UART
 
 int main(void)
 {

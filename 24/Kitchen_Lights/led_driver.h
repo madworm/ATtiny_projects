@@ -7,14 +7,14 @@
 #define DISPLAY_ON PORTB &= ~_BV(PB0)
 #define DISPLAY_OFF PORTB |= _BV(PB0)
 
-#define AUTO_FADE_IN_DELAY      32U
-#define AUTO_FADE_OUT_DELAY     256U
+#define AUTO_FADE_IN_DELAY      16U
+#define AUTO_FADE_OUT_DELAY     16U
 #define MANUAL_UP_DELAY         128U // slow ( better for the eyes in the morning ;-) )
 #define MANUAL_DOWN_DELAY       128U
 #define MANUAL_FADE_STEPSIZE    4U
 #define BCM_BIT_DEPTH 6U
 
-#define PATTERN_B
+#define PATTERN_A
 
 #ifdef PATTERN_A
 #define LAMP_BRIGHTNESS_MAX 255U // ( 2^(BCM_BIT_DEPTH + 2) - 1 )
