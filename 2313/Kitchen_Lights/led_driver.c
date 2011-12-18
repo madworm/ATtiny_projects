@@ -160,3 +160,18 @@ uint16_t get_brightness(void)
 {
     return lamp_brightness;
 }
+
+uint16_t flash_channel(uint8_t channel, uint8_t times, uint16_t flash_delay)
+{
+    uint8_t tmp = led_brightness[channel];
+    uint8_t ctr;
+    for(ctr=0; ctr < times; ctr++) {
+        led_brightness[channel] = 0;
+        delay(flash_delay);
+        led_brightness[channel] = 8;
+        delay(flash_delay);
+    }
+    led_brightness[channel] = tmp;
+
+    return (2*times*flash_delay);
+}
