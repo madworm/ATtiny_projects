@@ -182,8 +182,15 @@ void eval_switch_state(SWITCHES_STATE_t state, LAMP_JOB_t first_job, LAMP_JOB_t 
 {
     uint16_t start_time = time();
     uint16_t elapsed_time = 0;
+    uint8_t already_flashed = 0;
+
     while ( button_read_state() == state ) {
         elapsed_time = time() - start_time;
+
+        if ( (elapsed_time > 1500) && (already_flashed == 0) ) {
+            start_time += flash_status_led(5,500);
+            already_flashed = 1;
+        }
 
         if ( elapsed_time > 3000 ) {
             // long press

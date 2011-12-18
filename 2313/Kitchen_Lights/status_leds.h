@@ -35,5 +35,6 @@
 #define TX_LED_TOGGLE       PORTD ^= _BV(PD6)
 
 void status_leds_test(void);
+uint16_t flash_status_led(uint8_t times, uint16_t flash_delay);
 
 #endif

@@ -20,6 +20,7 @@
 #define TCCR0B_val ( _BV(CS01) )
 
 volatile uint16_t system_ticks = 0;
+extern uint8_t led_test; // led_test lives in 'status_leds.c'
 
 void system_ticker_setup(void)
 {
@@ -35,7 +36,7 @@ ISR(TIMER0_OVF_vect) // on attiny2313/4313 this is named TIMER0_OVF_vect
     if( (PORTD & _BV(PD6)) || (PORTB & _BV(PB2)) ) { // RX or TX LED is on
         loop++;
     }
-    if(loop == 32) {
+    if( (loop == 32) && (led_test == 0) ) {
         TX_LED_OFF;
         RX_LED_OFF;
         loop = 0;
