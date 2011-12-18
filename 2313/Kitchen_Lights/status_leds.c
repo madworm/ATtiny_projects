@@ -5,20 +5,19 @@
 
 void status_leds_test(void)
 {
-    uint8_t ctr;
-    for(ctr = 0; ctr < 5; ctr++) {
-        RX_LED_BLINK;
-        TX_LED_BLINK;
-    }
+        RX_LED_ON;
+        TX_LED_ON;
+        LEFT_LED_ON;
+        MID_LED_ON;
+        RIGHT_LED_ON;
+        S_LED_ON;
 
-    for(ctr = 0; ctr < 5; ctr++) {
-        LEFT_LED_BLINK;
-        MID_LED_BLINK;
-        RIGHT_LED_BLINK;
-    }
+        delay(4000);
 
-    for(ctr = 0; ctr < 5; ctr++) {
-        S_LED_BLINK;
-    }
-
+        RX_LED_OFF;
+        TX_LED_OFF;
+        LEFT_LED_OFF;
+        MID_LED_OFF;
+        RIGHT_LED_OFF;
+        S_LED_OFF;
 }
