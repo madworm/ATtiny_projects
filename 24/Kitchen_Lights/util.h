@@ -16,5 +16,6 @@
 #define RX_FLAG_OFF PORTB &= ~_BV(PB2)
 
 void signal_reset(void);
+uint16_t flash_status_led(uint8_t times, uint16_t flash_delay);
 
 #endif
