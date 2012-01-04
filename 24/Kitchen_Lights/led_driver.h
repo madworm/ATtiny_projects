@@ -31,5 +31,6 @@ void fade_out(uint16_t start_at, uint16_t fade_delay);
 void up(uint16_t fade_delay);
 void down(uint16_t fade_delay);
 uint16_t get_brightness(void);
+uint16_t flash_channel(uint8_t channel, uint8_t times, uint16_t flash_delay);
 
 #endif

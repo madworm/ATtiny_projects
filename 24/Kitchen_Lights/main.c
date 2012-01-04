@@ -222,15 +222,24 @@ void eval_switch_state(SWITCHES_STATE_t state, LAMP_JOB_t first_job, LAMP_JOB_t 
 {
     uint16_t start_time = time();
     uint16_t elapsed_time = 0;
+    #ifdef PATTERN_A
     uint8_t already_flashed = 0;
+    #endif
 
     while ( adc_read_state(1) == state ) {
         elapsed_time = time() - start_time;
 
+        #ifdef PATTERN_A
         if ( (elapsed_time > 1500) && (already_flashed == 0) ) {
-            start_time += flash_status_led(5,500);
+            //start_time += flash_status_led(5,500);
+            start_time += flash_channel(0,5,500);
             already_flashed = 1;
         }
+        #endif
+
+        #ifdef PATTERN_B
+            // not enough FLASH to use the above
+        #endif
 
         if ( elapsed_time > 3000 ) {
             // long press

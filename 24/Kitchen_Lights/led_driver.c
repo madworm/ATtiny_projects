@@ -185,7 +185,7 @@ static void set_led_pattern(void)
         for(ctr=0; ctr<=1; ctr++) {
             led_brightness[ctr] = 63;
         }
-        led_brightness[2] = lamp_brightness - 64;
+        led_brightness[2] = lamp_brightness - 128;
         for(ctr=3; ctr<=7; ctr++) {
             led_brightness[ctr] = 0;
         }
@@ -195,7 +195,7 @@ static void set_led_pattern(void)
         for(ctr=0; ctr<=2; ctr++) {
             led_brightness[ctr] = 63;
         }
-        led_brightness[3] = lamp_brightness - 64;
+        led_brightness[3] = lamp_brightness - 192;
         for(ctr=4; ctr<=7; ctr++) {
             led_brightness[ctr] = 0;
         }
@@ -204,7 +204,7 @@ static void set_led_pattern(void)
         for(ctr=0; ctr<=3; ctr++) {
             led_brightness[ctr] = 63;
         }
-        led_brightness[4] = lamp_brightness - 64;
+        led_brightness[4] = lamp_brightness - 256;
         for(ctr=5; ctr<=7; ctr++) {
             led_brightness[ctr] = 0;
         }
@@ -213,7 +213,7 @@ static void set_led_pattern(void)
         for(ctr=0; ctr<=4; ctr++) {
             led_brightness[ctr] = 63;
         }
-        led_brightness[5] = lamp_brightness - 64;
+        led_brightness[5] = lamp_brightness - 320;
         for(ctr=6; ctr<=7; ctr++) {
             led_brightness[ctr] = 0;
         }
@@ -222,14 +222,14 @@ static void set_led_pattern(void)
         for(ctr=0; ctr<=5; ctr++) {
             led_brightness[ctr] = 63;
         }
-        led_brightness[6] = lamp_brightness - 64;
+        led_brightness[6] = lamp_brightness - 384;
         led_brightness[7] = 0;
     }
     if( (lamp_brightness >=448) && (lamp_brightness <=511) ) {
         for(ctr=0; ctr<=6; ctr++) {
             led_brightness[ctr] = 63;
         }
-        led_brightness[7] = lamp_brightness - 64;
+        led_brightness[7] = lamp_brightness - 448;
     }
 #endif
 }
@@ -237,4 +237,19 @@ static void set_led_pattern(void)
 uint16_t get_brightness(void)
 {
     return lamp_brightness;
+}
+
+uint16_t flash_channel(uint8_t channel, uint8_t times, uint16_t flash_delay)
+{
+    uint8_t tmp = led_brightness[channel];
+    uint8_t ctr;
+    for(ctr=0; ctr < times; ctr++) {
+        led_brightness[channel] = 0;
+        delay(flash_delay);
+        led_brightness[channel] = 63;
+        delay(flash_delay);
+    }
+    led_brightness[channel] = tmp;
+
+    return (2*times*flash_delay);
 }
