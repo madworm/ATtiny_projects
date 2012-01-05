@@ -10,7 +10,6 @@
 uint16_t lamp_brightness = 0; // variable is mapped down to individual channels
 uint8_t led_brightness[8] = {0,0,0,0,0,0,0,0};
 
-
 static void set_led_pattern(void);
 
 void led_driver_setup(void)

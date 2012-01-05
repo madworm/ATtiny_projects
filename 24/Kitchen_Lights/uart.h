@@ -6,13 +6,16 @@
 #define FULL_BIT_DELAY          96 // with my newly acquired OLS from Dangerous Prototypes ;-)
 #define THREE_HALFS_BIT_DELAY   136
 
-#define ENABLE_PCINT0_VECT  GIMSK |= _BV(PCIE0);
-#define DISABLE_PCINT0_VECT GIMSK &= ~_BV(PCIE0);
-#define CLEAR_PCINT0_FLAG   GIFR |= _BV(PCIF0);
+#define ENABLE_PCINT0_VECT  GIMSK |= _BV(PCIE0)
+#define DISABLE_PCINT0_VECT GIMSK &= ~_BV(PCIE0)
+#define CLEAR_PCINT0_FLAG   GIFR |= _BV(PCIF0)
 
 #define ENABLE_TIM0_COMPA_VECT  TIMSK0 |= _BV(OCIE0A)
 #define DISABLE_TIM0_COMPA_VECT TIMSK0 &= ~_BV(OCIE0A)
-#define CLEAR_TIM0_COMPA_FLAG   TIFR0 = _BV(OCF0A); // clear the flag by writing a 1 (see datasheet);
+#define CLEAR_TIM0_COMPA_FLAG   TIFR0 = _BV(OCF0A) // clear the flag by writing a 1 (see datasheet);
+
+#define ENABLE_TIM1_COMPA_VECT  TIMSK1 |= _BV(OCIE1A)
+#define DISABLE_TIM1_COMPA_VECT TIMSK1 &= ~_BV(OCIE1A)
 
 // only for RX_FLAG debugging, as on same pin as the status led
 // #define TOGGLE_LED
