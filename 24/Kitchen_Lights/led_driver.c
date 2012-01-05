@@ -29,7 +29,7 @@ void led_driver_setup(void)
     TIMSK1 |= _BV(OCIE1A);
 }
 
-ISR(TIM1_COMPA_vect) // on attiny2313/4313 this is named TIMER1_COMPA_vect
+ISR(TIM1_COMPA_vect,ISR_NOBLOCK) // on attiny2313/4313 this is named TIMER1_COMPA_vect
 {
     // for debugging only
     // PA2_ON;
