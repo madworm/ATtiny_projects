@@ -88,7 +88,7 @@ ISR(PCINT0_vect) // pin-change interrupt group 0
         OCR0A = TCNT0 + THREE_HALFS_BIT_DELAY; // TIM0_COMPA_vect should start in the middle in the first data-bit
         CLEAR_TIM0_COMPA_FLAG; // prevent premature execution
         ENABLE_TIM0_COMPA_VECT; // enable the bit sampling
-        DISABLE_TIM1_COMPA_VECT; // turn off the LED ISR so we can sample uninterrupted
+        // DISABLE_TIM1_COMPA_VECT; // turn off the LED ISR so we can sample uninterrupted
     } else {
         // didn't get a start-bit, re-enable
         CLEAR_PCINT0_FLAG;
@@ -124,7 +124,7 @@ ISR(TIM0_COMPA_vect)
         }
         CLEAR_PCINT0_FLAG;  // prevent premature execution
         ENABLE_PCINT0_VECT; // turn the receiver back on
-        ENABLE_TIM1_COMPA_VECT; // receiving done, enable LED ISR
+        // ENABLE_TIM1_COMPA_VECT; // receiving done, enable LED ISR
     }
     // only for debugging
     // PA7_OFF;
