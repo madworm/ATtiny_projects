@@ -72,6 +72,11 @@ void kitchen_lights(uint8_t channel)
 
     SWITCHES_STATE_t switches_state = adc_read_state(1);
 
+    if( my_mcusr & _BV(PORF) ) { // automatically fade in to full brightness
+        my_mcusr = 0;            // if the lamp is supplied with power
+        process_lamp_job(LJ_FADE_IN);
+    }
+
     switch(switches_state) {
     case SW_RIGHT_PRESSED:
         eval_switch_state(SW_RIGHT_PRESSED,LJ_MANUAL_UP,LJ_FADE_IN);
@@ -254,4 +259,10 @@ void eval_switch_state(SWITCHES_STATE_t state, LAMP_JOB_t first_job, LAMP_JOB_t 
         // short press
         process_lamp_job(first_job);
     }
+}
+
+void read_mcusr(void)
+{
+    my_mcusr = MCUSR;
+    MCUSR = 0;
 }
