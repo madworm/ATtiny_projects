@@ -1,7 +1,7 @@
 #include <avr/interrupt.h>
 #include <util/atomic.h>
 #include <stdint.h>
-#include "system_ticker.h"
+#include "system_ticker.hpp"
 
 void system_ticker_setup(void)
 {
@@ -66,9 +66,10 @@ ISR(TIMER0_OVF_vect)
 uint32_t millis(void)
 {
     uint32_t m;
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    uint8_t _sreg = SREG;
+    cli();
         m = timer0_millis;
-    }
+    SREG = _sreg;
     return m;
 }
 
@@ -76,7 +77,8 @@ uint32_t micros(void)
 {
     uint32_t m;
     uint8_t t;
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+    uint8_t _sreg = SREG;
+    cli();
         m = timer0_overflow_count;
         t = TCNT0;
 #ifdef TIFR0
@@ -89,7 +91,7 @@ uint32_t micros(void)
             m++;
         }
 #endif
-    }
+    SREG = _sreg;
     #if F_CPU == 16000000UL
     return (((m << 8) + t) * 4);
     #endif

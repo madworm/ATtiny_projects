@@ -7,9 +7,11 @@
 #define FULL_BIT_DELAY         23 // with my newly acquired OLS from Dangerous Prototypes ;-)
 #define THREE_HALFS_BIT_DELAY  35
 
-void soft_uart_send(uint8_t byte);
-void soft_uart_send_byte_number(uint8_t number);
-void soft_uart_send_uint_number(uint16_t number);
-void soft_uart_send_PSTR(const char * string);
+void soft_uart_write(uint8_t byte);
+void soft_uart_send(uint8_t number);
+void soft_uart_send(int8_t number);
+void soft_uart_send(uint16_t number);
+void soft_uart_send(int16_t number);
+void soft_uart_send(const char * string);
 
 #endif

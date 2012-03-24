@@ -25,9 +25,8 @@
 			<Add option="-Os" />
 			<Add option="-Wmain" />
 			<Add option="-Wall" />
-			<Add option="-ansi" />
 			<Add option="-g" />
-			<Add option="-gdwarf-2 -std=gnu99 -funsigned-bitfields -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -fno-exceptions -Wstrict-prototypes" />
+			<Add option="-gdwarf-2 -funsigned-bitfields -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -fno-exceptions" />
 			<Add option="-DF_CPU=8000000UL" />
 		</Compiler>
 		<Linker>
@@ -46,22 +45,14 @@
 			<Mode after="always" />
 		</ExtraCommands>
 		<Unit filename="IR_codes.h" />
-		<Unit filename="IR_receiver.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="IR_receiver.h" />
-		<Unit filename="main.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="main.h" />
-		<Unit filename="system_ticker.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="system_ticker.h" />
-		<Unit filename="uart.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="uart.h" />
+		<Unit filename="IR_receiver.cpp" />
+		<Unit filename="IR_receiver.hpp" />
+		<Unit filename="main.cpp" />
+		<Unit filename="main.hpp" />
+		<Unit filename="system_ticker.cpp" />
+		<Unit filename="system_ticker.hpp" />
+		<Unit filename="uart.cpp" />
+		<Unit filename="uart.hpp" />
 		<Extensions>
 			<DoxyBlocks>
 				<comment_style block="0" line="0" />

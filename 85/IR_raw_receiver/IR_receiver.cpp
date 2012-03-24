@@ -4,10 +4,13 @@
 #include <util/atomic.h>
 #include <avr/pgmspace.h>
 #include <stdint.h>
-#include "uart.h"
+#include "system_ticker.hpp"
+#include "uart.hpp"
+#include "IR_receiver.hpp"
+
+extern "C" {
 #include "IR_codes.h"
-#include "IR_receiver.h"
-#include "system_ticker.h"
+}
 
 //#define DEBUG
 #define TRANSLATE_REPEAT_CODE	// instead of outputting 'repeat code' output the previously recognized IR code
@@ -73,98 +76,105 @@ void __attribute__ ((noinline)) zero_pulses(volatile uint16_t * array)
 
 void flip_buffers(void)
 {
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        volatile uint16_t *tmp;
-        tmp = pulses_read_from;
-        pulses_read_from = pulses_write_to;
-        pulses_write_to = tmp;
-    }
+    uint8_t _sreg = SREG;
+    cli();
+    volatile uint16_t *tmp;
+    tmp = pulses_read_from;
+    pulses_read_from = pulses_write_to;
+    pulses_write_to = tmp;
+    SREG = _sreg;
 }
 
 uint8_t IR_available(void)
 {
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        if (last_IR_activity != 0
-            && ((micros() - last_IR_activity) > MAXPULSE)) {
-            flip_buffers();
-            last_IR_activity = 0;
-            return 1;
-        }
+    uint8_t _sreg = SREG;
+    cli();
+    if (last_IR_activity != 0
+        && ((micros() - last_IR_activity) > MAXPULSE)) {
+        flip_buffers();
+        last_IR_activity = 0;
+        SREG = _sreg;
+        return 1;
     }
+    SREG = _sreg;
     return 0;
 }
 
 IR_code_t eval_IR_code(void)
 {
-	uint8_t ctr1;
-	uint8_t ctr2;
+    uint8_t ctr1;
+    uint8_t ctr2;
 #ifdef TRANSLATE_REPEAT_CODE
-	static IR_code_t prev_IR_code = NOT_SURE_YET;
+    static IR_code_t prev_IR_code = NOT_SURE_YET;
 #endif
-	IR_code_t IR_code;
-	for (ctr2 = 0; ctr2 < NUMBER_OF_IR_CODES; ctr2++) {
+    IR_code_t IR_code;
+    for (ctr2 = 0; ctr2 < NUMBER_OF_IR_CODES; ctr2++) {
 #ifdef DEBUG
-		soft_uart_send_PSTR(PSTR("\r\nChecking against array element #: "));
-		soft_uart_send_byte_number(ctr2);
-		soft_uart_send_PSTR(PSTR("\r\n"));
+        soft_uart_send(PSTR("\r\nChecking against array element #: "));
+        soft_uart_send(ctr2);
+        soft_uart_send(PSTR("\r\n"));
 #endif
-		IR_code = NOT_SURE_YET;
+        IR_code = NOT_SURE_YET;
 
-		for (ctr1 = 0; ctr1 < NUMPULSES - 6; ctr1++) {
-			int16_t measured = (int16_t) (pulses_read_from[ctr1]);
-			int16_t reference = (int16_t) pgm_read_word(&IRsignals[ctr2][ctr1]);
-			uint16_t delta = (uint16_t) abs(measured - reference);
-			uint16_t delta_repeat = (uint16_t) abs(measured - REPEAT_CODE_PAUSE);
+        for (ctr1 = 0; ctr1 < NUMPULSES - 6; ctr1++) {
+            int16_t measured = (int16_t) (pulses_read_from[ctr1]);
+            int16_t reference = (int16_t) pgm_read_word(&IRsignals[ctr2][ctr1]);
+            uint16_t delta = (uint16_t) abs(measured - reference);
+            uint16_t delta_repeat = (uint16_t) abs(measured - REPEAT_CODE_PAUSE);
 #ifdef DEBUG
-			soft_uart_send_PSTR(PSTR("measured: "));
-			soft_uart_send_uint_number(measured);
-			soft_uart_send_PSTR(PSTR(" - reference: "));
-			soft_uart_send_uint_number(reference);
-			soft_uart_send_PSTR(PSTR(" - delta: "));
-			soft_uart_send_uint_number(delta);
-			soft_uart_send_PSTR(PSTR(" - delta_rpt_code: "));
-			soft_uart_send_uint_number(delta_repeat);
+            soft_uart_send(PSTR("measured: "));
+            soft_uart_send(measured);
+            soft_uart_send(PSTR(" - reference: "));
+            soft_uart_send(reference);
+            soft_uart_send(PSTR(" - delta: "));
+            soft_uart_send(delta);
+            soft_uart_send(PSTR(" - delta_rpt_code: "));
+            soft_uart_send(delta_repeat);
 #endif
-			if (delta > (reference * FUZZINESS / 100)) {
-				if (delta_repeat <
-				    REPEAT_CODE_PAUSE * FUZZINESS / 100) {
+            if (delta > (reference * FUZZINESS / 100)) {
+                if (delta_repeat <
+                    REPEAT_CODE_PAUSE * FUZZINESS / 100) {
 #ifdef DEBUG
-					soft_uart_send_PSTR(PSTR(" - repeat code (ok)"));
+                    soft_uart_send(PSTR(" - repeat code (ok)"));
 #endif
-					IR_code = REPEAT_CODE;
-					break;
-				}
+                    IR_code = REPEAT_CODE;
+                    break;
+                }
 #ifdef DEBUG
-				soft_uart_send_PSTR(PSTR(" - (x)\r\n"));
+                soft_uart_send(PSTR(" - (x)\r\n"));
 #endif
-				IR_code = MISMATCH;
-				break;
-			} else {
+                IR_code = MISMATCH;
+                break;
+            } else {
 #ifdef DEBUG
-				soft_uart_send_PSTR(PSTR(" - (ok)\r\n"));
+                soft_uart_send(PSTR(" - (ok)\r\n"));
 #endif
-			}
-		}
-		if (IR_code == REPEAT_CODE) {
+            }
+        }
+        if (IR_code == REPEAT_CODE) {
 #ifdef TRANSLATE_REPEAT_CODE
-			IR_code = prev_IR_code;
+            IR_code = prev_IR_code;
 #endif
-			break;
-		}
-		if (IR_code == NOT_SURE_YET) {
-			IR_code = (IR_code_t) (ctr2);
-			break;
-		}
-	}
+            break;
+        }
+        if (IR_code == NOT_SURE_YET) {
+            IR_code = (IR_code_t) (ctr2);
+            break;
+        }
+    }
 #ifdef TRANSLATE_REPEAT_CODE
-	prev_IR_code = IR_code;
+    prev_IR_code = IR_code;
 #endif
-	zero_pulses(pulses_read_from);
-	return IR_code;
+    zero_pulses(pulses_read_from);
+    return IR_code;
 }
 
 ISR(PCINT0_vect)
 {
+    #ifdef __AVR_ATmega168__
+    PORTB ^= _BV(PB5);
+    #endif
+
     static uint8_t pulse_counter = 0;
     static uint32_t last_run = 0;
     uint32_t now = micros();
