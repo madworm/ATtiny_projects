@@ -23,7 +23,6 @@
 #define REPEAT_CODE_PAUSE 250	// this has to be signed !
 #define NUMPULSES 72U
 #define FUZZINESS 20U
-#define FACTOR 2
 
 #define	vol_down { \
 	 882, 438,\

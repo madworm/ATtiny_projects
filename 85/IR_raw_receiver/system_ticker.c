@@ -3,8 +3,6 @@
 #include <stdint.h>
 #include "system_ticker.h"
 
-volatile uint32_t system_ticks = 0;
-
 void system_ticker_setup(void)
 {
     // using timer0
