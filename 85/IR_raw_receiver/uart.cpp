@@ -16,6 +16,14 @@
 #define UART_PIN PB0
 #endif
 
+void soft_uart_init(void) {
+    UART_DIR |= _BV(UART_PIN); // make it an output
+    UART_PORT |= _BV(UART_PIN);  // pull it high
+    _delay_ms(500);
+    UART_DIR &= ~_BV(UART_PIN);  // make it an input again
+    UART_PORT &= ~_BV(UART_PIN); // pull-up off
+}
+
 void soft_uart_write(uint8_t byte)
 {
     uint8_t ctr;

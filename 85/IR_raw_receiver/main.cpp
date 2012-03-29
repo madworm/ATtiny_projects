@@ -62,6 +62,7 @@ void setup_hw(void)
     system_ticker_setup();
     sei(); // turn global irq flag on
     init_IR();
+    soft_uart_init();
 }
 
 void read_mcusr(void)
