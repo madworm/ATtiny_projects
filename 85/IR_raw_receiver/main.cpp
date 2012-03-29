@@ -22,25 +22,29 @@ int main(void)
         if ( IR_available() ) {
             switch(eval_IR_code()) {
             case VOL_UP:
-                soft_uart_send(PSTR("volume up\r\n"));
+                soft_uart_send(PSTR("+"));
+                //soft_uart_send(PSTR("volume up\r\n"));
                 break;
             case VOL_DOWN:
-                soft_uart_send(PSTR("volume down\r\n"));
+                soft_uart_send(PSTR("-"));
+                //soft_uart_send(PSTR("volume down\r\n"));
                 break;
             case ARROW_UP:
-                soft_uart_send(PSTR("arrow up\r\n"));
+                soft_uart_send(PSTR("F"));
+                //soft_uart_send(PSTR("arrow up\r\n"));
                 break;
             case ARROW_DOWN:
-                soft_uart_send(PSTR("arrow down\r\n"));
+                soft_uart_send(PSTR("f"));
+                //soft_uart_send(PSTR("arrow down\r\n"));
                 break;
             case REPEAT_CODE:
-                soft_uart_send(PSTR("repeat code\r\n"));
+                //soft_uart_send(PSTR("repeat code\r\n"));
                 break;
             case MISMATCH:
-                soft_uart_send(PSTR("UNKNOWN / ERROR ARGH ARGH ARGH!\r\n"));
+                //soft_uart_send(PSTR("UNKNOWN / ERROR ARGH ARGH ARGH!\r\n"));
                 break;
             case NOT_SURE_YET:
-                soft_uart_send(PSTR("You should NEVER see this!\r\n"));
+                //soft_uart_send(PSTR("You should NEVER see this!\r\n"));
                 break;
             default:
                 break;

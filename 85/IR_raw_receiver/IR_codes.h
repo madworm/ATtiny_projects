@@ -22,7 +22,7 @@
 #define MINPULSE 5U
 #define REPEAT_CODE_PAUSE 250	// this has to be signed !
 #define NUMPULSES 72U
-#define FUZZINESS 20U
+#define FUZZINESS 35U // had to increase to 35 for the ATtiny85 + ext. resonator. 20 worked with the ATmega168 + crystal
 
 #define	vol_down { \
 	 882, 438,\
@@ -833,10 +833,10 @@
 #define NUMBER_OF_IR_CODES 4	// does not include the repeat-code, which I don't consider as a "full" code.
 
 const uint16_t PROGMEM IRsignals[NUMBER_OF_IR_CODES][72] = {
-	vol_down,
-	vol_up,
-	arrow_up,
-	arrow_down,
+    vol_down,
+    vol_up,
+    arrow_up,
+    arrow_down,
 };
 
 #endif
