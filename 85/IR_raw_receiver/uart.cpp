@@ -3,6 +3,8 @@
 #include <util/delay.h>
 #include <util/atomic.h>
 #include <stdint.h>
+
+#define BAUDSPEED 9600 // valid: 9600, 38400
 #include "uart.hpp"
 
 #ifdef __AVR_ATmega168__
