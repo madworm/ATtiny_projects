@@ -4,7 +4,7 @@
 #include <util/atomic.h>
 #include <stdint.h>
 
-#define BAUDSPEED 9600 // valid: 9600, 38400
+#define BAUDSPEED 10417 // valid: 9600, 38400 (must be tweaked if the receiver is not a real uart with accurate clock
 #include "uart.hpp"
 
 #ifdef __AVR_ATmega168__
@@ -18,12 +18,16 @@
 #define UART_PIN PB0
 #endif
 
-void soft_uart_init(void) {
+void soft_uart_init(void)
+{
     UART_DIR |= _BV(UART_PIN); // make it an output
-    UART_PORT |= _BV(UART_PIN);  // pull it high
+    UART_PORT |= _BV(UART_PIN);  // drive it high
     _delay_ms(500);
-    UART_DIR &= ~_BV(UART_PIN);  // make it an input again
-    UART_PORT &= ~_BV(UART_PIN); // pull-up off
+    UART_PORT &= ~_BV(UART_PIN);  // drive it low
+    _delay_ms(500);
+    UART_PORT |= _BV(UART_PIN);  // drive it high (serial: idle high!)
+    // using the pull-up is not good enough
+    // as there is an LED on the TX line
 }
 
 void soft_uart_write(uint8_t byte)
@@ -40,8 +44,7 @@ void soft_uart_write(uint8_t byte)
 
     uint8_t _sreg = SREG;
     cli();
-    UART_DIR |= _BV(UART_PIN); // make it an output
-    UART_PORT &= ~_BV(UART_PIN); // pull it low: start-bit
+    UART_PORT &= ~_BV(UART_PIN); // drive it low: start-bit
     _delay_us(FULL_BIT_DELAY);
     for(ctr=0; ctr<=7; ctr++) {
         if( (byte & _BV(ctr)) ) { // sent byte LSB first
@@ -51,8 +54,8 @@ void soft_uart_write(uint8_t byte)
         }
         _delay_us(FULL_BIT_DELAY);
     }
-    UART_PORT |= _BV(UART_PIN);  // pull it high: stop-bit
-    UART_DIR &= ~_BV(UART_PIN);  // make it an input again
+    UART_PORT |= _BV(UART_PIN);  // drive it high: stop-bit and later idle
+
     SREG = _sreg;
 
     _delay_us(10*FULL_BIT_DELAY); // don't flood the receiver
