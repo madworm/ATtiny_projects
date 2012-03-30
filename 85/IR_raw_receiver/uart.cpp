@@ -30,6 +30,7 @@ void soft_uart_write(uint8_t byte)
 
     uint8_t _sreg = SREG;
     cli();
+    UART_DIR |= _BV(UART_PIN); // make it an output
     UART_PORT &= ~_BV(UART_PIN); // drive it low: start-bit
     _delay_us(FULL_BIT_DELAY);
     for(ctr=0; ctr<=7; ctr++) {
