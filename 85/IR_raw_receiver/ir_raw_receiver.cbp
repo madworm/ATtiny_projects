@@ -53,6 +53,7 @@
 		<Unit filename="system_ticker.hpp" />
 		<Unit filename="uart.cpp" />
 		<Unit filename="uart.hpp" />
+		<Unit filename="util.hpp" />
 		<Extensions>
 			<DoxyBlocks>
 				<comment_style block="0" line="0" />

@@ -3,31 +3,17 @@
 #include <util/delay.h>
 #include <util/atomic.h>
 #include <stdint.h>
-
-#define BAUDSPEED 10417 // valid: 9600, 38400 (must be tweaked if the receiver is not a real uart with accurate clock
+#include "util.hpp"
 #include "uart.hpp"
-
-#ifdef __AVR_ATmega168__
-#define UART_PORT PORTD
-#define UART_DIR  DDRD
-#define UART_PIN PD1 // Arduino digital pin #1 (tx)
-#endif
-#ifdef __AVR_ATtiny85__
-#define UART_PORT PORTB
-#define UART_DIR  DDRB
-#define UART_PIN PB0
-#endif
 
 void soft_uart_init(void)
 {
-    UART_DIR |= _BV(UART_PIN); // make it an output
-    UART_PORT |= _BV(UART_PIN);  // drive it high
+    UART_DIR &= ~_BV(UART_PIN); // make it an input
+    UART_PORT |= _BV(UART_PIN); // pull-up on (idle)
+
+    LED_ON;
     _delay_ms(500);
-    UART_PORT &= ~_BV(UART_PIN);  // drive it low
-    _delay_ms(500);
-    UART_PORT |= _BV(UART_PIN);  // drive it high (serial: idle high!)
-    // using the pull-up is not good enough
-    // as there is an LED on the TX line
+    LED_OFF;
 }
 
 void soft_uart_write(uint8_t byte)
@@ -55,6 +41,7 @@ void soft_uart_write(uint8_t byte)
         _delay_us(FULL_BIT_DELAY);
     }
     UART_PORT |= _BV(UART_PIN);  // drive it high: stop-bit and later idle
+    UART_DIR &= ~_BV(UART_PIN); // make it an input (pull-up on)
 
     SREG = _sreg;
 

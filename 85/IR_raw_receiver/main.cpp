@@ -3,6 +3,7 @@
 #include <avr/pgmspace.h>
 #include <inttypes.h>
 
+#include "util.hpp"
 #include "system_ticker.hpp"
 #include "uart.hpp"
 #include "IR_receiver.hpp"
@@ -16,7 +17,7 @@ int main(void)
 
     while(1) {
 
-        //PORTB ^= _BV(PB5);
+        //TOGGLE_LED;
         //delay(200);
 
         if ( IR_available() ) {
@@ -56,9 +57,7 @@ int main(void)
 
 void setup_hw(void)
 {
-#ifdef __AVR_ATmega168__
-    DDRB |= _BV(PB5);
-#endif
+    LED_DIR |= _BV(LED_PIN);
     system_ticker_setup();
     sei(); // turn global irq flag on
     init_IR();

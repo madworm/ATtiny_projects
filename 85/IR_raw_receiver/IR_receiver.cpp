@@ -4,6 +4,7 @@
 #include <util/atomic.h>
 #include <avr/pgmspace.h>
 #include <stdint.h>
+#include "util.hpp"
 #include "system_ticker.hpp"
 #include "uart.hpp"
 #include "IR_receiver.hpp"
@@ -171,9 +172,7 @@ IR_code_t eval_IR_code(void)
 
 ISR(PCINT0_vect)
 {
-    #ifdef __AVR_ATmega168__
-    PORTB ^= _BV(PB5);
-    #endif
+    TOGGLE_LED;
 
     static uint8_t pulse_counter = 0;
     static uint32_t last_run = 0;

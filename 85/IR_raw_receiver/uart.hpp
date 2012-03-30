@@ -1,6 +1,8 @@
 #ifndef uart_h
 #define uart_h
 
+#define BAUDSPEED 9600 // valid: 9600, 38400 (must be tweaked if the receiver is not a real uart with accurate clock
+
 #ifdef BAUDSPEED 38400
 // 38400 values (reduced a bit, running on 16MHz xtal for testing)
 // may not work with ceramic resonator
@@ -19,6 +21,18 @@
 #define HALF_BIT_DELAY         48
 #define FULL_BIT_DELAY         96
 #define THREE_HALFS_BIT_DELAY 144
+#endif
+
+#ifdef __AVR_ATmega168__
+#define UART_DIR  DDRD
+#define UART_PORT PORTD
+#define UART_PIN PD1 // Arduino digital pin #1 (tx)
+#endif
+
+#ifdef __AVR_ATtiny85__
+#define UART_DIR  DDRB
+#define UART_PORT PORTB
+#define UART_PIN PB2
 #endif
 
 void soft_uart_init(void);
