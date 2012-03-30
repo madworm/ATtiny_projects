@@ -40,25 +40,27 @@ void soft_uart_send(uint8_t byte)
     // the atomic block is needed to make sure this happens
     // _uninterrupted_ by the LED ISR !
 
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
-    {
-    DDRA |= _BV(PA0); // make it an output
-    PORTA &= ~_BV(PA0); // pull it low: start-bit
-    _delay_us(FULL_BIT_DELAY);
-    for(ctr=0; ctr<=7; ctr++) {
-        if( (byte & _BV(ctr)) ) { // sent byte LSB first
-            PORTA |= _BV(PA0);  // set pin
-        } else {
-            PORTA &= ~_BV(PA0); // clear pin
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        DDRA |= _BV(PA0); // make it an output
+        PORTA &= ~_BV(PA0); // pull it low: start-bit
+
+        _delay_us(HALF_BIT_DELAY);
+        _delay_us(HALF_BIT_DELAY);
+
+        for(ctr=0; ctr<=7; ctr++) {
+            if( (byte & _BV(ctr)) ) { // sent byte LSB first
+                PORTA |= _BV(PA0);  // set pin
+            } else {
+                PORTA &= ~_BV(PA0); // clear pin
+            }
+            _delay_us(HALF_BIT_DELAY);
+            _delay_us(HALF_BIT_DELAY);
         }
-        _delay_us(FULL_BIT_DELAY);
-    }
-    PORTA |= _BV(PA0);  // pull it high: stop-bit
-    DDRA &= ~_BV(PA0);  // make it an input again
+        PORTA |= _BV(PA0);  // pull it high: stop-bit
+        DDRA &= ~_BV(PA0);  // make it an input again
     }
 
-    _delay_us(10*FULL_BIT_DELAY); // don't flood the receiver
-    _delay_us(10*FULL_BIT_DELAY); // a soft-uart as well
+    _delay_ms(1); // don't flood the receiver - a soft-uart as well
 
     CLEAR_PCINT0_FLAG;
     ENABLE_PCINT0_VECT; // re-enable pin-change interrupts on group 0
@@ -85,7 +87,7 @@ ISR(PCINT0_vect) // pin-change interrupt group 0
 
     if( !(PINA & _BV(PA0)) ) {
         // PA0 is low (got a valid start-bit)
-        OCR0A = TCNT0 + THREE_HALFS_BIT_DELAY; // TIM0_COMPA_vect should start in the middle in the first data-bit
+        OCR0A = TCNT0 + 3*HALF_BIT_DELAY; // TIM0_COMPA_vect should start in the middle in the first data-bit
         CLEAR_TIM0_COMPA_FLAG; // prevent premature execution
         ENABLE_TIM0_COMPA_VECT; // enable the bit sampling
         // DISABLE_TIM1_COMPA_VECT; // turn off the LED ISR so we can sample uninterrupted
@@ -112,7 +114,7 @@ ISR(TIM0_COMPA_vect)
             soft_uart_rx_byte &= ~bit_value;
         }
         bit_value <<= 1; // shift 1 bit to the left
-        OCR0A = TCNT0 + FULL_BIT_DELAY; // when to run next time
+        OCR0A = TCNT0 + 2*HALF_BIT_DELAY; // when to run next time
     } else { // stop-bit
         DISABLE_TIM0_COMPA_VECT; // no further runs after this one
         bit_value = 1; // reset bit counter
