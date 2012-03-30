@@ -30,24 +30,27 @@ void soft_uart_write(uint8_t byte)
 
     uint8_t _sreg = SREG;
     cli();
-    UART_DIR |= _BV(UART_PIN); // make it an output
-    UART_PORT &= ~_BV(UART_PIN); // drive it low: start-bit
-    _delay_us(FULL_BIT_DELAY);
+    UART_DIR |= _BV(UART_PIN);  // make it an output
+    UART_PORT &= ~_BV(UART_PIN);    // drive it low: start-bit
+
+    _delay_us(HALF_BIT_DELAY);  // _delay_us() can only do 768/F_CPU max !!
+    _delay_us(HALF_BIT_DELAY);  // run it twice for safety
+
     for(ctr=0; ctr<=7; ctr++) {
         if( (byte & _BV(ctr)) ) { // sent byte LSB first
             UART_PORT |= _BV(UART_PIN);  // set pin
         } else {
             UART_PORT &= ~_BV(UART_PIN); // clear pin
         }
-        _delay_us(FULL_BIT_DELAY);
+        _delay_us(HALF_BIT_DELAY);
+        _delay_us(HALF_BIT_DELAY);
     }
     UART_PORT |= _BV(UART_PIN);  // drive it high: stop-bit and later idle
     UART_DIR &= ~_BV(UART_PIN); // make it an input (pull-up on)
 
     SREG = _sreg;
 
-    _delay_us(10*FULL_BIT_DELAY); // don't flood the receiver
-    _delay_us(10*FULL_BIT_DELAY); // a soft-uart as well
+    _delay_ms(1); // don't flood the receiver
 }
 
 void soft_uart_send(uint8_t number)

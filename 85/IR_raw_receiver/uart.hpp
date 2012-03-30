@@ -1,26 +1,23 @@
 #ifndef uart_h
 #define uart_h
 
-#define BAUDSPEED   9600 // valid: 9600, 38400 (must be tweaked if the receiver is not a real uart with accurate clock
+// valid: 9600, 38400 (must be tweaked if the receiver is not a real uart with accurate clock
+#define BAUDSPEED 9600
 
-#ifdef  BAUDSPEED   38400
-// 38400 values (reduced a bit, running on 16MHz xtal for testing)
-// may not work with ceramic resonator
-#define HALF_BIT_DELAY          11 // tuned a bit after looking at the sample times
-#define FULL_BIT_DELAY          23 // with my newly acquired OLS from Dangerous Prototypes ;-)
-#define THREE_HALFS_BIT_DELAY   35
+// these values are not the nominal ones, but tweaked by looking a the actual signal
+#if BAUDSPEED == 38400
+#define HALF_BIT_DELAY 11
 #endif
 
-#ifdef BAUDSPEED    9600
-#define HALF_BIT_DELAY          52
-#define FULL_BIT_DELAY          104
-#define THREE_HALFS_BIT_DELAY   156
+// these values are not the nominal ones, but tweaked by looking a the actual signal
+#if BAUDSPEED == 9600
+#define HALF_BIT_DELAY 50
 #endif
 
-#ifdef BAUDSPEED 10417 // the ATtiny24 project want this (no real uart...)
-#define HALF_BIT_DELAY          48
-#define FULL_BIT_DELAY          96
-#define THREE_HALFS_BIT_DELAY   144
+// these values are not the nominal ones, but tweaked by looking a the actual signal
+// the ATtiny24 project want this (no real uart...)
+#if BAUDSPEED == 10417
+#define HALF_BIT_DELAY 48
 #endif
 
 #ifdef __AVR_ATmega168__
