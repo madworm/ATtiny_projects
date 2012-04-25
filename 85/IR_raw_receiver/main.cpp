@@ -1,6 +1,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
+#include <avr/sleep.h>
 #include <inttypes.h>
 
 #include "util.hpp"
@@ -50,6 +51,12 @@ int main(void)
             default:
                 break;
             }
+        } else {
+            /*
+             * This is only enabled, if IR_available() has set called 'sleep_enable()'
+             * Wakeup and 'sleep_disable()' is done in the pin-change-ISR
+             */
+            sleep_cpu();
         }
     }
     return 0;
@@ -57,9 +64,26 @@ int main(void)
 
 void setup_hw(void)
 {
+    /*
+     * save some power
+     *
+     * Down to 3.6mA for the whole board.
+     * The TSOP38238 is said to take 3mA, which leaves 600µA for the AVR.
+     * It should go lower, but I can't get it there
+     */
+
+    DDRB = 0x00; // all inputs
+    PORTB = 0xFF; // all pull-ups on
+    ACSR |= _BV(ACD); // disable the analog comparator, ACIE is already zero (default value)
+    PRR |= _BV(PRTIM1) | _BV(PRUSI) | _BV(PRADC); // turn off the clock for TIMER1, USI and ADC
+    set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+    sleep_enable(); // Enable for the first time only. Subsequent times see the pin-change ISR / IR_available()
+
+    // configure what we need to use
+
     LED_DIR |= _BV(LED_PIN);
     system_ticker_setup();
-    sei(); // turn global irq flag on
+    sei(); // turn global irq flag on, also needed as a wakeup source
     init_IR();
     soft_uart_init();
 }

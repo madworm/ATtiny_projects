@@ -1,5 +1,6 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <avr/sleep.h>
 #include <stdlib.h>
 #include <util/atomic.h>
 #include <avr/pgmspace.h>
@@ -95,6 +96,7 @@ uint8_t IR_available(void)
         flip_buffers();
         last_IR_activity = 0;
         SREG = _sreg;
+        sleep_enable(); // new IR data has been received completely, re-enabling sleep
         return 1;
     }
     SREG = _sreg;
@@ -172,6 +174,8 @@ IR_code_t eval_IR_code(void)
 
 ISR(PCINT0_vect)
 {
+    sleep_disable(); // need to keep awake until the data has timed out. NO clock while sleeping!
+
     TOGGLE_LED;
 
     static uint8_t pulse_counter = 0;
