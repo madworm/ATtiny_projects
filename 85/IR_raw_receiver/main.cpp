@@ -56,6 +56,7 @@ int main(void)
              * This is only enabled, if IR_available() has set called 'sleep_enable()'
              * Wakeup and 'sleep_disable()' is done in the pin-change-ISR
              */
+            sleep_bod_disable();
             sleep_cpu();
         }
     }
