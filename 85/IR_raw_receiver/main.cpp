@@ -68,9 +68,11 @@ void setup_hw(void)
     /*
      * save some power
      *
-     * Down to 3.6mA for the whole board.
-     * The TSOP38238 is said to take 3mA, which leaves 600µA for the AVR.
-     * It should go lower, but I can't get it there
+     * Down to 3.6mA for the whole board (idle).
+     *
+     * The AVR takes about 20µA in shutdown, the TSOP38238 a couple of 100µA
+     * when no IR is detected, the rest is the L78L05. The datasheet claims
+     * about 6mA of quiescent current, I see about 3mA (12V input).
      */
 
     DDRB = 0x00; // all inputs
