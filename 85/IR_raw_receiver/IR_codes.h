@@ -822,7 +822,7 @@
 
 /*
  * If you don't need some of the IR codes, just remove them from the IRsignals[][] array below
- * Also remove them from the IR_code_t enum below, but make sure the ORDER of the remaining IR
+ * Also add/remove them from the IR_code_t enum (see IR_receiver.hpp), but make sure the ORDER of the remaining IR
  * code is the same in both. To free up memory, reduce 'NUMBER_OF_IR_CODES' to match the
  * remaining elements of the IRsignals array.
  *
@@ -830,13 +830,17 @@
  *
  */
 
-#define NUMBER_OF_IR_CODES 4	// does not include the repeat-code, which I don't consider as a "full" code.
+#define NUMBER_OF_IR_CODES 8	// does not include the repeat-code, which I don't consider as a "full" code.
 
 const uint16_t PROGMEM IRsignals[NUMBER_OF_IR_CODES][72] = {
     vol_down,
     vol_up,
     arrow_up,
     arrow_down,
+    digit_1,
+    digit_2,
+    digit_3,
+    digit_0_or_10,
 };
 
 #endif
