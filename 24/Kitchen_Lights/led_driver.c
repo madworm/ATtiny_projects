@@ -14,8 +14,9 @@ static void set_led_pattern(void);
 
 void led_driver_setup(void)
 {
+    /*
     // set prescaler to 256
-    TCCR1B |= (_BV(CS12));
+    TCCR1B |= _BV(CS12);
     TCCR1B &= ~(_BV(CS10) | _BV(CS11));
     // set WGM mode 4: CTC using OCR1A
     TCCR1A &= ~(_BV(WGM11) | _BV(WGM10));
@@ -27,6 +28,16 @@ void led_driver_setup(void)
     OCR1A = 10; // just some start value
     // enable COMPA isr
     TIMSK1 |= _BV(OCIE1A);
+    */
+
+    // save some FLASH
+    TCCR1A = 0;
+    TCCR1B = _BV(CS12) | _BV(WGM12);
+    // enable COMPA isr
+    TIMSK1 = _BV(OCIE1A);
+    // set top value for TCNT1
+    OCR1A = 10; // just some start value
+
 }
 
 ISR(TIM1_COMPA_vect,ISR_NOBLOCK) // on attiny2313/4313 this is named TIMER1_COMPA_vect

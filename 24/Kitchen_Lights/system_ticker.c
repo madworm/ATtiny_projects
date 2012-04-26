@@ -6,6 +6,7 @@ volatile uint16_t system_ticks = 0;
 
 void system_ticker_setup(void)
 {
+    /*
     // using timer0
     // setting prescaler to 8
     // 1MHz clock is required for TIM0_COMPA_vect !!!!
@@ -18,6 +19,13 @@ void system_ticker_setup(void)
     TCCR0A &= ~(_BV(COM0A1) | _BV(COM0A0) | _BV(COM0B1) | _BV(COM0B0));
     // enabling overflow interrupt
     TIMSK0 |= _BV(TOIE0);
+    */
+
+    // save some FLASH
+    TCCR0A = 0;
+    TCCR0B = _BV(CS01);
+    // enabling overflow interrupt
+    TIMSK0 = _BV(TOIE0);
 }
 
 ISR(TIM0_OVF_vect) // on attiny2313/4313 this is named TIMER0_OVF_vect
