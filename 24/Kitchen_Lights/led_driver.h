@@ -24,10 +24,8 @@
 #define LAMP_BRIGHTNESS_MAX 511U // ( 2^(BCM_BIT_DEPTH + 3) - 1 )
 #endif
 
-
 void led_driver_setup(void);
-void fade_in(uint16_t start_at, uint16_t fade_delay);
-void fade_out(uint16_t start_at, uint16_t fade_delay);
+void fade(uint16_t fade_from, uint16_t fade_to, uint16_t fade_delay);
 void up(uint16_t fade_delay);
 void down(uint16_t fade_delay);
 uint16_t get_brightness(void);

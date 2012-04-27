@@ -186,12 +186,12 @@ void process_lamp_job(LAMP_JOB_t job)
         down(MANUAL_DOWN_DELAY);
         break;
     case LJ_FADE_IN:
-        fade_in(get_brightness(),AUTO_FADE_IN_DELAY);
+        fade(get_brightness(),LAMP_BRIGHTNESS_MAX,AUTO_FADE_IN_DELAY);
         break;
     case LJ_FADE_OUT:
-        fade_out(get_brightness(),AUTO_FADE_OUT_DELAY);
+        fade(get_brightness(),0,AUTO_FADE_OUT_DELAY);
         break;
-    #ifdef USE_SOFT_UART
+#ifdef USE_SOFT_UART
     case LJ_SEND_REMOTE_UP:
         soft_uart_send('+');
         break;
@@ -211,12 +211,12 @@ void process_lamp_job(LAMP_JOB_t job)
         down(MANUAL_DOWN_DELAY);
         break;
     case LJ_RECVD_REMOTE_FADE_IN:
-        fade_in(get_brightness(),AUTO_FADE_IN_DELAY);
+        fade(get_brightness(),LAMP_BRIGHTNESS_MAX,AUTO_FADE_IN_DELAY);
         break;
     case LJ_RECVD_REMOTE_FADE_OUT:
-        fade_out(get_brightness(),AUTO_FADE_OUT_DELAY);
+        fade(get_brightness(),0,AUTO_FADE_OUT_DELAY);
         break;
-    #endif
+#endif
     default:
         // LJ_NOP
         break;

@@ -80,29 +80,40 @@ ISR(TIM1_COMPA_vect,ISR_NOBLOCK) // on attiny2313/4313 this is named TIMER1_COMP
     // PA2_OFF;
 }
 
-void fade_in(uint16_t start_at, uint16_t fade_delay)
+void fade(uint16_t fade_from, uint16_t fade_to, uint16_t fade_delay)
 {
-    LED_ON;
-
-    uint16_t ctr;
-
-    for(ctr = start_at; ctr <= (LAMP_BRIGHTNESS_MAX - MANUAL_FADE_STEPSIZE); ctr += MANUAL_FADE_STEPSIZE) {
-        lamp_brightness = ctr;
-        set_led_pattern();
-        delay(fade_delay);
+    if( fade_to >= fade_from ) { // fade in
+        if( fade_to == fade_from ) {
+            return; // nothing to do
+        } else {
+            while( fade_from <= fade_to - MANUAL_FADE_STEPSIZE ) {
+                lamp_brightness = fade_from;
+                set_led_pattern();
+                fade_from += MANUAL_FADE_STEPSIZE;
+                delay(fade_delay);
+            }
+        }
+        if( fade_from > fade_to - MANUAL_FADE_STEPSIZE ) { // some odd value too low
+            lamp_brightness = fade_to;
+            set_led_pattern();
+        }
     }
-}
 
-void fade_out(uint16_t start_at, uint16_t fade_delay)
-{
-    LED_OFF;
-
-    int16_t ctr;
-
-    for(ctr = start_at; ctr >= 0; ctr -= MANUAL_FADE_STEPSIZE) {
-        lamp_brightness = ctr;
-        set_led_pattern();
-        delay(fade_delay);
+    if( fade_from >= fade_to ) { // fade out
+        if( fade_from == fade_to ) {
+            return; // nothing to do
+        } else {
+            while( fade_from >= fade_to + MANUAL_FADE_STEPSIZE ) {
+                lamp_brightness = fade_from;
+                set_led_pattern();
+                fade_from -= MANUAL_FADE_STEPSIZE;
+                delay(fade_delay);
+            }
+        }
+        if( fade_from < fade_to + MANUAL_FADE_STEPSIZE ) { // some odd value left over
+            lamp_brightness = fade_to;
+            set_led_pattern();
+        }
     }
 }
 
