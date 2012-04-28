@@ -28,6 +28,7 @@
 			<Add option="-g" />
 			<Add option="-gdwarf-2 -funsigned-bitfields -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -fno-exceptions" />
 			<Add option="-DF_CPU=8000000UL" />
+			<Add option="-DPIR_MOD=1" />
 		</Compiler>
 		<Linker>
 			<Add option="-mmcu=attiny85" />

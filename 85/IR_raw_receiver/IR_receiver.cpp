@@ -1,6 +1,5 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <avr/sleep.h>
 #include <stdlib.h> // needed for abs()
 #include <avr/pgmspace.h>
 #include <stdint.h>
@@ -24,11 +23,6 @@ volatile uint16_t *pulses_read_from = pulses_b;
 
 volatile uint32_t last_IR_activity = 0;
 
-#if defined(PIR_MOD) && defined(__AVR_ATtiny85__)
-volatile uint8_t PIR_level = 0;
-volatile uint8_t PIR_changed = 0;
-#endif
-
 void init_IR(void)
 {
     IR_DIR &= ~_BV(IR_pin); // set as input
@@ -37,10 +31,6 @@ void init_IR(void)
     PC_PIN_MASK |= _BV(PC_PIN_MASK_BIT); // enable trigger source pin PCINT1 (PB1)
     zero_pulses(pulses_read_from);
     zero_pulses(pulses_write_to);
-
-#if defined(PIR_MOD) && defined(__AVR_ATtiny85__)
-    PC_PIN_MASK |= _BV(PC_PIN_MASK_PIR_BIT); // also trigger on the PIR sensor
-#endif
 }
 
 void __attribute__ ((noinline)) zero_pulses(volatile uint16_t * array)
@@ -81,36 +71,11 @@ uint8_t IR_available(void)
         flip_buffers();
         last_IR_activity = 0;
         SREG = _sreg;
-        sleep_enable(); // new IR data has been received completely, re-enabling sleep
         return 1;
     }
     SREG = _sreg;
     return 0;
 }
-
-#if defined(PIR_MOD) && defined(__AVR_ATtiny85__)
-PIR_status_t PIR_status(void)
-{
-    static PIR_status_t PIR_status = {0U, 0U, 0UL, 0UL};
-
-    uint8_t _sreg = SREG;
-    cli();
-
-    if ( PIR_changed == 1 ) {
-        PIR_status.changed = 1;
-        PIR_status.level = PIR_level;
-        PIR_status.time_last_change = PIR_status.time_now;
-        PIR_status.time_now = millis();
-    } else {
-        PIR_status.changed = 0;
-    }
-    PIR_changed = 0;
-
-    SREG = _sreg;
-
-    return PIR_status;
-}
-#endif
 
 IR_code_t eval_IR_code(void)
 {
@@ -183,38 +148,9 @@ IR_code_t eval_IR_code(void)
 
 ISR(PCINT0_vect)
 {
-    sleep_disable(); // need to keep awake until the data has timed out. NO clock while sleeping!
 
 #if !defined(PIR_MOD)
     TOGGLE_LED;
-#endif
-
-#if defined(PIR_MOD) && defined(__AVR_ATtiny85__)
-    static uint8_t pin_data_prev = 0;
-    uint8_t pin_data = PIR_PIN;
-
-    if ( (pin_data^pin_data_prev) & _BV(PIR_pin) ) { // if the pin-state of the PIR_pin has changed
-
-        PIR_changed = 1;
-
-        if ( pin_data & _BV(PIR_pin) ) { // sensor spits out a HIGH (3V) when it sees stuff
-            sleep_enable();
-            PIR_level = 1;
-#if defined(PIR_DEBUG)
-            soft_uart_send(PIR_level);
-            soft_uart_send(PSTR("\r\n"));
-#endif
-        } else {
-            sleep_enable();
-            PIR_level = 0;
-#if defined(PIR_DEBUG)
-            soft_uart_send(PIR_level);
-            soft_uart_send(PSTR("\r\n"));
-#endif
-        }
-        pin_data_prev = pin_data;
-        return; // if the PIR_pin was changed, nothing to do for the IR part !
-    }
 #endif
 
     static uint8_t pulse_counter = 0;

@@ -13,6 +13,10 @@
 #define LED_PIN  PINB
 #define LED_PORT PORTB
 #define LED_pin  PB0
+#define PIR_DIR  DDRB
+#define PIR_PIN  PINB
+#define PIR_PORT PORTB
+#define PIR_pin  PB0
 #endif
 
 // set as output + HIGH
