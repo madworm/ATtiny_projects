@@ -108,7 +108,8 @@ void setup_hw(void)
     soft_uart_init();
 }
 
-void do_PIR(void) {
+void do_PIR(void)
+{
     static uint8_t lamp_state = 0;
     static uint32_t pir_silence = 0;
 

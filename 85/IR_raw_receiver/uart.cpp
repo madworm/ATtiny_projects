@@ -12,11 +12,11 @@ void soft_uart_init(void)
     UART_DIR &= ~_BV(UART_pin); // make it an input
     UART_PORT |= _BV(UART_pin); // pull-up on (idle)
 
-    #if !defined(PIR_MOD)
+#if !defined(PIR_MOD)
     LED_ON;
     _delay_ms(500);
     LED_OFF;
-    #endif
+#endif
 }
 
 void soft_uart_write(uint8_t byte)
