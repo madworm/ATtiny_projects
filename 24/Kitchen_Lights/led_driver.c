@@ -7,7 +7,7 @@
 #include "spi.h"
 
 // for all 8 channels. OCR1A_MAX is fully off, 0 is fully on
-uint16_t lamp_brightness = 0; // variable is mapped down to individual channels
+int16_t lamp_brightness = 0; // variable is mapped down to individual channels
 uint8_t led_brightness[8] = {0,0,0,0,0,0,0,0};
 
 static void set_led_pattern(void);
@@ -80,14 +80,22 @@ ISR(TIM1_COMPA_vect,ISR_NOBLOCK) // on attiny2313/4313 this is named TIMER1_COMP
     // PA2_OFF;
 }
 
-void fade(uint16_t fade_from, uint16_t fade_to, uint16_t fade_delay)
+void fade(int16_t fade_from, int16_t fade_to, uint16_t fade_delay)
 {
     if( fade_to > LAMP_BRIGHTNESS_MAX) {
         fade_to = LAMP_BRIGHTNESS_MAX;
     }
 
+    if( fade_to < 0 ) {
+        fade_to = 0;
+    }
+
     if( fade_from > LAMP_BRIGHTNESS_MAX) {
         fade_from = LAMP_BRIGHTNESS_MAX;
+    }
+
+    if( fade_from < 0 ) {
+        fade_from = 0;
     }
 
     if( fade_to > fade_from ) { // fade in
@@ -123,10 +131,9 @@ void up(uint16_t fade_delay)
 
     if (lamp_brightness <= (LAMP_BRIGHTNESS_MAX - MANUAL_FADE_STEPSIZE)) {
         lamp_brightness = lamp_brightness + MANUAL_FADE_STEPSIZE;
+    } else {
+        lamp_brightness = LAMP_BRIGHTNESS_MAX;
     }
-    //} else {
-    //    lamp_brightness = LAMP_BRIGHTNESS_MAX;
-    //}
 
     set_led_pattern();
 
@@ -139,10 +146,9 @@ void down(uint16_t fade_delay)
 
     if (lamp_brightness >= (0 + MANUAL_FADE_STEPSIZE)) {
         lamp_brightness = lamp_brightness - MANUAL_FADE_STEPSIZE;
+    } else {
+        lamp_brightness = 0;
     }
-    //} else {
-    //    lamp_brightness = 0;
-    //}
 
     set_led_pattern();
 
@@ -255,7 +261,7 @@ static void set_led_pattern(void)
 #endif
 }
 
-uint16_t get_brightness(void)
+int16_t get_brightness(void)
 {
     return lamp_brightness;
 }

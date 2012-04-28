@@ -17,18 +17,18 @@
 #define PATTERN_A
 
 #ifdef PATTERN_A
-#define LAMP_BRIGHTNESS_MAX 255U // ( 2^(BCM_BIT_DEPTH + 2) - 1 )
+#define LAMP_BRIGHTNESS_MAX 255 // ( 2^(BCM_BIT_DEPTH + 2) - 1 )
 #endif
 
 #ifdef PATTERN_B
-#define LAMP_BRIGHTNESS_MAX 511U // ( 2^(BCM_BIT_DEPTH + 3) - 1 )
+#define LAMP_BRIGHTNESS_MAX 511 // ( 2^(BCM_BIT_DEPTH + 3) - 1 )
 #endif
 
 void led_driver_setup(void);
-void fade(uint16_t fade_from, uint16_t fade_to, uint16_t fade_delay);
+void fade(int16_t fade_from, int16_t fade_to, uint16_t fade_delay);
 void up(uint16_t fade_delay);
 void down(uint16_t fade_delay);
-uint16_t get_brightness(void);
+int16_t get_brightness(void);
 uint16_t flash_channel(uint8_t channel, uint8_t times, uint16_t flash_delay);
 
 #endif

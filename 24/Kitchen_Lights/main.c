@@ -1,6 +1,5 @@
 #include <avr/io.h>
 #include <avr/wdt.h>
-#include <avr/sleep.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include <inttypes.h>
@@ -13,6 +12,7 @@
 #include "led_driver.h"
 #include "main.h"
 
+//#define DEBUG
 #define USE_SOFT_UART
 
 int main(void)
@@ -24,10 +24,6 @@ int main(void)
         //adc_test(1); // shows ADCH on the 8 LEDs. timer1 should be OFF (or it blinks like mad --> headache)
         TOGGLE_LED; // make the lamps visible in the darkness
         kitchen_lights(1);
-        // this saved about 2mA on my dev board
-        sleep_enable(); // make it possible to have some zzzzz-s
-        sleep_cpu();    // good night
-        sleep_disable(); // we've just woken up again
     }
 }
 
@@ -112,11 +108,18 @@ void setup_hw(void)
      *
      */
 
-    // turn the watchdog off
-    wdt_reset();
-    MCUSR= 0x00;
-    WDTCSR |= ( _BV(WDCE) | _BV(WDE) ); // timed sequence !
-    WDTCSR = 0x00;
+    /*
+     * turn the watchdog off
+     *
+     * This should be off by default anyway I think
+     * I didn't burn the WD fuse
+     *
+     */
+
+    // wdt_reset();
+    // MCUSR= 0x00;
+    // WDTCSR |= ( _BV(WDCE) | _BV(WDE) ); // timed sequence !
+    // WDTCSR = 0x00;
 
     // turn all pins to inputs + pull-up on
     // saved about another 0.5mA on my board
@@ -160,9 +163,6 @@ void setup_hw(void)
      */
     PORTA &= ~_BV(PA1); // internal pull-up off on switches pin
 
-    // sleep mode
-    // set_sleep_mode(SLEEP_MODE_IDLE);
-
     /*
      * getting ready
      */
@@ -173,11 +173,16 @@ void setup_hw(void)
     #endif
 
     sei(); // turn global irq flag on
+    #ifdef DEBUG
     signal_reset(); // needs the system_ticker to run and sei() as well !
+    #endif
 }
 
 void process_lamp_job(LAMP_JOB_t job)
 {
+    int16_t tmp;
+    int16_t tmp2;
+
     switch(job) {
     case LJ_MANUAL_UP:
         up(MANUAL_UP_DELAY);
@@ -186,10 +191,14 @@ void process_lamp_job(LAMP_JOB_t job)
         down(MANUAL_DOWN_DELAY);
         break;
     case LJ_FADE_IN:
-        fade(get_brightness(),LAMP_BRIGHTNESS_MAX,AUTO_FADE_IN_DELAY);
+        tmp = get_brightness();
+        tmp2 = (tmp<LAMP_BRIGHTNESS_MAX/2)?LAMP_BRIGHTNESS_MAX/2:LAMP_BRIGHTNESS_MAX;
+        fade(tmp,tmp2,AUTO_FADE_IN_DELAY);
         break;
     case LJ_FADE_OUT:
-        fade(get_brightness(),0,AUTO_FADE_OUT_DELAY);
+        tmp = get_brightness();
+        tmp2 = (tmp>LAMP_BRIGHTNESS_MAX/2)?LAMP_BRIGHTNESS_MAX/2:0;
+        fade(tmp,tmp2,AUTO_FADE_IN_DELAY);
         break;
 #ifdef USE_SOFT_UART
     case LJ_SEND_REMOTE_UP:
@@ -211,10 +220,14 @@ void process_lamp_job(LAMP_JOB_t job)
         down(MANUAL_DOWN_DELAY);
         break;
     case LJ_RECVD_REMOTE_FADE_IN:
-        fade(get_brightness(),LAMP_BRIGHTNESS_MAX,AUTO_FADE_IN_DELAY);
+        tmp = get_brightness();
+        tmp2 = (tmp<LAMP_BRIGHTNESS_MAX/2)?LAMP_BRIGHTNESS_MAX/2:LAMP_BRIGHTNESS_MAX;
+        fade(tmp,tmp2,AUTO_FADE_IN_DELAY);
         break;
     case LJ_RECVD_REMOTE_FADE_OUT:
-        fade(get_brightness(),0,AUTO_FADE_OUT_DELAY);
+        tmp = get_brightness();
+        tmp2 = (tmp>LAMP_BRIGHTNESS_MAX/2)?LAMP_BRIGHTNESS_MAX/2:0;
+        fade(tmp,tmp2,AUTO_FADE_IN_DELAY);
         break;
 #endif
     default:
