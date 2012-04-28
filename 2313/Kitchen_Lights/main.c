@@ -1,6 +1,4 @@
 #include <avr/io.h>
-#include <avr/wdt.h>
-#include <avr/sleep.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include <stdint.h>
@@ -12,20 +10,17 @@
 #include "status_leds.h"
 #include "main.h"
 
-
 int main(void)
 {
     setup_hw();
     delay(3000);
+    process_lamp_job(LJ_FADE_IN);
+
     for (;;) {
         //button_test(); // shows the button states on the 8 LEDs. timer1 should be OFF (or it blinks like mad --> headache)
         //uart_half_duplex_test();
         S_LED_TOGGLE; // make the lamps visible in the darkness
         kitchen_lights();
-        // this saved about 2mA on my dev board
-        sleep_enable(); // make it possible to have some zzzzz-s
-        sleep_cpu();    // good night
-        sleep_disable(); // we've just woken up again
     }
 }
 
@@ -52,11 +47,6 @@ void kitchen_lights(void)
 
     SWITCHES_STATE_t switches_state = button_read_state();
 
-    if( my_mcusr & _BV(PORF) ) { // automatically fade in to full brightness
-        my_mcusr = 0;            // if the lamp is supplied with power
-        process_lamp_job(LJ_FADE_IN);
-    }
-
     switch(switches_state) {
     case SW_RIGHT_PRESSED:
         eval_switch_state(SW_RIGHT_PRESSED,LJ_MANUAL_UP,LJ_FADE_IN);
@@ -78,8 +68,6 @@ void kitchen_lights(void)
 
 void setup_hw(void)
 {
-    cli();  // turn interrupts off, just in case
-
     /*
      * power savings !
      *
@@ -90,32 +78,14 @@ void setup_hw(void)
      *
      */
 
-    // turn the watchdog off
-    wdt_reset();
-    MCUSR= 0x00;
-
-    #ifdef _AVR_IOTN2313_H_
-      #define WATCHDOG_CTRL_REG WDTCSR
-    #endif
-    #ifdef _AVR_ATtiny4313_H_
-      #define WATCHDOG_CTRL_REG WDTCR
-    #endif
-
-    WATCHDOG_CTRL_REG |= ( _BV(WDCE) | _BV(WDE) ); // timed sequence !
-    WATCHDOG_CTRL_REG = 0x00;
-
-    // turn all pins to inputs + pull-up on
+    // turn all pins to inputs (default anyway) + pull-up on
     // saved about another 0.5mA on my board
-    DDRA = 0x00;
-    DDRB = 0x00;
-    DDRD = 0x00;
     PORTA = 0xFF;
     PORTB = 0xFF;
     PORTD = 0xFF;
 
     /*
-     *
-      now configure the pins we actually need
+     * now configure the pins we actually need
      */
 
     DDRD |= _BV(PD5); // make the S_LED pin an output
@@ -125,7 +95,6 @@ void setup_hw(void)
      * getting ready
      */
 
-    set_sleep_mode(SLEEP_MODE_IDLE);
     system_ticker_setup();
     usi_setup();
     uart_setup();
@@ -140,6 +109,9 @@ void setup_hw(void)
 
 void process_lamp_job(LAMP_JOB_t job)
 {
+    int16_t tmp;
+    int16_t tmp2;
+
     switch(job) {
     case LJ_MANUAL_UP:
         up(MANUAL_UP_DELAY);
@@ -148,10 +120,14 @@ void process_lamp_job(LAMP_JOB_t job)
         down(MANUAL_DOWN_DELAY);
         break;
     case LJ_FADE_IN:
-        fade_in(get_brightness(),AUTO_FADE_IN_DELAY);
+        tmp = get_brightness();
+        tmp2 = (tmp<LAMP_BRIGHTNESS_MAX/2)?LAMP_BRIGHTNESS_MAX/2:LAMP_BRIGHTNESS_MAX;
+        fade(tmp,tmp2,AUTO_FADE_IN_DELAY);
         break;
     case LJ_FADE_OUT:
-        fade_out(get_brightness(),AUTO_FADE_OUT_DELAY);
+        tmp = get_brightness();
+        tmp2 = (tmp>LAMP_BRIGHTNESS_MAX/2)?LAMP_BRIGHTNESS_MAX/2:0;
+        fade(tmp,tmp2,AUTO_FADE_IN_DELAY);
         break;
     case LJ_SEND_REMOTE_UP:
         uart_send('+');
@@ -172,10 +148,14 @@ void process_lamp_job(LAMP_JOB_t job)
         down(MANUAL_DOWN_DELAY);
         break;
     case LJ_RECVD_REMOTE_FADE_IN:
-        fade_in(get_brightness(),AUTO_FADE_IN_DELAY);
+        tmp = get_brightness();
+        tmp2 = (tmp<LAMP_BRIGHTNESS_MAX/2)?LAMP_BRIGHTNESS_MAX/2:LAMP_BRIGHTNESS_MAX;
+        fade(tmp,tmp2,AUTO_FADE_IN_DELAY);
         break;
     case LJ_RECVD_REMOTE_FADE_OUT:
-        fade_out(get_brightness(),AUTO_FADE_OUT_DELAY);
+        tmp = get_brightness();
+        tmp2 = (tmp>LAMP_BRIGHTNESS_MAX/2)?LAMP_BRIGHTNESS_MAX/2:0;
+        fade(tmp,tmp2,AUTO_FADE_IN_DELAY);
         break;
     default:
         // LJ_NOP
@@ -210,10 +190,4 @@ void eval_switch_state(SWITCHES_STATE_t state, LAMP_JOB_t first_job, LAMP_JOB_t 
         // short press
         process_lamp_job(first_job);
     }
-}
-
-void read_mcusr(void)
-{
-    my_mcusr = MCUSR;
-    MCUSR = 0;
 }
