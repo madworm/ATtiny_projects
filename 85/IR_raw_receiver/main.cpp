@@ -4,7 +4,7 @@
 #include <inttypes.h>
 
 // add this as a GLOBAL define in the build-options to enable it: PIR_MOD
-#define PIR_GO_OFF_DELAY 10000000UL
+#define PIR_GO_OFF_DELAY 3000000UL
 
 #include "util.hpp"
 #include "system_ticker.hpp"
