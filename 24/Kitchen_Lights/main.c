@@ -108,10 +108,8 @@ void setup_hw(void)
      *
      */
 
-    // turn all pins to inputs + pull-up on
+    // turn all pins to inputs (default anyway) + pull-up on
     // saved about another 0.5mA on my board
-    DDRA = 0x00;
-    DDRB = 0x00;
     PORTA = 0xFF;
     PORTB = 0xFF;
 
