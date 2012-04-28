@@ -108,19 +108,6 @@ void setup_hw(void)
      *
      */
 
-    /*
-     * turn the watchdog off
-     *
-     * This should be off by default anyway I think
-     * I didn't burn the WD fuse
-     *
-     */
-
-    // wdt_reset();
-    // MCUSR= 0x00;
-    // WDTCSR |= ( _BV(WDCE) | _BV(WDE) ); // timed sequence !
-    // WDTCSR = 0x00;
-
     // turn all pins to inputs + pull-up on
     // saved about another 0.5mA on my board
     DDRA = 0x00;
