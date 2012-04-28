@@ -20,24 +20,26 @@
 #define HALF_BIT_DELAY 48
 #endif
 
-#ifdef __AVR_ATmega168__
+#if defined(__AVR_ATmega168__)
 #define UART_DIR    DDRD
+#define UART_PIN    PIND
 #define UART_PORT   PORTD
-#define UART_PIN    PD1 // Arduino digital pin #1 (tx)
+#define UART_pin    PD1 // Arduino digital pin #1 (tx)
 #endif
 
-#ifdef __AVR_ATtiny85__
+#if defined(__AVR_ATtiny85__)
 #define UART_DIR    DDRB
+#define UART_PIN    PINB
 #define UART_PORT   PORTB
-#define UART_PIN    PB2
+#define UART_pin    PB2
 #endif
 
 void soft_uart_init(void);
 void soft_uart_write(uint8_t byte);
 void soft_uart_send(uint8_t number);
-void soft_uart_send(int8_t number);
-void soft_uart_send(uint16_t number);
+void soft_uart_send(uint8_t number, uint8_t base);
 void soft_uart_send(int16_t number);
+void soft_uart_send(uint16_t number);
 void soft_uart_send(const char * string);
 
 #endif

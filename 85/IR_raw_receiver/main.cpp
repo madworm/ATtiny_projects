@@ -10,10 +10,11 @@
 #include "IR_receiver.hpp"
 #include "main.hpp"
 
-#define USE_BOARD_ADDRESS
+//#define USE_BOARD_ADDRESS
 #define BOARD_ADDRESS DIGIT_1
 #define BOARD_ADDRESS_GENERAL DIGIT_0_OR_10
-#define WAIT_FOR_COMMAND_TIMEOUT 3000
+#define WAIT_FOR_COMMAND_TIMEOUT 4000
+#define PIR_CHANGE_DELAY 3000UL
 
 int main(void)
 {
@@ -23,12 +24,21 @@ int main(void)
 
     while(1) {
 
-        //TOGGLE_LED;
-        //delay(200);
+#if defined(PIR_MOD) && defined(__AVR_ATtiny85__)
+        PIR_status_t pir_status = PIR_status();
+
+        if ( (pir_status.changed == 1) && ((millis() - pir_status.time_last_change) > PIR_CHANGE_DELAY) ) {
+            if ( pir_status.level == 1 ) {
+                soft_uart_send(PSTR("F\r\n"));
+            } else {
+                soft_uart_send(PSTR("f\r\n"));
+            }
+        }
+#endif
 
         if ( IR_available() ) {
 
-#ifdef USE_BOARD_ADDRESS
+#if defined(USE_BOARD_ADDRESS)
             IR_code_t IR_code = eval_IR_code();
 
             if( (IR_code == BOARD_ADDRESS) || (IR_code == BOARD_ADDRESS_GENERAL) ) {
@@ -68,7 +78,7 @@ int main(void)
                         default:
                             break;
                         }
-#ifdef USE_BOARD_ADDRESS
+#if defined(USE_BOARD_ADDRESS)
                     }
                 }
             }
@@ -79,7 +89,7 @@ int main(void)
              * Wakeup and 'sleep_disable()' is done in the pin-change-ISR
              */
             sleep_bod_disable();
-            sleep_cpu();
+            //sleep_cpu();
         }
     }
     return 0;
@@ -101,20 +111,20 @@ void setup_hw(void)
     PORTB = 0xFF; // all pull-ups on
     ACSR |= _BV(ACD); // disable the analog comparator, ACIE is already zero (default value)
     PRR |= _BV(PRTIM1) | _BV(PRUSI) | _BV(PRADC); // turn off the clock for TIMER1, USI and ADC
-    set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+    set_sleep_mode(SLEEP_MODE_IDLE);
     sleep_enable(); // Enable for the first time only. Subsequent times see the pin-change ISR / IR_available()
 
     // configure what we need to use
 
-    LED_DIR |= _BV(LED_PIN);
+#if defined(PIR_MOD) && defined(__AVR_ATtiny85__)
+    PIR_DIR &= ~_BV(PIR_pin); // set as INPUT
+    PIR_PORT &= ~_BV(PIR_pin); // pullup OFF
+#else
+    LED_DIR |= _BV(LED_pin);
+#endif
+
     system_ticker_setup();
     sei(); // turn global irq flag on, also needed as a wakeup source
     init_IR();
     soft_uart_init();
-}
-
-void read_mcusr(void)
-{
-    my_mcusr = MCUSR;
-    MCUSR = 0;
 }

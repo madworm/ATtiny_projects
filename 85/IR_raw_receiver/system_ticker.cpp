@@ -1,5 +1,4 @@
 #include <avr/interrupt.h>
-#include <util/atomic.h>
 #include <stdint.h>
 #include "system_ticker.hpp"
 
@@ -15,12 +14,12 @@ void system_ticker_setup(void)
     // normal operation - disconnect PWM pins
     TCCR0A &= ~(_BV(COM0A1) | _BV(COM0A0) | _BV(COM0B1) | _BV(COM0B0));
     // enabling overflow interrupt
-    #ifdef __AVR_ATmega168__
+#if defined(__AVR_ATmega168__)
     TIMSK0 |= _BV(TOIE0);
-    #endif
-    #ifdef __AVR_ATtiny85__
+#endif
+#if defined( __AVR_ATtiny85__)
     TIMSK |= _BV(TOIE0);
-    #endif
+#endif
 }
 
 /*
@@ -29,10 +28,10 @@ void system_ticker_setup(void)
  *
  */
 
-#if F_CPU == 16000000UL
+#if (F_CPU == 16000000UL)
 #define MICROSECONDS_PER_TIMER0_OVERFLOW 1024
 #endif
-#if F_CPU == 8000000UL
+#if (F_CPU == 8000000UL)
 #define MICROSECONDS_PER_TIMER0_OVERFLOW 2048
 #endif
 #define MILLIS_INC (MICROSECONDS_PER_TIMER0_OVERFLOW / 1000)
@@ -68,7 +67,7 @@ uint32_t millis(void)
     uint32_t m;
     uint8_t _sreg = SREG;
     cli();
-        m = timer0_millis;
+    m = timer0_millis;
     SREG = _sreg;
     return m;
 }
@@ -79,25 +78,25 @@ uint32_t micros(void)
     uint8_t t;
     uint8_t _sreg = SREG;
     cli();
-        m = timer0_overflow_count;
-        t = TCNT0;
-#ifdef TIFR0
-        if ((TIFR0 & _BV(TOV0)) && (t < 255)) {
-            m++;
-        }
+    m = timer0_overflow_count;
+    t = TCNT0;
+#if defined(TIFR0)
+    if ((TIFR0 & _BV(TOV0)) && (t < 255)) {
+        m++;
+    }
 #endif
-#ifdef TIFR
-        if ((TIFR & _BV(TOV0)) && (t < 255)) {
-            m++;
-        }
+#if defined(TIFR)
+    if ((TIFR & _BV(TOV0)) && (t < 255)) {
+        m++;
+    }
 #endif
     SREG = _sreg;
-    #if F_CPU == 16000000UL
+#if (F_CPU == 16000000UL)
     return (((m << 8) + t) * 4);
-    #endif
-    #if F_CPU == 8000000UL
+#endif
+#if (F_CPU == 8000000UL)
     return (((m << 8) + t) * 8);
-    #endif
+#endif
 }
 
 void delay(uint32_t ms)
@@ -119,7 +118,7 @@ void delayMicroseconds(uint16_t us)
     // 2 microseconds) gives delays longer than desired.
     //delay_us(us);
 
-#if F_CPU >= 16000000L
+#if (F_CPU >= 16000000L)
     // for the 16 MHz clock on most Arduino boards
 
     // for a one-microsecond delay, simply return.  the overhead
