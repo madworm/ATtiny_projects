@@ -12,7 +12,7 @@
 #include "IR_receiver.hpp"
 #include "main.hpp"
 
-//#define USE_BOARD_ADDRESS
+#define USE_BOARD_ADDRESS
 #define BOARD_ADDRESS DIGIT_1
 #define BOARD_ADDRESS_GENERAL DIGIT_0_OR_10
 #define WAIT_FOR_COMMAND_TIMEOUT 4000
