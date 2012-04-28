@@ -96,8 +96,6 @@ void kitchen_lights(uint8_t channel)
 
 void setup_hw(void)
 {
-    cli();  // turn interrupts off, just in case
-
     /*
      * power savings !
      *
