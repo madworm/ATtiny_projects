@@ -18,6 +18,7 @@ void setup(void) {
   
   // USI stuff
   
+  DDRB |= _BV(PB4); // as output (latch)
   DDRB |= _BV(PB6); // as output (DO)
   DDRB |= _BV(PB7); // as output (USISCK)
   DDRB &= ~_BV(PB5); // as input (DI)
