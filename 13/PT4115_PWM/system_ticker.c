@@ -10,7 +10,7 @@ void system_ticker_setup(void)
 	// setting prescaler to 1
 	TCCR0B |= _BV(CS00);
 	TCCR0B &= ~(_BV(CS01) | _BV(CS02));
-	// set WGM mode 4
+	// set to 'FAST PWM' mode
 	TCCR0A |= (_BV(WGM01) | _BV(WGM00));
 	TCCR0B &= ~_BV(WGM02);
 	// PWM on PB0 (OC0A)
