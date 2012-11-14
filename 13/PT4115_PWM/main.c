@@ -10,7 +10,7 @@ int main(void)
  RESTART:
 
 	setup_hw();
-	delay(2000);
+	delay(16000);
 
 	initial_fade_in();
 
@@ -33,7 +33,7 @@ int main(void)
 		default:
 			break;
 		}
-		delay(5);
+		delay(40);
 	}
 }
 
@@ -54,6 +54,6 @@ void initial_fade_in(void)
 	uint8_t counter;
 	for (counter = 0; counter < 64; counter++) {
 		OCR0A = counter;
-		delay(10);
+		delay(80);
 	}
 }

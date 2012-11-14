@@ -7,9 +7,9 @@ volatile uint16_t system_ticks = 0;
 void system_ticker_setup(void)
 {
 	// using timer0
-	// setting prescaler to 8
-	TCCR0B |= _BV(CS01);
-	TCCR0B &= ~(_BV(CS00) | _BV(CS02));
+	// setting prescaler to 1
+	TCCR0B |= _BV(CS00);
+	TCCR0B &= ~(_BV(CS01) | _BV(CS02));
 	// set WGM mode 4
 	TCCR0A |= (_BV(WGM01) | _BV(WGM00));
 	TCCR0B &= ~_BV(WGM02);
