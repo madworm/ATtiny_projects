@@ -13,12 +13,12 @@ void system_ticker_setup(void)
 	// set to 'FAST PWM' mode
 	TCCR0A |= (_BV(WGM01) | _BV(WGM00));
 	TCCR0B &= ~_BV(WGM02);
-	// PWM on PB0 (OC0A)
+	// inverted PWM on PB0 (OC0A)
 	TCCR0A |= _BV(COM0A1);
-	TCCR0A &= ~_BV(COM0A0);
+	TCCR0A |= _BV(COM0A0);
 	// enabling overflow interrupt
 	TIMSK0 |= _BV(TOIE0);
-	OCR0A = 0;		// start fully off
+	OCR0A = 255;		// start fully off (inverted PWM)
 }
 
 ISR(TIM0_OVF_vect)		// on attiny2313/4313 this is named TIMER0_OVF_vect
