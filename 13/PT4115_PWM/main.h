@@ -5,5 +5,6 @@ void setup_hw(void);
 void initial_fade_in(void);
 
 int main(void);
+void breathe(void);
 
 #endif
