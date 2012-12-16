@@ -45,6 +45,7 @@
 			<Add after="avr-size $(TARGET_OUTPUT_FILE).hex" />
 			<Mode after="always" />
 		</ExtraCommands>
+		<Unit filename="breathe_mode.h" />
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>

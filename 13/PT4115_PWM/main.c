@@ -5,16 +5,11 @@
 #include "system_ticker.h"
 #include "main.h"
 
-#define BREATHE_MODE
-
-#ifdef BREATHE_MODE
-#define BREATHE_DELAY 40
-#define BREATHE_DELAY_STEPSIZE 32
-#endif // BREATHE_MODE
-
 int main(void)
 {
+#ifndef BREATHE_MODE
 RESTART:
+#endif
 
     setup_hw();
     delay(16000);
@@ -74,33 +69,9 @@ void initial_fade_in(void)
     }
 }
 
+#ifdef BREATHE_MODE
 void breathe(void)
 {
-    static uint16_t breathe_delay = BREATHE_DELAY;
-
-    switch (PINB & 0x06) {	// only get PB2 and PB1
-    case 0x02:	// PB2 pulled low
-        if( breathe_delay <= 65535 - BREATHE_DELAY_STEPSIZE ) {
-            breathe_delay += BREATHE_DELAY_STEPSIZE;
-        } else if( breathe_delay == 65535 ) {
-            break;
-        } else {
-            breathe_delay = 65535;
-        }
-        break;
-    case 0x04:	// PB1 pulled low
-        if( breathe_delay >= 0 + BREATHE_DELAY_STEPSIZE ) {
-            breathe_delay -= BREATHE_DELAY_STEPSIZE;
-        } else if( breathe_delay == 0 ) {
-            break;
-        } else {
-            breathe_delay = 0;
-        }
-        break;
-    default:
-        break;
-    }
-
     OCR0A = 0;
 
     while(OCR0A <= 255) {
@@ -126,3 +97,4 @@ void breathe(void)
         delay(breathe_delay);
     }
 }
+#endif // BREATHE_MODE
