@@ -12,10 +12,11 @@ void system_ticker_setup(void)
     TCCR0A |= (_BV(WGM01) | _BV(WGM00));
     TCCR0B &= ~_BV(WGM02);
     // inv. PWM
-    TCCR0A &= ~(_BV(COM0A0) | _BV(COM0B1) | _BV(COM0B0));
-    TCCR0A |= _BV(COM0A1);
+    TCCR0A &= ~(_BV(COM0B1) | _BV(COM0B0));
+    TCCR0A |= (_BV(COM0A1) | _BV(COM0A0));
     // enabling overflow interrupt
     TIMSK |= _BV(TOIE0);
+    OCR0A = 255; // inverted PWM - start OFF
 }
 
 /*

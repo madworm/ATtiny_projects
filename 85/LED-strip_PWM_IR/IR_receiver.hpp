@@ -17,18 +17,14 @@
 // order (if present at all) as in the PROGMEM array IRsignals! These 3 special elements
 // must ALWAYS be there.
 typedef enum {
-    VOL_DOWN,
     VOL_UP,
+    VOL_DOWN,
     ARROW_UP,
     ARROW_DOWN,
-    DIGIT_1,
-    DIGIT_2,
-    DIGIT_3,
-    DIGIT_0_OR_10,
     // DO NOT EDIT THESE LAST 3!
     REPEAT_CODE = 66,
     MISMATCH = 77,		// only returned if something goes terribly wrong
-    NOT_SURE_YET = 99,	// this should NEVER be returned as a result
+    NOT_SURE_YET = 99	// this should NEVER be returned as a result
 } IR_code_t;
 
 void init_IR(void);

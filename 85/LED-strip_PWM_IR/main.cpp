@@ -35,23 +35,25 @@ int main(void)
                     if (IR_available() ) {
 #endif
                         switch(eval_IR_code()) {
-                        case VOL_UP:
-                            if(OCR0A < 255) {
-                                OCR0A++;
-                            } else {
-                                OCR0A = 255;
-                            }
-                            break;
-                        case VOL_DOWN:
+                        case VOL_UP: // inverted PWM
                             if(OCR0A >0) {
                                 OCR0A--;
                             } else {
                                 OCR0A = 0;
                             }
                             break;
+                        case VOL_DOWN: // inverted PWM
+                            if(OCR0A < 255) {
+                                OCR0A++;
+                            } else {
+                                OCR0A = 255;
+                            }
+                            break;
                         case ARROW_UP:
+                            OCR0A = 0; // inverted PWM
                             break;
                         case ARROW_DOWN:
+                            OCR0A = 255; // inverted PWM
                             break;
                         case REPEAT_CODE:
                             break;
