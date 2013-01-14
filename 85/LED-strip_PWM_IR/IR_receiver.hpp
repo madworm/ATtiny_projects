@@ -30,5 +30,6 @@ typedef enum {
 void init_IR(void);
 uint8_t IR_available(void);
 IR_code_t eval_IR_code(void);
+void IR_scan(void);
 
 #endif

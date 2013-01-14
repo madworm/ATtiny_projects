@@ -145,6 +145,29 @@ IR_code_t eval_IR_code(void)
     return IR_code;
 }
 
+void IR_scan(void)
+{
+    uint8_t ctr1;
+
+    if(IR_available()) {
+
+        soft_uart_send(PSTR("\n\r --- START --- \n\r"));
+        soft_uart_send(PSTR("#define ir_code_1 \{\\ \n\r"));
+
+        for (ctr1 = 0; ctr1 <= (NUMPULSES-2); ctr1++) {
+            int16_t measured = (int16_t) (pulses_read_from[ctr1]);
+            soft_uart_send(measured);
+            soft_uart_send(PSTR(",\\ \n\r"));
+        }
+
+        soft_uart_send(pulses_read_from[NUMPULSES-1]);
+        soft_uart_send(PSTR("\}\\ \n\r"));
+
+        soft_uart_send(PSTR("\n\r --- END --- \n\r"));
+        zero_pulses(pulses_read_from);
+    }
+}
+
 ISR(PCINT0_vect)
 {
     static uint8_t pulse_counter = 0;
