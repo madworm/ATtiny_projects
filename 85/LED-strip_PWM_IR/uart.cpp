@@ -83,36 +83,52 @@ void soft_uart_send(uint8_t number, uint8_t base)
 
 void soft_uart_send(uint16_t number)
 {
-    uint8_t a = number / 10000;
-    uint8_t b = (number - 10000*a)/1000;
-    uint8_t c = (number - 10000*a - 1000*b)/100;
-    uint8_t d = (number - 10000*a - 1000*b -100*c)/10;
-    uint8_t e = (number - 10000*a - 1000*b -100*c - 10*d);
+    uint16_t digit[5];
 
-    soft_uart_write(a+'0');
-    soft_uart_write(b+'0');
-    soft_uart_write(c+'0');
-    soft_uart_write(d+'0');
-    soft_uart_write(e+'0');
+    digit[0] = number / 10000;
+    digit[1] = (number - 10000*digit[0])/1000;
+    digit[2] = (number - 10000*digit[0] - 1000*digit[1])/100;
+    digit[3] = (number - 10000*digit[0] - 1000*digit[1] -100*digit[2])/10;
+    digit[4] = (number - 10000*digit[0] - 1000*digit[1] -100*digit[2] - 10*digit[3]);
+
+    uint8_t counter;
+    uint8_t print_now = 0;
+    for(counter=0; counter <=4; counter++) {
+        if((digit[counter] == 0) && (print_now == 0) && (counter != 4)) {
+            continue;
+        } else {
+            print_now = 1;
+            soft_uart_write(digit[counter]+'0');
+        }
+    }
+
 }
 
 void soft_uart_send(int16_t number)
 {
     if ( number < 0 ) {
         number = (uint16_t)(-number);
+        soft_uart_write('-');
     }
 
-    uint8_t a = number / 10000;
-    uint8_t b = (number - 10000*a)/1000;
-    uint8_t c = (number - 10000*a - 1000*b)/100;
-    uint8_t d = (number - 10000*a - 1000*b -100*c)/10;
-    uint8_t e = (number - 10000*a - 1000*b -100*c - 10*d);
+    uint16_t digit[5];
 
-    soft_uart_write(a+'0');
-    soft_uart_write(b+'0');
-    soft_uart_write(c+'0');
-    soft_uart_write(d+'0');
-    soft_uart_write(e+'0');
+    digit[0] = number / 10000;
+    digit[1] = (number - 10000*digit[0])/1000;
+    digit[2] = (number - 10000*digit[0] - 1000*digit[1])/100;
+    digit[3] = (number - 10000*digit[0] - 1000*digit[1] -100*digit[2])/10;
+    digit[4] = (number - 10000*digit[0] - 1000*digit[1] -100*digit[2] - 10*digit[3]);
+
+    uint8_t counter;
+    uint8_t print_now = 0;
+    for(counter=0; counter <=4; counter++) {
+        if((digit[counter] == 0) && (print_now == 0) && (counter != 4)) {
+            continue;
+        } else {
+            print_now = 1;
+            soft_uart_write(digit[counter]+'0');
+        }
+    }
 }
 
 void soft_uart_send(const char * string)
