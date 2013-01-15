@@ -133,7 +133,9 @@ IR_code_t eval_IR_code(void)
 #endif
             break;
         }
-        if (IR_code == NOT_SURE_YET) {
+        if (IR_code == NOT_SURE_YET) { 
+            // IR_code wasn't determined to be a repeat code or something of that sort
+	    // so we know we have a match against data
             IR_code = (IR_code_t) (ctr2);
             break;
         }
