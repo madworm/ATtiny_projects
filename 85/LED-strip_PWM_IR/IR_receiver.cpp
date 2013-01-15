@@ -155,8 +155,7 @@ void IR_scan(void)
         soft_uart_send(PSTR("#define ir_code_1 \{\\ \n\r"));
 
         for (ctr1 = 0; ctr1 <= (NUMPULSES-2); ctr1++) {
-            int16_t measured = (int16_t) (pulses_read_from[ctr1]);
-            soft_uart_send(measured);
+            soft_uart_send(pulses_read_from[ctr]);
             soft_uart_send(PSTR(",\\ \n\r"));
         }
 
