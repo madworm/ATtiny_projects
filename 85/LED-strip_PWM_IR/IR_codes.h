@@ -21,7 +21,7 @@
 #define MAXPULSE 65000U
 #define MINPULSE 5U
 #define REPEAT_CODE_PAUSE 250	// this has to be signed !
-#define NUMPULSES 72U
+#define NUMPULSES 72U // adjust this to capture all of the IR data. If you get lots of '0' at the end, reduce.
 #define FUZZINESS 35U // had to increase to 35 for the ATtiny85 + ext. resonator.
 
 #define	vol_down { \
@@ -830,9 +830,9 @@
  *
  */
 
-#define NUMBER_OF_IR_CODES 8	// does not include the repeat-code, which I don't consider as a "full" code.
+#define NUMBER_OF_IR_CODES 4	// does not include the repeat-code, which I don't consider as a "full" code.
 
-const uint16_t PROGMEM IRsignals[NUMBER_OF_IR_CODES][72] = {
+const uint16_t PROGMEM IRsignals[NUMBER_OF_IR_CODES][NUMPULSES] = {
     vol_up,
     vol_down,
     arrow_up,
