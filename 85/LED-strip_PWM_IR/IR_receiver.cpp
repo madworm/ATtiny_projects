@@ -133,7 +133,7 @@ IR_code_t eval_IR_code(void)
 #endif
             break;
         }
-        if (IR_code == NOT_SURE_YET) { 
+        if (IR_code == NOT_SURE_YET) {
             // IR_code wasn't determined to be a repeat code or something of that sort
 	    // so we know we have a match against data
             IR_code = (IR_code_t) (ctr2);
@@ -157,7 +157,7 @@ void IR_scan(void)
         soft_uart_send(PSTR("#define ir_code_1 \{\\ \n\r"));
 
         for (ctr1 = 0; ctr1 <= (NUMPULSES-2); ctr1++) {
-            soft_uart_send(pulses_read_from[ctr]);
+            soft_uart_send(pulses_read_from[ctr1]);
             soft_uart_send(PSTR(",\\ \n\r"));
         }
 
