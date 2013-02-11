@@ -6,6 +6,7 @@
 #include "system_ticker.hpp"
 #include "uart.hpp"
 #include "IR_receiver.hpp"
+#include "util.hpp"
 
 extern "C" {
 #include "IR_codes.h"
@@ -130,13 +131,25 @@ IR_code_t eval_IR_code(void)
         if (IR_code == REPEAT_CODE) {
 #if defined(TRANSLATE_REPEAT_CODE)
             IR_code = prev_IR_code;
+            LED_on;
+            delay(10);
+            LED_off;
+            delay(10);
+            LED_on;
+            delay(10);
+            LED_off;
+            LED_idle;
 #endif
             break;
         }
         if (IR_code == NOT_SURE_YET) {
             // IR_code wasn't determined to be a repeat code or something of that sort
-	    // so we know we have a match against data
+            // so we know we have a match against data
             IR_code = (IR_code_t) (ctr2);
+            LED_on;
+            delay(100);
+            LED_off;
+            LED_idle;
             break;
         }
     }
