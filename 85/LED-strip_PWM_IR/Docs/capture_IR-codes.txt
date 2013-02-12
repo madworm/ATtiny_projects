@@ -1,0 +1,68 @@
+
+Switch the board into capture mode:
+===================================
+
+* Connect the IR sensor.
+
+* Connect 'MISO' to 'GND'.
+
+  ISP-header top-view:        #5      #3       #1
+                           +-------+-------+--------+
+                           |       |       |        |
+                           | RESET |  SCK  |  MISO  |
+                           |       |       |        |
+                           +------ +-------+--------+
+                           |       |       |        |
+                           |  GND  |  MOSI |   5V   |
+                           |       |       |        |
+                           +-------+-------+--------+
+                              #6      #4       #2
+
+* Connect '+' and '-' on the 12V-side of the board to the corresponding
+  pins of the USB adapter board (5V and GND).
+
+  The status-LED should turn on and stay lit.
+
+* Remove the wire between 'MISO' and 'GND'.
+
+* Connect 'SCK' to the RX-pin of the serial adapter.
+
+* Make sure to be far away from disturbing light sources:
+ 
+  compact fluoros, LED lamps with PWM...
+
+
+
+Linux:
+======
+
+Assuming you use an USB to TTL-serial adapter that shows up as /dev/ttyUSB0
+
+* Configure the serial port:
+  ==========================
+
+  stty -F /dev/ttyUSB0 9600
+
+
+* For watching only:
+  ------------------
+
+  cat /dev/ttyUSB0
+
+
+* For watching with pagination:
+  -----------------------------
+
+  cat /dev/ttyUSB0 | less
+
+
+* For saving to a file:
+  ---------------------
+
+  cat /dev>/ttyUSB0 > filename.txt
+
+
+The status-LED will increase in brightness while data is sent.
+When the transfer is finished, it will revert to a dim glow.
+
+
