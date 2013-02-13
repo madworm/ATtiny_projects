@@ -2,10 +2,6 @@
 Switch the board into capture mode:
 ===================================
 
-* Connect the IR sensor.
-
-* Connect 'MISO' to 'GND'.
-
   ISP-header top-view:        #5      #3       #1
                            +-------+-------+--------+
                            |       |       |        |
@@ -18,18 +14,20 @@ Switch the board into capture mode:
                            +-------+-------+--------+
                               #6      #4       #2
 
-* Connect '+' and '-' on the 12V-side of the board to the corresponding
-  pins of the USB adapter board (5V and GND).
-
-  The status-LED should turn on and stay lit.
-
-* Remove the wire between 'MISO' and 'GND'.
+* Connect the IR sensor.
 
 * Connect 'SCK' to the RX-pin of the serial adapter.
 
 * Make sure to be far away from disturbing light sources:
  
   compact fluoros, LED lamps with PWM...
+
+* Connect '+' and '-' on the 12V-side of the board to the corresponding
+  pins of the USB adapter board (5V and GND).
+
+  The status-LED should turn on and stay lit.
+
+* Within 5 seconds start sending IR codes, the board will go into scan mode.
 
 
 

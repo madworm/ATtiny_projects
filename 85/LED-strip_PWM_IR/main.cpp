@@ -19,20 +19,20 @@ int main(void)
 {
     setup_hw();
 
-    // if the MISO pin is shorted to ground on startup
-    // run IR_scan to capture new IR codes and send
-    // them to the PC (9600,8,N,1)
-    // the IR sensor must be disconnected at first
-    // and reconnected after the short was removed
-    if ( !(PINB & _BV(PB1)) ) {
-        while( 1 ) {
-            IR_scan();
-        }
-    }
+	// if there is any IR data within 5 seconds of power-on
+	// we go into scan mode and transmit pulse-data on the
+	// SCK-pin of the ISP header (9600,8,N,1).
+	while(millis() < 5000) {
+		if( IR_available() ) {
+			while(1) {
+				IR_scan();
+			}
+		}
+	}
 
-    while(1) {
+	while(1) {
 
-        if ( IR_available() ) {
+		if ( IR_available() ) {
 
 #if defined(USE_BOARD_ADDRESS)
             IR_code_t IR_code = eval_IR_code();
