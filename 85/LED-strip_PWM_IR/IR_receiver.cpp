@@ -166,18 +166,18 @@ void IR_scan(void)
 
     if(IR_available()) {
 
-        soft_uart_send(PSTR("\n\r --- START --- \n\r"));
-        soft_uart_send(PSTR("#define ir_code_1 { \\ \n\r"));
+        soft_uart_send(PSTR("\n --- START --- \n"));
+        soft_uart_send(PSTR("#define ir_code_1 { \\ \n"));
 
         for (ctr1 = 0; ctr1 <= (NUMPULSES-2); ctr1++) {
             soft_uart_send(pulses_read_from[ctr1]);
-            soft_uart_send(PSTR(", \\ \n\r"));
+            soft_uart_send(PSTR(", \\ \n"));
         }
 
         soft_uart_send(pulses_read_from[NUMPULSES-1]);
-        soft_uart_send(PSTR("} \\ \n\r"));
+        soft_uart_send(PSTR("} \\ \n"));
 
-        soft_uart_send(PSTR("\n\r --- END --- \n\r"));
+        soft_uart_send(PSTR("\n --- END --- \n"));
         zero_pulses(pulses_read_from);
     }
 }
