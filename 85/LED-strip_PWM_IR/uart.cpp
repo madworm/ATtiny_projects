@@ -3,7 +3,6 @@
 #include <avr/pgmspace.h>
 #include <util/delay.h>
 #include <stdint.h>
-#include "IR_receiver.hpp"
 #include "uart.hpp"
 
 void soft_uart_init(void)
