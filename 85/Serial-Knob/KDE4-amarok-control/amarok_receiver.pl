@@ -27,5 +27,12 @@ while (1) {
       # amarok 2 + KDE4: volume down
       system('qdbus org.mpris.amarok /Player org.kde.amarok.Mpris1Extensions.Player.Mute');
   }
+
+  # abuse select as a finer-granulated sleep function - limit cpu usage
+  # next step of escalation: Time::HiRes
+  #
+  # http://stackoverflow.com/questions/896904/how-do-i-sleep-for-a-millisecond-in-perl
+  #
+  select(undef, undef, undef, 0.01);
 }
 
