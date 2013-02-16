@@ -69,8 +69,39 @@ ISR(TIMER0_OVF_vect)
 
 	cur_enc_state = ~(PINB & 0x07);  // bit 2: ENC_B, bit 1: ENC_A, bit 0: button
 
-	uint8_t enc_rot_trans[16] = {0, 2, 1, 0, 1, 0, 0, 2, 2, 0, 0, 1, 0, 1, 2, 0 };
-	
+	// full resolution, 4 counting-ticks per 1 mechanical tick
+	// uint8_t enc_rot_trans[16] = {0, 2, 1, 0, 1, 0, 0, 2, 2, 0, 0, 1, 0, 1, 2, 0};
+		
+	// encoder transitions:
+	//
+	// 0 --> 0, 2 --> +1, 1 --> -1
+	//
+	// 2 and 1 are used instead of just +1 and -1, as this keeps the bits separate.
+	// 2 is 0b00000010 and 1 is 0b00000001, so going forward or backward can be
+	// polled as two individual flag-bits in the 'enc_evt' byte.
+	//
+	// #	from-to : step to take
+	//
+	// 0	00-00 : 0
+	// 1	00-01 : 2
+	// 2	00-10 : 1
+	// 3	00-11 : 0
+	// 4	01-00 : 1
+	// 5	01-01 : 0
+	// 6	01-10 : 0
+	// 7	01-11 : 2
+	// 8	10-00 : 2
+	// 9	10-01 : 0
+	// 10	10-10 : 0
+	// 11	10-11 : 1
+	// 12	11-00 : 0
+	// 13	11-01 : 1
+	// 14	11-10 : 2
+	// 15	11-11 : 0
+
+	// just 1 counting tick per 1 mechnical tick
+	uint8_t enc_rot_trans[16] = {0, 2, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
 	// enc_evt:  bit 4: button state, bit 3: button just pressed, bit 2: button just released, bit 1: count+, bit 0: count-
 
 	// always write the current 'live' button state - figure out debouncing later

@@ -30,6 +30,7 @@ int main(void)
 		}
 		if( encoder_get(BUTTON_STATE) ) {
 			soft_uart_send(PSTR("¯"));
+			delay(50);
 		} else {
 			//soft_uart_send(PSTR("_"));
 		}
