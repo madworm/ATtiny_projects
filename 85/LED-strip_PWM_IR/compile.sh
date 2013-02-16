@@ -7,14 +7,24 @@ ARDUINO_DIR="arduino-1.0.3/hardware/tools/avr/bin"
 
 PATH=$PATH:$HOME/$ARDUINO_DIR
 
+if [[ -d ./obj/Debug ]]
+then
+	rm -rf ./obj/Debug/*
+fi
+
+if [[ -d ./bin/Debug ]]
+then
+	rm -rf ./bin/Debug/*
+fi
+
 if [[ ! -d ./obj/Debug ]]
 then
-mkdir -p "obj/Debug"
+	mkdir -p "obj/Debug"
 fi
 
 if [[ ! -d ./bin/Debug  ]]
 then
-mkdir -p "bin/Debug"
+	mkdir -p "bin/Debug"
 fi
 
 avr-g++ -mmcu=attiny85 -fexpensive-optimizations -Os -Wmain -Wall -g -gdwarf-2 -funsigned-bitfields -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -fno-exceptions -DF_CPU=8000000UL      -c IR_receiver.cpp -o obj/Debug/IR_receiver.o
