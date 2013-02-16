@@ -71,9 +71,15 @@ ISR(TIMER0_OVF_vect)
 
 	uint8_t enc_rot_trans[16] = {0, 2, 1, 0, 1, 0, 0, 2, 2, 0, 0, 1, 0, 1, 2, 0 };
 	
-	// bit 4: button state, bit 3: button just pressed, bit 2: button just released, bit 1: count+, bit 0: count-
-	enc_evt = ( (cur_enc_state & 0x01) << 4 ); // always write the current button state
-			   
+	// enc_evt:  bit 4: button state, bit 3: button just pressed, bit 2: button just released, bit 1: count+, bit 0: count-
+
+	// always write the current 'live' button state - figure out debouncing later
+	if( cur_enc_state & 0x01 ) {
+		enc_evt |= _BV(4);
+	} else {
+		enc_evt &= ~_BV(4);
+	}
+
 	// only OR the changes into it, so encoder_get() has to zero them out and the last change doesn't get
 	// overwritten by the next ISR invocation
 	enc_evt |= ( ( ( (prev_enc_state & 0x01) ^ (cur_enc_state & 0x01) ) & (cur_enc_state & 0x01) ) << 3 ) + \
@@ -187,7 +193,7 @@ uint8_t encoder_get(uint8_t whatbit) {
 	cli();
 	if( enc_evt & _BV(whatbit) ) {
 		if( whatbit != BUTTON_STATE ) {
-			enc_evt &= ~_BV(whatbit);
+			enc_evt &= ~_BV(whatbit); // reset flag
 		}
 		SREG = _sreg;
 		return 1;

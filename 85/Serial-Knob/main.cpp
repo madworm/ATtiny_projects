@@ -29,21 +29,11 @@ int main(void)
 			soft_uart_send(PSTR("\\"));
 		}
 		if( encoder_get(BUTTON_STATE) ) {
+			soft_uart_send(PSTR("¯"));
+		} else {
+			//soft_uart_send(PSTR("_"));
 		}
-		if( encoder_get(BUTTON_STATE) ) {
-		}
-		if( encoder_get(BUTTON_STATE) ) {
-		}
-		if( encoder_get(BUTTON_STATE) ) {
-		}
-		if( encoder_get(BUTTON_STATE) ) {
-		}
-		if( encoder_get(BUTTON_STATE) ) {
-		}
-		if( encoder_get(BUTTON_STATE) ) {
-		}
-		if( encoder_get(BUTTON_STATE) ) {
-		}
+		//delay(5);
 	}
 	return 0;
 }
