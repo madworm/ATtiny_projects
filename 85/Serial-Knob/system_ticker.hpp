@@ -12,6 +12,6 @@ uint32_t millis(void);
 uint32_t micros(void);
 void delay(uint32_t ms);
 void delayMicroseconds(uint16_t us);
-uint8_t encoder_get(void);
+uint8_t encoder_get(uint8_t whatbit);
 
 #endif

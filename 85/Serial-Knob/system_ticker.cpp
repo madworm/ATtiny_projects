@@ -67,9 +67,9 @@ ISR(TIMER0_OVF_vect)
 	uint8_t cur_enc_state;
 	static uint8_t prev_enc_state = 0;
 
-	cur_enc_state = PINB & 0x07;  // bit 2: ENC_B, bit 1: ENC_A, bit 0: button
+	cur_enc_state = ~(PINB & 0x07);  // bit 2: ENC_B, bit 1: ENC_A, bit 0: button
 
-	uint8_t enc_rot_trans[15] = { 2, 1, 0, 1, 0, 0, 2, 2, 0, 0, 1, 0, 1, 2, 0 };
+	uint8_t enc_rot_trans[16] = {0, 2, 1, 0, 1, 0, 0, 2, 2, 0, 0, 1, 0, 1, 2, 0 };
 	
 	// bit 4: button state, bit 3: button just pressed, bit 2: button just released, bit 1: count+, bit 0: count-
 	enc_evt = ( (cur_enc_state & 0x01) << 4 ); // always write the current button state
@@ -182,11 +182,17 @@ void delayMicroseconds(uint16_t us)
     );
 }
 
-uint8_t encoder_get(void) {
+uint8_t encoder_get(uint8_t whatbit) {
 	uint8_t _sreg = SREG;
 	cli();
-	uint8_t encoder_event = enc_evt;
-	enc_evt = 0;
-	SREG = _sreg;
-	return encoder_event;
+	if( enc_evt & _BV(whatbit) ) {
+		if( whatbit != BUTTON_STATE ) {
+			enc_evt &= ~_BV(whatbit);
+		}
+		SREG = _sreg;
+		return 1;
+	} else {
+		SREG = _sreg;
+		return 0;
+	}
 }

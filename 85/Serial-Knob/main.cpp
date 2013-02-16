@@ -15,14 +15,36 @@ int main(void)
     setup_hw();
    
    	while(1) {
-		if( encoder_get() & _BV(BUTTON_WAS_PRESSED) ) {
-			LED_on;
-			delay(1000);
-			LED_off;
-			LED_idle;
+
+		if( encoder_get(ENC_COUNT_UP) ) {
+			soft_uart_send(PSTR("+"));
+		}
+		if( encoder_get(ENC_COUNT_DOWN) ) {
+			soft_uart_send(PSTR("-"));
+		}
+		if( encoder_get(BUTTON_WAS_PRESSED) ) {
+			soft_uart_send(PSTR("/"));
+		}
+		if( encoder_get(BUTTON_WAS_RELEASED) ) {
+			soft_uart_send(PSTR("\\"));
+		}
+		if( encoder_get(BUTTON_STATE) ) {
+		}
+		if( encoder_get(BUTTON_STATE) ) {
+		}
+		if( encoder_get(BUTTON_STATE) ) {
+		}
+		if( encoder_get(BUTTON_STATE) ) {
+		}
+		if( encoder_get(BUTTON_STATE) ) {
+		}
+		if( encoder_get(BUTTON_STATE) ) {
+		}
+		if( encoder_get(BUTTON_STATE) ) {
+		}
+		if( encoder_get(BUTTON_STATE) ) {
 		}
 	}
-
 	return 0;
 }
 
@@ -40,5 +62,5 @@ void setup_hw(void)
 
     system_ticker_setup();
     sei(); // turn global irq flag on, also needed as a wakeup source
-    soft_uart_init();
+	soft_uart_init();
 }
