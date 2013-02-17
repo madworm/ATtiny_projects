@@ -16,10 +16,12 @@ int main(void)
    
    	while(1) {
 
-		if( encoder_get(ENC_COUNT_UP) ) {
+		int8_t counts = encoder_get(ENC_COUNTS);
+		
+		if( counts > 0 ) {
 			soft_uart_send(PSTR("+"));
 		}
-		if( encoder_get(ENC_COUNT_DOWN) ) {
+		if( counts < 0 ) {
 			soft_uart_send(PSTR("-"));
 		}
 		if( encoder_get(BUTTON_WAS_PRESSED) ) {
@@ -34,7 +36,6 @@ int main(void)
 		} else {
 			//soft_uart_send(PSTR("_"));
 		}
-		//delay(5);
 	}
 	return 0;
 }

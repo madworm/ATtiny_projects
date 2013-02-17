@@ -2,7 +2,8 @@
 #include <stdint.h>
 #include "system_ticker.hpp"
 
-volatile uint8_t enc_evt = 0;
+volatile int8_t enc_evt = 0; // contains information about encoder ticks, buttons tate...
+volatile int8_t enc_counts = 0;
 
 void system_ticker_setup(void)
 {
@@ -70,52 +71,46 @@ ISR(TIMER0_OVF_vect)
 	cur_enc_state = ~(PINB & 0x07);  // bit 2: ENC_B, bit 1: ENC_A, bit 0: button
 
 	// full resolution, 4 counting-ticks per 1 mechanical tick
-	// uint8_t enc_rot_trans[16] = {0, 2, 1, 0, 1, 0, 0, 2, 2, 0, 0, 1, 0, 1, 2, 0};
+	// int8_t enc_rot_trans[16] = {0, +1, -1, 0, -1, 0, 0, +1, +1, 0, 0, -1, 0, -1, +1, 0};
 		
 	// encoder transitions:
 	//
-	// 0 --> 0, 2 --> +1, 1 --> -1
-	//
-	// 2 and 1 are used instead of just +1 and -1, as this keeps the bits separate.
-	// 2 is 0b00000010 and 1 is 0b00000001, so going forward or backward can be
-	// polled as two individual flag-bits in the 'enc_evt' byte.
-	//
-	// #	from-to : step to take
-	//
 	// 0	00-00 : 0
-	// 1	00-01 : 2
-	// 2	00-10 : 1
+	// 1	00-01 : +1
+	// 2	00-10 : -1
 	// 3	00-11 : 0
-	// 4	01-00 : 1
+	// 4	01-00 : -1
 	// 5	01-01 : 0
 	// 6	01-10 : 0
-	// 7	01-11 : 2
-	// 8	10-00 : 2
+	// 7	01-11 : +1
+	// 8	10-00 : +1
 	// 9	10-01 : 0
 	// 10	10-10 : 0
-	// 11	10-11 : 1
+	// 11	10-11 : -1
 	// 12	11-00 : 0
-	// 13	11-01 : 1
-	// 14	11-10 : 2
+	// 13	11-01 : -1
+	// 14	11-10 : +1
 	// 15	11-11 : 0
 
 	// just 1 counting tick per 1 mechnical tick
-	uint8_t enc_rot_trans[16] = {0, 2, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	int8_t enc_rot_trans[16] = {0, +1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-	// enc_evt:  bit 4: button state, bit 3: button just pressed, bit 2: button just released, bit 1: count+, bit 0: count-
+	// enc_evt:  bit 6...3: accumulated ticks, bit 2: button state, bit 1: button just pressed, bit 0: button just released
+	// enc_evt:  bit 7 is off-limits, as this is a signed variable!
+
+	enc_counts += enc_rot_trans[ ( (prev_enc_state & 0x06) << 1 ) + ( (cur_enc_state & 0x06) >> 1 ) ];
 
 	// always write the current 'live' button state - figure out debouncing later
 	if( cur_enc_state & 0x01 ) {
-		enc_evt |= _BV(4);
+		enc_evt |= _BV(2);
 	} else {
-		enc_evt &= ~_BV(4);
+		enc_evt &= ~_BV(2);
 	}
 
 	// only OR the changes into it, so encoder_get() has to zero them out and the last change doesn't get
 	// overwritten by the next ISR invocation
-	enc_evt |= ( ( ( (prev_enc_state & 0x01) ^ (cur_enc_state & 0x01) ) & (cur_enc_state & 0x01) ) << 3 ) + \
-			   ( ( ( (prev_enc_state & 0x01) ^ (cur_enc_state & 0x01) ) & (prev_enc_state & 0x01) ) << 2 ) + \
-			   enc_rot_trans[ ( (prev_enc_state & 0x06) << 1 ) + ( (cur_enc_state & 0x06) >> 1 ) ];
+	enc_evt |= ( ( ( (prev_enc_state & 0x01) ^ (cur_enc_state & 0x01) ) & (cur_enc_state & 0x01) ) << 1 ) + \
+			   ( ( ( (prev_enc_state & 0x01) ^ (cur_enc_state & 0x01) ) & (prev_enc_state & 0x01) ) << 0 ); 
 
 	prev_enc_state = cur_enc_state;
 }
@@ -219,17 +214,50 @@ void delayMicroseconds(uint16_t us)
     );
 }
 
-uint8_t encoder_get(uint8_t whatbit) {
+int8_t encoder_get(uint8_t whatbit) {
 	uint8_t _sreg = SREG;
+	int8_t counts = 0;
 	cli();
-	if( enc_evt & _BV(whatbit) ) {
-		if( whatbit != BUTTON_STATE ) {
-			enc_evt &= ~_BV(whatbit); // reset flag
+
+	switch(whatbit) {
+
+	case 0:
+		if( enc_evt & _BV(0) ) {
+			enc_evt &= ~_BV(0);
+			SREG = _sreg;
+			return 1;
+		} else {
+			SREG = _sreg;
+			return 0;
 		}
+		break;
+	case 1:
+		if( enc_evt & _BV(1) ) {
+			enc_evt &= ~_BV(1);
+			SREG = _sreg;
+			return 1;
+		} else {
+			SREG = _sreg;
+			return 0;
+		}
+		break;
+	case 2:
+		if( enc_evt & _BV(2) ) {
+			enc_evt &= ~_BV(2);
+			SREG = _sreg;
+			return 1;
+		} else {
+			SREG = _sreg;
+			return 0;
+		}
+		break;
+	case 7:
+		counts = enc_counts;
+		enc_counts = 0;
 		SREG = _sreg;
-		return 1;
-	} else {
-		SREG = _sreg;
-		return 0;
+		return counts;
+		break;
+	default:
+		break;
 	}
 }

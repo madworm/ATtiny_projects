@@ -80,6 +80,31 @@ void soft_uart_send(uint8_t number, uint8_t base)
     }
 }
 
+void soft_uart_send(int8_t number)
+{
+    if ( number < 0 ) {
+        number = (uint8_t)(-number);
+        soft_uart_write('-');
+    }
+
+    uint8_t digit[3];
+
+    digit[0] = number / 100;
+    digit[1] = (number - 100*digit[0])/10;
+    digit[2] = (number - 100*digit[0] - 10*digit[1]);
+
+    uint8_t counter;
+    uint8_t print_now = 0;
+    for(counter=0; counter <=2; counter++) {
+        if((digit[counter] == 0) && (print_now == 0) && (counter != 2)) {
+            continue;
+        } else {
+            print_now = 1;
+            soft_uart_write(digit[counter]+'0');
+        }
+    }
+}
+
 void soft_uart_send(uint16_t number)
 {
     uint16_t digit[5];
