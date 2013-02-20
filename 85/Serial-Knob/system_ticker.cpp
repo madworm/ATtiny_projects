@@ -67,6 +67,7 @@ ISR(TIMER0_OVF_vect)
     // reading the quadrature encoder //
 	uint8_t cur_enc_state;
 	static uint8_t prev_enc_state = 0;
+	static uint8_t button_debounce = 0;
 
 	cur_enc_state = ~(PINB & 0x07);  // bit 2: ENC_B, bit 1: ENC_A, bit 0: button
 
@@ -95,15 +96,25 @@ ISR(TIMER0_OVF_vect)
 	// just 1 counting tick per 1 mechnical tick
 	int8_t enc_rot_trans[16] = {0, +1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-	// enc_evt:  bit 6...3: accumulated ticks, bit 2: button state, bit 1: button just pressed, bit 0: button just released
-	// enc_evt:  bit 7 is off-limits, as this is a signed variable!
-
 	enc_counts += enc_rot_trans[ ( (prev_enc_state & 0x06) << 1 ) + ( (cur_enc_state & 0x06) >> 1 ) ];
 
-	// always write the current 'live' button state - figure out debouncing later
+	// debounce the button
+	
+	button_debounce <<= 1; // shift 1 bit to the left
+
 	if( cur_enc_state & 0x01 ) {
+		button_debounce |= _BV(0); // insert a 1 as LSB
+	} else {
+		button_debounce &= ~_BV(0); // insert a 0 as LSB
+	}
+
+	// if the whole byte is filled with 1s, the button is considered as pressed 
+	// the button was stable ON for 8 interrupt invocations, about 8ms.
+	if ( button_debounce == 0xFF ) {
+		cur_enc_state |= _BV(0);
 		enc_evt |= _BV(2);
 	} else {
+		cur_enc_state &= ~_BV(0);
 		enc_evt &= ~_BV(2);
 	}
 
@@ -111,6 +122,8 @@ ISR(TIMER0_OVF_vect)
 	// overwritten by the next ISR invocation
 	enc_evt |= ( ( ( (prev_enc_state & 0x01) ^ (cur_enc_state & 0x01) ) & (cur_enc_state & 0x01) ) << 1 ) + \
 			   ( ( ( (prev_enc_state & 0x01) ^ (cur_enc_state & 0x01) ) & (prev_enc_state & 0x01) ) << 0 ); 
+	// enc_evt:  bit 2: button state, bit 1: button just pressed, bit 0: button just released
+	// enc_evt:  bit 7 is off-limits, as this is a signed variable!
 
 	prev_enc_state = cur_enc_state;
 }
@@ -217,11 +230,11 @@ void delayMicroseconds(uint16_t us)
 int8_t encoder_get(uint8_t whatbit) {
 	uint8_t _sreg = SREG;
 	int8_t counts = 0;
-	cli();
 
 	switch(whatbit) {
 
 	case 0:
+		cli();
 		if( enc_evt & _BV(0) ) {
 			enc_evt &= ~_BV(0);
 			SREG = _sreg;
@@ -232,6 +245,7 @@ int8_t encoder_get(uint8_t whatbit) {
 		}
 		break;
 	case 1:
+		cli();
 		if( enc_evt & _BV(1) ) {
 			enc_evt &= ~_BV(1);
 			SREG = _sreg;
@@ -242,6 +256,7 @@ int8_t encoder_get(uint8_t whatbit) {
 		}
 		break;
 	case 2:
+		cli();
 		if( enc_evt & _BV(2) ) {
 			enc_evt &= ~_BV(2);
 			SREG = _sreg;
@@ -252,12 +267,14 @@ int8_t encoder_get(uint8_t whatbit) {
 		}
 		break;
 	case 7:
+		cli();
 		counts = enc_counts;
 		enc_counts = 0;
 		SREG = _sreg;
 		return counts;
 		break;
 	default:
+		return 0;
 		break;
 	}
 }

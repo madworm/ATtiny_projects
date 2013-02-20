@@ -13,7 +13,10 @@
 int main(void)
 {
     setup_hw();
-   
+
+	static uint8_t button_press_just_happened = 0;
+	static uint8_t not_the_first_time_pressed = 0;
+
    	while(1) {
 
 		int8_t counts = encoder_get(ENC_COUNTS);
@@ -26,12 +29,16 @@ int main(void)
 		}
 		if( encoder_get(BUTTON_WAS_PRESSED) ) {
 			soft_uart_send(PSTR("/"));
+			button_press_just_happened = 1;
 		}
 		if( encoder_get(BUTTON_WAS_RELEASED) ) {
 			soft_uart_send(PSTR("\\"));
+			not_the_first_time_pressed = 0;
 		}
-		if( encoder_get(BUTTON_STATE) ) {
+		if( encoder_get(BUTTON_STATE) && ( (button_press_just_happened == 1) || (not_the_first_time_pressed == 1) ) ) {
 			soft_uart_send(PSTR("¯"));
+			button_press_just_happened = 0;
+			not_the_first_time_pressed = 1;
 			delay(50);
 		} else {
 			//soft_uart_send(PSTR("_"));
