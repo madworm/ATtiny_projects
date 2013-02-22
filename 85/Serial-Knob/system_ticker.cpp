@@ -4,6 +4,7 @@
 
 volatile int8_t enc_evt = 0; // contains information about encoder ticks, buttons tate...
 volatile int8_t enc_counts = 0;
+volatile int16_t enc_velocity = 0;
 
 void system_ticker_setup(void)
 {
@@ -68,6 +69,9 @@ ISR(TIMER0_OVF_vect)
 	uint8_t cur_enc_state;
 	static uint8_t prev_enc_state = 0;
 	static uint8_t button_debounce = 0;
+	static int16_t enc_velocity_accu = 0;
+	static uint16_t ISR_invoc_counter = 0;
+	int8_t tmp;
 
 	cur_enc_state = ~(PINB & 0x07);  // bit 2: ENC_B, bit 1: ENC_A, bit 0: button
 
@@ -96,7 +100,16 @@ ISR(TIMER0_OVF_vect)
 	// just 1 counting tick per 1 mechnical tick
 	int8_t enc_rot_trans[16] = {0, +1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-	enc_counts += enc_rot_trans[ ( (prev_enc_state & 0x06) << 1 ) + ( (cur_enc_state & 0x06) >> 1 ) ];
+    tmp = enc_rot_trans[ ( (prev_enc_state & 0x06) << 1 ) + ( (cur_enc_state & 0x06) >> 1 ) ];
+
+	enc_velocity_accu += tmp;
+	enc_counts += tmp;
+
+	if( ISR_invoc_counter == 100 ) {
+		enc_velocity = enc_velocity_accu*10; // approx. ticks / s
+		enc_velocity_accu = 0;
+		ISR_invoc_counter = 0;
+	}
 
 	// debounce the button
 	
@@ -110,7 +123,7 @@ ISR(TIMER0_OVF_vect)
 
 	// if the whole byte is filled with 1s, the button is considered as pressed 
 	// the button was stable ON for 8 interrupt invocations, about 8ms.
-	if ( button_debounce == 0xFF ) {
+	if( button_debounce == 0xFF ) {
 		cur_enc_state |= _BV(0);
 		enc_evt |= _BV(2);
 	} else {
@@ -126,6 +139,7 @@ ISR(TIMER0_OVF_vect)
 	// enc_evt:  bit 7 is off-limits, as this is a signed variable!
 
 	prev_enc_state = cur_enc_state;
+	ISR_invoc_counter++;
 }
 
 uint32_t millis(void)
@@ -227,9 +241,9 @@ void delayMicroseconds(uint16_t us)
     );
 }
 
-int8_t encoder_get(uint8_t whatbit) {
+int16_t encoder_get(uint8_t whatbit) {
 	uint8_t _sreg = SREG;
-	int8_t counts = 0;
+	int16_t tmp = 0;
 
 	switch(whatbit) {
 
@@ -268,11 +282,16 @@ int8_t encoder_get(uint8_t whatbit) {
 		break;
 	case 7:
 		cli();
-		counts = enc_counts;
+		tmp = enc_counts;
 		enc_counts = 0;
 		SREG = _sreg;
-		return counts;
+		return tmp;
 		break;
+	case 8:
+		cli();
+		tmp = enc_velocity;
+		SREG = _sreg;
+		return tmp;
 	default:
 		return 0;
 		break;
