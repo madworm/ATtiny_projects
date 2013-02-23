@@ -2,7 +2,6 @@
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
 #include <inttypes.h>
-#include <stdlib.h>
 
 #include <util/delay.h>
 
@@ -20,7 +19,8 @@ int main(void)
 
    	while(1) {
 		int8_t counts = encoder_get(ENC_COUNTS);
-		
+		int16_t velocity = encoder_get(ENC_VELOCITY);
+
 		if( counts > 0 ) {
 			soft_uart_send(PSTR("+"));
 		}
@@ -44,7 +44,7 @@ int main(void)
 			//soft_uart_send(PSTR("_"));
 		}
 	
-		if(labs(encoder_get(ENC_VELOCITY)) > 50) {
+		if( (velocity > 50) || (velocity < -50) ) {
 			soft_uart_send(PSTR(" ! 50 ticks/s ! "));
 			delay(500);
 		}
