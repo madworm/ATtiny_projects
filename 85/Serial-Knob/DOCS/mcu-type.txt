@@ -1,0 +1,7 @@
+
+To compile for ATtiny25 / 45, make these adjustments to 'compile.sh':
+
+ATtiny25: replace all instances of 'attiny85' with 'attiny25'
+
+ATtiny45:              ""                     with 'attiny45'
+
