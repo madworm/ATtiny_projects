@@ -1,13 +1,13 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
-#include <inttypes.h>
-
+#include <stdint.h>
 #include <util/delay.h>
 
 #include "system_ticker.hpp"
 #include "uart.hpp"
 #include "util.hpp"
+#include "PWM.hpp"
 #include "main.hpp"
 
 int main(void)
@@ -23,9 +23,15 @@ int main(void)
 
 		if( counts > 0 ) {
 			soft_uart_send(PSTR("+"));
+			if(OCR1B < 255) {
+				OCR1B++;
+			}
 		}
 		if( counts < 0 ) {
 			soft_uart_send(PSTR("-"));
+			if(OCR1B > 0) {
+				OCR1B--;
+			}
 		}
 		if( encoder_get(BUTTON_WAS_PRESSED) ) {
 			soft_uart_send(PSTR("/"));
@@ -64,7 +70,8 @@ void setup_hw(void)
     ACSR |= _BV(ACD); // disable the analog comparator, ACIE is already zero (default value)
     PRR |= _BV(PRTIM1) | _BV(PRUSI) | _BV(PRADC); // turn off the clock for TIMER1, USI and ADC
 
-    system_ticker_setup();
-    sei(); // turn global irq flag on, also needed as a wakeup source
+	system_ticker_setup();
+	sei(); // turn global irq flag on, also needed as a wakeup source
+	setup_PWM();
 	soft_uart_init();
 }
