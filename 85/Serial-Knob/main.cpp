@@ -7,7 +7,13 @@
 #include "system_ticker.hpp"
 #include "uart.hpp"
 #include "util.hpp"
+
+//#define USE_PWM // output 30kHz PWM signal on PB4 (pin-label: 4 / DIR)
+
+#ifdef USE_PWM
 #include "PWM.hpp"
+#endif
+
 #include "main.hpp"
 
 int main(void)
@@ -23,15 +29,19 @@ int main(void)
 
 		if( counts > 0 ) {
 			soft_uart_send(PSTR("+"));
+			#ifdef USE_PWM
 			if(OCR1B < 255) {
 				OCR1B++;
 			}
+			#endif
 		}
 		if( counts < 0 ) {
 			soft_uart_send(PSTR("-"));
+			#ifdef USE_PWM
 			if(OCR1B > 0) {
 				OCR1B--;
 			}
+			#endif
 		}
 		if( encoder_get(BUTTON_WAS_PRESSED) ) {
 			soft_uart_send(PSTR("/"));
@@ -72,6 +82,8 @@ void setup_hw(void)
 
 	system_ticker_setup();
 	sei(); // turn global irq flag on, also needed as a wakeup source
+	#ifdef USE_PWM
 	setup_PWM();
+	#endif
 	soft_uart_init();
 }
