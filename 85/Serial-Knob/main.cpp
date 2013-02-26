@@ -9,6 +9,8 @@
 #include "util.hpp"
 
 //#define USE_PWM // output 30kHz PWM signal on PB4 (pin-label: 4 / DIR)
+//#define VELOCITY_BLAME // send a note if turning faster than some value
+#define VELOCITY_BLAME_VALUE 50
 
 #ifdef USE_PWM
 #include "PWM.hpp"
@@ -59,11 +61,12 @@ int main(void)
 		} else {
 			//soft_uart_send(PSTR("_"));
 		}
-	
-		if( (velocity > 50) || (velocity < -50) ) {
+		#ifdef VELOCITY_BLAME	
+		if( (velocity > VELOCITY_BLAME_VALUE) || (velocity < -VELOCITY_BLAME_VALUE) ) {
 			soft_uart_send(PSTR(" ! 50 ticks/s ! "));
 			delay(500);
 		}
+		#endif
 	}
 	return 0;
 }
