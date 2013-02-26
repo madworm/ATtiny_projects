@@ -1,6 +1,6 @@
 #ifndef PWM_h
 #define PWM_h
 
-void setup_PWM(void);
+void setup_pwm(void);
 
 #endif

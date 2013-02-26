@@ -1,9 +1,9 @@
 #include <avr/io.h>
 #include <stdint.h>
 
-#include "PWM.hpp"
+#include "pwm.hpp"
 
-void setup_PWM(void) {
+void setup_pwm(void) {
 	PORTB &= ~_BV(PB4); //pull-up off
 	DDRB |= _BV(PB4); // set as output
 	// turn power for timer1 back on - we want to use it!

@@ -13,7 +13,7 @@
 #define VELOCITY_BLAME_VALUE 50
 
 #ifdef USE_PWM
-#include "PWM.hpp"
+#include "pwm.hpp"
 #endif
 
 #include "main.hpp"
@@ -111,7 +111,7 @@ void setup_hw(void)
 	system_ticker_setup();
 	sei(); // turn global irq flag on, also needed as a wakeup source
 	#ifdef USE_PWM
-	setup_PWM();
+	setup_pwm();
 	#endif
 	soft_uart_init();
 }
