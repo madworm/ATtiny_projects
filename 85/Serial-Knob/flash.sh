@@ -14,5 +14,5 @@ read
 # http://www.engbedded.com/fusecalc/
 #
 
-avrdude -c avrispmkii -P usb -p $MCU -B 1000 -U lfuse:w:0xE2:m -U hfuse:w:0xDD:m -U efuse:w:0xFF:m
-avrdude -c avrispmkii -P usb -p $MCU -B 1 -e -U flash:w:$HEXFILE:i
+avrdude -c $PROGRAMMER -P $PORT -p $MCU -B 1000 -U lfuse:w:0xE2:m -U hfuse:w:0xDD:m -U efuse:w:0xFF:m
+avrdude -c $PROGRAMMER -P $PORT -p $MCU -B 1 -e -U flash:w:$HEXFILE:i
