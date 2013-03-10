@@ -1,7 +1,6 @@
 #!/bin/bash
 
-HEXFILE="./bin/Debug/source.elf.hex"
-MCU="attiny${1:-45}"
+. ./config.txt
 
 echo -e "\n\n-:###+++--- ---+++###:-\n"
 echo -e "About to flash: $HEXFILE into an $MCU\n"

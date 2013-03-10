@@ -1,0 +1,10 @@
+
+#
+# relative to your HOME directory
+#
+ARDUINO_DIR="arduino-1.0.3/hardware/tools/avr/bin"
+
+PATH="$PATH:$HOME/$ARDUINO_DIR"
+MCU="attiny${1:-45}"
+HEXFILE="./bin/Debug/source.elf.hex"
+

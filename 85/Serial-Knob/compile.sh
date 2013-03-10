@@ -1,12 +1,6 @@
 #!/bin/bash
 
-#
-# relative to your HOME directory
-#
-ARDUINO_DIR="arduino-1.0.3/hardware/tools/avr/bin"
-
-PATH="$PATH:$HOME/$ARDUINO_DIR"
-MCU="attiny${1:-45}"
+. ./config.txt
 
 echo -e "\n\n-:###+++--- ---+++###:-\n"
 echo -e "Compiling for target: $MCU\n"
@@ -43,12 +37,12 @@ avr-g++ -mmcu=$MCU -fexpensive-optimizations -Os -Wmain -Wall -g -gdwarf-2 -funs
 
 avr-g++ -mmcu=$MCU -fexpensive-optimizations -Os -Wmain -Wall -g -gdwarf-2 -funsigned-bitfields -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -fno-exceptions -DF_CPU=8000000UL -c pwm.cpp -o obj/Debug/pwm.o
 
-avr-g++  -o bin/Debug/source.elf obj/Debug/main.o obj/Debug/system_ticker.o obj/Debug/uart.o obj/Debug/pwm.o -mmcu=$MCU -Wl,-Map=bin/Debug/source.elf.map,--cref -Wl,--gc-sections,--print-gc-sections -lm -lc -v
+avr-g++  -o ./bin/Debug/source.elf obj/Debug/main.o obj/Debug/system_ticker.o obj/Debug/uart.o obj/Debug/pwm.o -mmcu=$MCU -Wl,-Map=./bin/Debug/source.elf.map,--cref -Wl,--gc-sections,--print-gc-sections -lm -lc -v
 
-avr-objcopy -O ihex -R .eeprom -R .eesafe bin/Debug/source.elf bin/Debug/source.elf.hex
-avr-objcopy --no-change-warnings -j .eeprom --change-section-lma .eeprom=0 -O ihex bin/Debug/source.elf bin/Debug/source.elf.eep.hex
-avr-objdump -h -S bin/Debug/source.elf > bin/Debug/source.elf.lss
+avr-objcopy -O ihex -R .eeprom -R .eesafe ./bin/Debug/source.elf $HEXFILE
+avr-objcopy --no-change-warnings -j .eeprom --change-section-lma .eeprom=0 -O ihex ./bin/Debug/source.elf ./bin/Debug/source.elf.eep.hex
+avr-objdump -h -S ./bin/Debug/source.elf > ./bin/Debug/source.elf.lss
 
-avr-size bin/Debug/source.elf
-avr-size bin/Debug/source.elf.hex
+avr-size ./bin/Debug/source.elf
+avr-size $HEXFILE
 
