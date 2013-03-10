@@ -5,11 +5,12 @@
 #
 ARDUINO_DIR="arduino-1.0.3/hardware/tools/avr/bin"
 
-PATH=$PATH:$HOME/$ARDUINO_DIR
-MCU=attiny${1:-85}
+PATH="$PATH:$HOME/$ARDUINO_DIR"
+MCU="attiny${1:-45}"
 
-echo -e "\n\nCompiling for target: $MCU\n"
-echo -e "To change to 'attiny25' or 'attiny45' run the script like so: '$0 25' or '$0 45'\n\n"
+echo -e "\n\n-:###+++--- ---+++###:-\n"
+echo -e "Compiling for target: $MCU\n"
+echo -e "To change to 'attiny25' or 'attiny85' run the script like so: '$0 25' or '$0 85'\n\n"
 echo -e "Press ENTER to proceed."
 
 read
