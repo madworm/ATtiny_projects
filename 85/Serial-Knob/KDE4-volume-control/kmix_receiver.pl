@@ -26,17 +26,17 @@ while (1) {
   if( ($readS eq "+") || ($readC eq "+") ) {
       # amarok 2 + KDE4: volume up
 	  print "+";
-      system('qdbus org.kde.kmix /kmix/KMixWindow/actions/increase_volume com.trolltech.Qt.QAction.trigger > /dev/null');
+      system('qdbus org.kde.kmix /kmix/KMixWindow/actions/increase_volume org.qtproject.Qt.QAction.trigger > /dev/null');
   }
   if( ($readS eq "-") || ($readC eq "-") ) {
       # amarok 2 + KDE4: volume down
 	  print "-";
-      system('qdbus org.kde.kmix /kmix/KMixWindow/actions/decrease_volume com.trolltech.Qt.QAction.trigger > /dev/null');
+      system('qdbus org.kde.kmix /kmix/KMixWindow/actions/decrease_volume org.qtproject.Qt.QAction.trigger > /dev/null');
   }
   if( ($readS eq "/") || ($readC eq "/")  ) {
       # amarok 2 + KDE4: volume down
 	  print "M";
-      system('qdbus org.kde.kmix /kmix/KMixWindow/actions/mute com.trolltech.Qt.QAction.trigger > /dev/null');
+      system('qdbus org.kde.kmix /kmix/KMixWindow/actions/mute org.qtproject.Qt.QAction.trigger > /dev/null');
   }
 
   if( $readC eq "q" ) {
