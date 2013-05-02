@@ -1,6 +1,6 @@
 #!/bin/bash
 
-HEXFILE=${1:-./bin/Debug/source.elf.hex}
+HEXFILE=${1:-./main.hex}
 
 echo -e "\nTrying to flash: $HEXFILE\n"
 
