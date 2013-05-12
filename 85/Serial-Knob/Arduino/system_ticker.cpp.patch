@@ -1,0 +1,11 @@
+--- system_ticker.cpp	2013-05-12 21:46:11.857724953 +0200
++++ system_ticker.cpp~	2013-05-12 21:13:54.910314847 +0200
+@@ -1,7 +1,7 @@
+ #include <avr/io.h>
+ #include <avr/interrupt.h>
+ #include <stdint.h>
+-#include "system_ticker.hpp"
++#include "system_ticker.h"
+ 
+ volatile int8_t enc_evt = 0; // contains information about encoder ticks, buttons tate...
+ volatile int8_t enc_counts = 0;

@@ -1,0 +1,27 @@
+--- Serial_Knob.ino	2013-05-02 20:51:52.223971136 +0200
++++ Serial_Knob.ino~	2013-05-12 22:32:45.532287531 +0200
+@@ -4,19 +4,19 @@
+ #include <stdint.h>
+ #include <util/delay.h>
+ 
+-#include "system_ticker.hpp"
+-#include "uart.hpp"
+-#include "util.hpp"
++#include "system_ticker.h"
++#include "uart.h"
++#include "util.h"
+ 
+ //#define USE_PWM // output 30kHz PWM signal on PB4 (pin-label: 4 / DIR)
+ //#define VELOCITY_BLAME // send a note if turning faster than some value
+ #define VELOCITY_BLAME_VALUE 50
+ 
+ #ifdef USE_PWM
+-#include "pwm.hpp"
++#include "pwm.h"
+ #endif
+ 
+-#include "main.hpp"
++#include "main.h"
+ 
+ int main(void)
+ {

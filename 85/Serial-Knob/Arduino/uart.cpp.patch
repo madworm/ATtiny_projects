@@ -1,0 +1,11 @@
+--- uart.cpp	2013-05-12 21:46:11.857724953 +0200
++++ uart.cpp~	2013-05-12 21:13:46.114424810 +0200
+@@ -3,7 +3,7 @@
+ #include <avr/pgmspace.h>
+ #include <util/delay.h>
+ #include <stdint.h>
+-#include "uart.hpp"
++#include "uart.h"
+ 
+ void soft_uart_init(void)
+ {
