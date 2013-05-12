@@ -2,9 +2,10 @@
 #
 # relative to your HOME directory
 #
-ARDUINO_DIR="arduino-1.0.4/hardware/tools/avr/bin"
+ARDUINO_DIR="arduino-1.0.4"
+AVRGCC_DIR="hardware/tools/avr/bin"
 
-PATH="$PATH:$HOME/$ARDUINO_DIR"
+PATH="$PATH:$HOME/$ARDUINO_DIR/$AVRGCC_DIR"
 MCU="attiny${1:-45}"
 HEXFILE="./bin/Debug/source.elf.hex"
 PROGRAMMER="avrispmkii"
