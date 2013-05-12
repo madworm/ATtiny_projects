@@ -36,7 +36,7 @@ fi
 if [[ -e $HOME/$ARDUINO_DIR/libraries/Ethernet ]]
 then
 	echo -e "  Disabling the 'Ethernet' library - moved to '$HOME/$ARDUINO_DIR'\n"
-	mv $HOME/$ARDUINO_DIR/libraries/Ethernet $HOME/$ARDUINO_DIR/	
+	mv -b $HOME/$ARDUINO_DIR/libraries/Ethernet $HOME/$ARDUINO_DIR/	
 fi
 
 echo -e "  Move the folder '$FOLDER' to your Arduino 'sketchbook' folder.\n"
