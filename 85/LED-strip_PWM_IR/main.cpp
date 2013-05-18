@@ -10,6 +10,8 @@
 #include "IR_receiver.hpp"
 #include "main.hpp"
 
+//#define IR_SCAN_ON_POWERUP_ENABLED
+
 //#define USE_BOARD_ADDRESS
 #define BOARD_ADDRESS DIGIT_1
 #define BOARD_ADDRESS_GENERAL DIGIT_0_OR_10
@@ -19,6 +21,7 @@ int main(void)
 {
     setup_hw();
 
+#ifdef IR_SCAN_ON_POWERUP_ENABLED
 	// if there is any IR data within 5 seconds of power-on
 	// we go into scan mode and transmit pulse-data on the
 	// SCK-pin of the ISP header (9600,8,N,1).
@@ -29,6 +32,7 @@ int main(void)
 			}
 		}
 	}
+#endif
 
 	while(1) {
 
