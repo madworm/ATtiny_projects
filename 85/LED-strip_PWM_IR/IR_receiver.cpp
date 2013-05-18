@@ -147,7 +147,7 @@ IR_code_t eval_IR_code(void)
             // so we know we have a match against data
             IR_code = (IR_code_t) (ctr2);
             LED_on;
-            delay(100);
+            delay(30);
             LED_off;
             LED_idle;
             break;
