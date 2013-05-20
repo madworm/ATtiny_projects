@@ -21,6 +21,8 @@ typedef enum {
     VOL_DOWN,
     ARROW_UP,
     ARROW_DOWN,
+//	DIGIT_1,
+//	DIGIT_0_OR_10,
     // DO NOT EDIT THESE LAST 3!
     REPEAT_CODE = 66,
     MISMATCH = 77,		// only returned if something goes terribly wrong

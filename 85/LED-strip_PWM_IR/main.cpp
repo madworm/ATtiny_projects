@@ -13,6 +13,7 @@
 //#define IR_SCAN_ON_POWERUP_ENABLED
 
 //#define USE_BOARD_ADDRESS
+// DIGIT_1 etc. must be present in IR_codes.h / IR_receiver.hpp
 #define BOARD_ADDRESS DIGIT_1
 #define BOARD_ADDRESS_GENERAL DIGIT_0_OR_10
 #define WAIT_FOR_COMMAND_TIMEOUT 4000
