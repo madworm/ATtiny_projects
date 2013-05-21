@@ -830,14 +830,15 @@
  *
  */
 
-#define NUMBER_OF_IR_CODES 4
-//#define NUMBER_OF_IR_CODES 6	// does not include the repeat-code, which I don't consider as a "full" code.
+#define NUMBER_OF_IR_CODES 5
+//#define NUMBER_OF_IR_CODES 7	// does not include the repeat-code, which I don't consider as a "full" code.
 
 const uint16_t PROGMEM IRsignals[NUMBER_OF_IR_CODES][NUMPULSES] = {
     vol_up,
     vol_down,
     arrow_up,
     arrow_down,
+	play_pause,
 //	digit_1,
 //	digit_0_or_10
 };

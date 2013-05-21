@@ -21,6 +21,7 @@ typedef enum {
     VOL_DOWN,
     ARROW_UP,
     ARROW_DOWN,
+	PLAY_PAUSE,
 //	DIGIT_1,
 //	DIGIT_0_OR_10,
     // DO NOT EDIT THESE LAST 3!
