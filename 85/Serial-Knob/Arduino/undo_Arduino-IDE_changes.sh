@@ -12,9 +12,9 @@ else
 	echo -e "\n  Nothing to do!\n"
 fi
 
-if [[ -e $HOME/$ARDUINO_DIR/Ethernet ]]
+if [[ -e $HOME/$ARDUINO_DIR/libraries/Ethernet__off__by_Serial-Knob ]]
 then
-	mv $HOME/$ARDUINO_DIR/Ethernet $HOME/$ARDUINO_DIR/libraries	
+	mv -b $HOME/$ARDUINO_DIR/libraries/Ethernet__off__by_Serial-Knob $HOME/$ARDUINO_DIR/libraries/Ethernet	
 	echo -e "\n  'Ethernet' library reactivated!\n"
 else 
 	echo -e "\n  Nothing to do!\n"

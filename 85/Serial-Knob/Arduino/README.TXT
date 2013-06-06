@@ -31,7 +31,7 @@ If you don't wanna, this is what you've got to do by hand:
 * Rename 'main.cpp' to 'Serial_Knob.ino'
 * Edit all files in 'sketchbook/Serial_Knob/' and replace '.hpp' with '.h' 
 
-* Update 'arduino-1.0.4/hardware/arduino/cores/arduino/Arduino.h' as follows:
+* Update 'arduino-1.0.5/hardware/arduino/cores/arduino/Arduino.h' as follows:
 
 unsigned long millis(void) __attribute__ ((weak));
 unsigned long micros(void) __attribute__ ((weak));

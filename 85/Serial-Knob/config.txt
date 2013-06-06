@@ -2,7 +2,7 @@
 #
 # relative to your HOME directory
 #
-ARDUINO_DIR="arduino-1.0.4"
+ARDUINO_DIR="arduino-1.0.5"
 AVRGCC_DIR="hardware/tools/avr/bin"
 
 PATH="$PATH:$HOME/$ARDUINO_DIR/$AVRGCC_DIR"
