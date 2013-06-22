@@ -71,13 +71,14 @@ ISR(TIMER0_OVF_vect)
 	static uint8_t prev_enc_state = 0;
 	static uint8_t button_debounce = 0;
 	static int16_t enc_velocity_accu = 0;
+	static int8_t enc_counts_accu = 0;
 	static uint16_t ISR_invoc_counter = 0;
 	int8_t tmp;
 
 	cur_enc_state = ~(PINB & 0x07);  // bit 2: ENC_B, bit 1: ENC_A, bit 0: button
 
 	// full resolution, 4 counting-ticks per 1 mechanical tick
-	// int8_t enc_rot_trans[16] = {0, +1, -1, 0, -1, 0, 0, +1, +1, 0, 0, -1, 0, -1, +1, 0};
+	int8_t enc_rot_trans[16] = {0, +1, -1, 0, -1, 0, 0, +1, +1, 0, 0, -1, 0, -1, +1, 0};
 		
 	// encoder transitions:
 	//
@@ -98,16 +99,23 @@ ISR(TIMER0_OVF_vect)
 	// 14	11-10 : +1
 	// 15	11-11 : 0
 
-	// just 1 counting tick per 1 mechnical tick
-	int8_t enc_rot_trans[16] = {0, +1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
 	tmp = enc_rot_trans[ ( (prev_enc_state & 0x06) << 1 ) + ( (cur_enc_state & 0x06) >> 1 ) ];
 
 	enc_velocity_accu += tmp;
-	enc_counts += tmp;
+	enc_counts_accu += tmp;
 
-	if( ISR_invoc_counter == 100 ) {
-		enc_velocity = enc_velocity_accu*10; // approx. ticks / s
+	if( enc_counts_accu == 4 ) {
+		enc_counts++;
+		enc_counts_accu = 0;
+	} 
+
+	if( enc_counts_accu == -4 ) {
+		enc_counts--;
+		enc_counts_accu = 0;
+	} 
+
+	if( ISR_invoc_counter == 50 ) {
+		enc_velocity = enc_velocity_accu / 4 * 10; // approx. mechanical ticks / s
 		enc_velocity_accu = 0;
 		ISR_invoc_counter = 0;
 	}

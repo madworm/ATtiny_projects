@@ -8,11 +8,10 @@
 #include "uart.hpp"
 #include "util.hpp"
 
-//#define USE_PWM // output 30kHz PWM signal on PB4 (pin-label: 4 / DIR)
-//#define VELOCITY_BLAME // send a note if turning faster than some value
+#define USE_PWM // output 30kHz PWM signal on PB4 (pin-label: 4 / DIR)
+//#define SHOW_PWM_MAX // blink onboard LED when PWM has reached 100% duty cycle
 #define AUTO_COARSE_FINE // once ticks/s is above a threshold, output 4x the +/- pulses
-#define COARSE_FINE_THRESHOLD 50
-#define VELOCITY_BLAME_VALUE 60
+#define COARSE_FINE_THRESHOLD 35
 
 #ifdef USE_PWM
 #include "pwm.hpp"
@@ -51,10 +50,12 @@ int main(void)
 			if(OCR1B < 255) {
 				OCR1B++;
 			} else {
+				#ifdef SHOW_PWM_MAX
 				LED_on; // signal that the maximum has been reached
-				delay(500);
+				delay(200);
 				LED_off;
 				LED_idle;
+				#endif
 			}
 			lamp_state = 1;
 			#endif
@@ -105,15 +106,6 @@ int main(void)
 		} else {
 			//soft_uart_send(PSTR("_"),1);
 		}
-		#ifdef VELOCITY_BLAME	
-		if( (velocity > VELOCITY_BLAME_VALUE) || (velocity < -VELOCITY_BLAME_VALUE) ) {
-			soft_uart_send(PSTR(" ! 60 ticks/s ! "),1);
-			LED_on;
-			delay(2000);
-			LED_off;
-			LED_idle;
-		}
-		#endif
 	}
 	return 0;
 }
