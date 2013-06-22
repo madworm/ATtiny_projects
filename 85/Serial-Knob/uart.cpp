@@ -155,7 +155,7 @@ void soft_uart_send(int16_t number)
     }
 }
 
-void soft_uart_send(const char * string)
+void soft_uart_send(const char * string, uint8_t times)
 {
     //
     // define strings in flash as such:
@@ -163,8 +163,15 @@ void soft_uart_send(const char * string)
     // const PROGMEM char pgm_text[] = "PGM: Hello World!\r\n";
     //
 
-    while(pgm_read_byte(string) != '\0') {
-        soft_uart_write(pgm_read_byte(string));
-        string++;
-    }
+	const char * string_tmp = string;
+	char letter;
+
+	while( times ) {
+   		while( (letter = pgm_read_byte(string)) != '\0') {
+        	soft_uart_write(letter);
+   		    string++;
+		}
+		times--;
+		string = string_tmp;
+	}
 }

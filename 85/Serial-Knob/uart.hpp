@@ -33,6 +33,6 @@ void soft_uart_send(uint8_t number, uint8_t base);
 void soft_uart_send(int8_t number);
 void soft_uart_send(uint16_t number);
 void soft_uart_send(int16_t number);
-void soft_uart_send(const char * string);
+void soft_uart_send(const char * string, uint8_t times);
 
 #endif

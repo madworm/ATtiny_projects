@@ -10,7 +10,9 @@
 
 //#define USE_PWM // output 30kHz PWM signal on PB4 (pin-label: 4 / DIR)
 //#define VELOCITY_BLAME // send a note if turning faster than some value
-#define VELOCITY_BLAME_VALUE 50
+#define AUTO_COARSE_FINE // once ticks/s is above a threshold, output 4x the +/- pulses
+#define COARSE_FINE_THRESHOLD 50
+#define VELOCITY_BLAME_VALUE 60
 
 #ifdef USE_PWM
 #include "pwm.hpp"
@@ -34,7 +36,17 @@ int main(void)
 		int16_t velocity = encoder_get(ENC_VELOCITY);
 
 		if( counts > 0 ) {
-			soft_uart_send(PSTR("+"));
+			
+			#ifdef AUTO_COARSE_FINE
+			if( velocity > COARSE_FINE_THRESHOLD ) {
+				soft_uart_send(PSTR("+"),4);
+			} else {
+				soft_uart_send(PSTR("+"),1);
+			}
+			#else
+			soft_uart_send(PSTR("+"),1);
+			#endif
+
 			#ifdef USE_PWM
 			if(OCR1B < 255) {
 				OCR1B++;
@@ -48,7 +60,17 @@ int main(void)
 			#endif
 		}
 		if( counts < 0 ) {
-			soft_uart_send(PSTR("-"));
+
+			#ifdef AUTO_COARSE_FINE
+			if( velocity < -COARSE_FINE_THRESHOLD ) {
+				soft_uart_send(PSTR("-"),4);
+			} else {
+				soft_uart_send(PSTR("-"),1);
+			}
+			#else
+			soft_uart_send(PSTR("-"),1);
+			#endif
+			
 			#ifdef USE_PWM
 			if(OCR1B > 0) {
 				OCR1B--;
@@ -58,7 +80,7 @@ int main(void)
 			#endif
 		}
 		if( encoder_get(BUTTON_WAS_PRESSED) ) {
-			soft_uart_send(PSTR("/"));
+			soft_uart_send(PSTR("/"),1);
 			button_press_just_happened = 1;
 			#ifdef USE_PWM
 			if( lamp_state == 1 ) {
@@ -72,20 +94,20 @@ int main(void)
 			#endif
 		}
 		if( encoder_get(BUTTON_WAS_RELEASED) ) {
-			soft_uart_send(PSTR("\\"));
+			soft_uart_send(PSTR("\\"),1);
 			not_the_first_time_pressed = 0;
 		}
 		if( encoder_get(BUTTON_STATE) && ( (button_press_just_happened == 1) || (not_the_first_time_pressed == 1) ) ) {
-			soft_uart_send(PSTR("¯"));
+			soft_uart_send(PSTR("¯"),1);
 			button_press_just_happened = 0;
 			not_the_first_time_pressed = 1;
 			delay(50);
 		} else {
-			//soft_uart_send(PSTR("_"));
+			//soft_uart_send(PSTR("_"),1);
 		}
 		#ifdef VELOCITY_BLAME	
 		if( (velocity > VELOCITY_BLAME_VALUE) || (velocity < -VELOCITY_BLAME_VALUE) ) {
-			soft_uart_send(PSTR(" ! 50 ticks/s ! "));
+			soft_uart_send(PSTR(" ! 60 ticks/s ! "),1);
 			LED_on;
 			delay(2000);
 			LED_off;
