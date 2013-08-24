@@ -1,6 +1,6 @@
---- Serial_Knob.ino	2013-05-02 20:51:52.223971136 +0200
-+++ Serial_Knob.ino~	2013-05-12 22:32:45.532287531 +0200
-@@ -4,19 +4,19 @@
+--- Serial_Knob.ino.orig	2013-08-24 17:04:11.732003012 +0200
++++ Serial_Knob.ino	2013-08-24 17:05:10.247271471 +0200
+@@ -4,9 +4,9 @@
  #include <stdint.h>
  #include <util/delay.h>
  
@@ -11,9 +11,10 @@
 +#include "uart.h"
 +#include "util.h"
  
- //#define USE_PWM // output 30kHz PWM signal on PB4 (pin-label: 4 / DIR)
- //#define VELOCITY_BLAME // send a note if turning faster than some value
- #define VELOCITY_BLAME_VALUE 50
+ #define USE_PWM // output 30kHz PWM signal on PB4 (pin-label: 4 / DIR)
+ //#define SHOW_PWM_MAX // blink onboard LED when PWM has reached 100% duty cycle
+@@ -14,10 +14,10 @@
+ #define COARSE_FINE_THRESHOLD 35
  
  #ifdef USE_PWM
 -#include "pwm.hpp"
