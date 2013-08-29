@@ -3,45 +3,93 @@
 #include <avr/eeprom.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include "util.h"
 #include "system_ticker.h"
 #include "adc.h"
+#include "uart.h"
 #include "main.h"
 
 int main(void)
 {
-	//uint8_t mode = eeprom_read_byte(0);
 	uint8_t adc_fade_to;
 	uint16_t adc_delay;
+	uint8_t mode = 0;
+	uint8_t tmp = 0;
 
 	setup_hw();
 
-	/*
-	 * DEBUG PWM blinker
-	 *
-	 while (1) {
-	 OCR0A = 0;
-	 delay(10000);
-	 OCR0A = 255;
-	 delay(10000);
-	 }
-	 *
-	 */
-
 	while (1) {
-		adc_fade_to = 255 - adc_read(POT1); // reverse POT1 result vs direction of rotation
-		adc_delay = (uint16_t)(adc_read(POT2));
-		fade(255 - OCR0A, adc_fade_to, 4 * adc_delay); // "255 - OCR0A" --> inverted PWM
+		OCR0A = 0;
+		delay_ms(500);
+		OCR0A = 255;
+		delay_ms(500);
 	}
+
+	/*
+	delay_ms(2500);
+
+	while(1) {
+		OCR0A = 0;
+		delay_ms(250);
+		OCR0A = 255;
+		soft_uart_send('+',++tmp); // 21 worked for 9600
+		delay_ms(250);
+	}
+	*/
+
+	/*
+	while (1) {
+
+		switch (mode) {
+		case 0:
+			if (soft_uart_peek()) {
+				mode = 1;
+				break;
+			}
+			adc_fade_to = 255 - adc_read(POT1);	// reverse POT1 result vs direction of rotation
+			adc_delay = (uint16_t) (adc_read(POT2));
+			fade(255 - OCR0A, adc_fade_to, 4 * adc_delay);	// "255 - OCR0A" --> inverted PWM
+			break;
+
+		case 1:
+			// do something useful here when serial data is received
+			tmp = soft_uart_read();
+
+			if ((tmp == '+') && (OCR0A > 0)) {
+				//OCR0A--;
+				OCR0A = 255;
+				delay_ms(250);
+				OCR0A = 0;
+				delay_ms(1000);
+				OCR0A = 255;
+			}
+
+			if ((tmp == '-') && (OCR0A < 255)) {
+				//OCR0A++;
+				OCR0A = 255;
+				delay_ms(250);
+				OCR0A = 0;
+				delay_ms(250);
+				OCR0A = 255;
+			}
+			// now back to normal
+			mode = 0;
+			break;
+
+		default:
+			break;
+		}
+	}
+	*/
 }
 
 void setup_hw(void)
 {
 	cli();			// turn interrupts off, just in case
 
-	DDRB |= _BV(PB0);	// set as output for PWM (OC0A)
-	DDRB &= ~(_BV(PB3) | _BV(PB4));	// set as input (POT1, POT2)
 	system_ticker_setup();
 	adc_init();
+	soft_uart_setup();
 
 	sei();			// turn global irq flag on
 }

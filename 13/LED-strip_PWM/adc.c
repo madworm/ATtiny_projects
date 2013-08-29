@@ -16,6 +16,7 @@ uint8_t adc_read(uint8_t channel)
 
 void adc_init(void)
 {
+  	DDRB &= ~(_BV(PB3) | _BV(PB4));	// set as input (POT1, POT2)
 	ADCSRA |= _BV(ADEN);	// enable ADC
 	ADCSRA |= (_BV(ADPS2) | _BV(ADPS1) | _BV(ADPS0));	// set prescaler to 128 for stable readings
 	ADMUX |= _BV(ADLAR);	// set to left-aligned. we only need 8-bit and read ADCH only
