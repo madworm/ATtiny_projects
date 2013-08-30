@@ -76,12 +76,15 @@ ISR(PCINT0_vect) // pin-change interrupt group 0
     // it will be re-enabled once the timer has read the byte
     // or if it didn't get a start-bit
     DISABLE_PCINT0_VECT;
-   
+
+ 	/* 
+	// visually check if the irq fires: YES	
 	uint8_t ctr = 5;
     while(ctr) {
-		pulse_PB0(50);
+		pulse_PB0_ms(50);
 		ctr--;
 	}
+	*/
 
     if( !(PINB & _BV(PB2)) ) {
         // PB2 is low (got a valid start-bit)
@@ -97,6 +100,18 @@ ISR(PCINT0_vect) // pin-change interrupt group 0
 
 ISR(TIM0_COMPB_vect)
 {
+	/*
+	// visually check if the irq fires: YES, but correct timing ??	
+	uint8_t ctr = 5;
+    while(ctr) {
+		pulse_PB0_ms(50);
+		ctr--;
+	}
+	*/
+
+	// add pulse for logic-analyzer testing of bit-sample timing
+	pulse_PB0_us(1);
+
     static uint8_t bit_value = 1;
 
     if( (bit_value > 0) && (bit_value <= 0x80) ) { // 0x80 = 0b10000000 - read data-bits 0...7
