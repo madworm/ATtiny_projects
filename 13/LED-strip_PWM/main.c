@@ -22,7 +22,7 @@ int main(void)
 	while (1) {
 		OCR0A = 0;
 		delay_ms(500);
-		OCR0A = 255;
+		OCR0A = 254;
 		delay_ms(500);
 	}
 	*/
@@ -41,10 +41,6 @@ int main(void)
 
 	while (1) {
 
-		//if(soft_uart_peek()) {
-		//	pulse_PB0_ms(250);
-		//}
-
 		switch (mode) {
 		case 0:
 			if (soft_uart_peek()) {
@@ -60,11 +56,11 @@ int main(void)
 			// do something useful here when serial data is received
 			tmp = soft_uart_read();
 
-			if ( (tmp == '+') && (OCR0A > 0) ) {
+			if ( (tmp == '1') && (OCR0A > 0) ) {
 				OCR0A--;
 			}
 
-			if ( (tmp == '-') && (OCR0A < 255) ) {
+			if ( (tmp == '2') && (OCR0A < 254) ) {
 				OCR0A++;
 			}
 			// now back to normal

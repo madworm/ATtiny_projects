@@ -6,26 +6,36 @@ volatile uint16_t system_ticks = 0;
 
 void system_ticker_setup(void)
 {
-	// set as output for PWM (OC0A)
+	// set as output for PWM
 	DDRB |= _BV(PB0);
+	OCR0A = 254;
 	// using timer0
-	// setting prescaler to 64: 9.6MHz system-clock --> 150kHz timer0-clock - ~600Hz PWM clock
-	TCCR0B |= (_BV(CS01) | _BV(CS00));
-	TCCR0B &= ~(_BV(CS02));
-	// set to 'FAST PWM' mode
-	TCCR0A |= (_BV(WGM01) | _BV(WGM00));
+	// setting prescaler to 8: 9.6MHz system-clock --> 1.2MHz timer0-clock - ~5kHz PWM clock
+	TCCR0B |= _BV(CS01);
+	TCCR0B &= ~(_BV(CS02) | _BV(CS00));
+	// set to 'NORMAL' WGM0 mode. see comments in 'uart.c' for reason
+	TCCR0A &= ~(_BV(WGM01) | _BV(WGM00));
 	TCCR0B &= ~_BV(WGM02);
-	// inverted PWM on PB0 (OC0A)
-	TCCR0A |= _BV(COM0A1);
-	TCCR0A |= _BV(COM0A0);
+	// no PWM on PB0 (OC0A) 
+	TCCR0A &= ~(_BV(COM0A1) | _BV(COM0A0));
 	// enabling overflow interrupt
 	TIMSK0 |= _BV(TOIE0);
-	OCR0A = 255;		// start fully off (inverted PWM)
+	// enable compare match interrupt A
+	TIMSK0 |= _BV(OCIE0A);
+}
+
+ISR(TIM0_COMPA_vect)
+{
+	// manual PWM...
+	PORTB |= _BV(PB0); // HIGH
 }
 
 ISR(TIM0_OVF_vect)		// on attiny2313/4313 this is named TIMER0_OVF_vect
 {
 	system_ticks++;
+	
+	// manual PWM - reason: need OCR0B updated IMMEDIATELY for soft-uart
+	PORTB &= ~_BV(PB0); // LOW
 }
 
 uint16_t time(void)

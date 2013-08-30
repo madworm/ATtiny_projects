@@ -2,7 +2,7 @@
 #define uart_h
 
 // at 9600 one bit should take 0.104ms
-#define HALF_BIT_DELAY          6U// tuned a bit after looking at the sample times. 1 tick ~ 6.7µs (9.6MHz system-clock / 64)
+#define HALF_BIT_DELAY          48U// tuned a bit after looking at the sample times. 1 tick ~ 0.83µs (9.6MHz system-clock / 8)
 
 #define ENABLE_PCINT0_VECT  GIMSK |= _BV(PCIE)
 #define DISABLE_PCINT0_VECT GIMSK &= ~_BV(PCIE)

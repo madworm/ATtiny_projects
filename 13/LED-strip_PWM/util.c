@@ -22,11 +22,11 @@ void delay_us(uint16_t us)
 
 void pulse_PB0_ms(uint16_t ms)
 {
-	OCR0A = 255; // off
+	OCR0A = 254; // off
 	delay_ms(2*ms);
 	OCR0A = 0; // on
 	delay_ms(ms);
-	OCR0A = 255; // off
+	OCR0A = 254; // off
 	delay_ms(2*ms);
 }
 

@@ -93,8 +93,7 @@ ISR(PCINT0_vect) // pin-change interrupt group 0
         // PB2 is low (got a valid start-bit)
         CLEAR_TIM0_COMPB_FLAG; // prevent premature execution
         ENABLE_TIM0_COMPB_VECT; // enable the bit sampling
-		TCNT0 = 0;
-        OCR0B = 3*HALF_BIT_DELAY; // TIM0_COMPB_vect should start in the middle in the first data-bit
+        OCR0B = TCNT0 + 3*HALF_BIT_DELAY; // TIM0_COMPB_vect should start in the middle in the first data-bit
 	} else {
         // didn't get a start-bit, re-enable
         CLEAR_PCINT0_FLAG;
@@ -114,14 +113,19 @@ ISR(TIM0_COMPB_vect)
 	*/
 
 	// add pulse for logic-analyzer testing of bit-sample timing
-	pulse_PB1_us(1);
+	//pulse_PB1_us(1);
 	
+	//
 	// ISR only fires correctly with TCNT0 reset... WHY?
 	// 		TCNT0 = 0;
 	// 		OCR0B = 2 x HALF_BIT_DELAY;
 	//
 	// THIS doesn't work, but should:
 	//		OCR0B = TCNT0 + 2 x HALF_BIT_DELAY;	
+	//
+	// OK... RTFM... timer0 was set to 'FAST PWM'
+	// FAST PWM (WGM 0): Update of OCRx at 'TOP' --> 1 full run worst case before changes take place
+	// NORMAL (WGM 4)  : Update of OCRx at 'IMMEDIATE' --> that's what we want!
 	//
 
     static uint8_t bit_value = 1;
@@ -133,8 +137,7 @@ ISR(TIM0_COMPB_vect)
             soft_uart_rx_byte &= ~bit_value;
         }
         bit_value <<= 1; // shift 1 bit to the left
-		TCNT0 = 0;
-        OCR0B = 2*HALF_BIT_DELAY; // when to run next time
+        OCR0B = TCNT0 + 2*HALF_BIT_DELAY; // when to run next time
     } else { // stop-bit
         DISABLE_TIM0_COMPB_VECT; // no further runs after this one
         bit_value = 1; // reset bit counter
@@ -145,6 +148,4 @@ ISR(TIM0_COMPB_vect)
         CLEAR_PCINT0_FLAG;  // prevent premature execution
         ENABLE_PCINT0_VECT; // turn the receiver back on
     }
-
-	pulse_PB1_us(1);
 }
