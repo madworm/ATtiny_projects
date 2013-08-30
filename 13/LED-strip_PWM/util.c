@@ -30,12 +30,14 @@ void pulse_PB0_ms(uint16_t ms)
 	delay_ms(2*ms);
 }
 
-void pulse_PB0_us(uint16_t us)
+void pulse_PB1_us(uint16_t us)
 {
-	OCR0A = 255; // off
+	DDRB |= _BV(PB1); // as output
+	PORTB &= ~_BV(PB1); // LOW
 	delay_us(2*us);
-	OCR0A = 0; // on
+	PORTB |= _BV(PB1); // HIGH
 	delay_us(us);
-	OCR0A = 255; // off
+	PORTB &= ~_BV(PB1); // LOW
 	delay_us(2*us);
+	DDRB &= ~_BV(PB1);; // as input
 }

@@ -77,6 +77,9 @@ ISR(PCINT0_vect) // pin-change interrupt group 0
     // or if it didn't get a start-bit
     DISABLE_PCINT0_VECT;
 
+	// mark when ISR fires: WORKS as expected
+	//pulse_PB1_us(1);
+
  	/* 
 	// visually check if the irq fires: YES	
 	uint8_t ctr = 5;
@@ -88,10 +91,11 @@ ISR(PCINT0_vect) // pin-change interrupt group 0
 
     if( !(PINB & _BV(PB2)) ) {
         // PB2 is low (got a valid start-bit)
-        OCR0B = TCNT0 + 3*HALF_BIT_DELAY; // TIM0_COMPB_vect should start in the middle in the first data-bit
         CLEAR_TIM0_COMPB_FLAG; // prevent premature execution
         ENABLE_TIM0_COMPB_VECT; // enable the bit sampling
-    } else {
+		TCNT0 = 0;
+        OCR0B = 3*HALF_BIT_DELAY; // TIM0_COMPB_vect should start in the middle in the first data-bit
+	} else {
         // didn't get a start-bit, re-enable
         CLEAR_PCINT0_FLAG;
         ENABLE_PCINT0_VECT;
@@ -110,7 +114,15 @@ ISR(TIM0_COMPB_vect)
 	*/
 
 	// add pulse for logic-analyzer testing of bit-sample timing
-	pulse_PB0_us(1);
+	pulse_PB1_us(1);
+	
+	// ISR only fires correctly with TCNT0 reset... WHY?
+	// 		TCNT0 = 0;
+	// 		OCR0B = 2 x HALF_BIT_DELAY;
+	//
+	// THIS doesn't work, but should:
+	//		OCR0B = TCNT0 + 2 x HALF_BIT_DELAY;	
+	//
 
     static uint8_t bit_value = 1;
 
@@ -121,7 +133,8 @@ ISR(TIM0_COMPB_vect)
             soft_uart_rx_byte &= ~bit_value;
         }
         bit_value <<= 1; // shift 1 bit to the left
-        OCR0B = TCNT0 + 2*HALF_BIT_DELAY; // when to run next time
+		TCNT0 = 0;
+        OCR0B = 2*HALF_BIT_DELAY; // when to run next time
     } else { // stop-bit
         DISABLE_TIM0_COMPB_VECT; // no further runs after this one
         bit_value = 1; // reset bit counter
@@ -132,4 +145,6 @@ ISR(TIM0_COMPB_vect)
         CLEAR_PCINT0_FLAG;  // prevent premature execution
         ENABLE_PCINT0_VECT; // turn the receiver back on
     }
+
+	pulse_PB1_us(1);
 }

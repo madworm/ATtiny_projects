@@ -42,7 +42,7 @@ MCU = attiny13a
 
 # Main Oscillator Frequency
 # This is only used to define F_CPU in all assembler and c-sources.
-F_CPU = 4800000UL
+F_CPU = 9600000UL
 
 # Output format. (can be srec, ihex, binary)
 FORMAT = ihex

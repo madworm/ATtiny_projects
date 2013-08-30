@@ -9,9 +9,9 @@ void system_ticker_setup(void)
 	// set as output for PWM (OC0A)
 	DDRB |= _BV(PB0);
 	// using timer0
-	// setting prescaler to 8: 4.8MHz system-clock --> 600kHz timer0-clock - ~2.3kHz PWM clock
-	TCCR0B |= _BV(CS01);
-	TCCR0B &= ~(_BV(CS00) | _BV(CS02));
+	// setting prescaler to 64: 9.6MHz system-clock --> 150kHz timer0-clock - ~600Hz PWM clock
+	TCCR0B |= (_BV(CS01) | _BV(CS00));
+	TCCR0B &= ~(_BV(CS02));
 	// set to 'FAST PWM' mode
 	TCCR0A |= (_BV(WGM01) | _BV(WGM00));
 	TCCR0B &= ~_BV(WGM02);
