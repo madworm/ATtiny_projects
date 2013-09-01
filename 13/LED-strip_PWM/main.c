@@ -56,11 +56,11 @@ int main(void)
 			// do something useful here when serial data is received
 			tmp = soft_uart_read();
 
-			if ( (tmp == '1') && (OCR0A > 0) ) {
+			if ( (tmp == '+') && (OCR0A > 0) ) {
 				OCR0A--;
 			}
 
-			if ( (tmp == '2') && (OCR0A < 254) ) {
+			if ( (tmp == '-') && (OCR0A < 254) ) {
 				OCR0A++;
 			}
 			// now back to normal
