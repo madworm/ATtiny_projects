@@ -78,7 +78,7 @@ ISR(PCINT0_vect) // pin-change interrupt group 0
     DISABLE_PCINT0_VECT;
 
 	// mark when ISR fires: WORKS as expected
-	//pulse_PB1_us(1);
+	//pulse_PB1();
 
  	/* 
 	// visually check if the irq fires: YES	
@@ -113,7 +113,7 @@ ISR(TIM0_COMPB_vect)
 	*/
 
 	// add pulse for logic-analyzer testing of bit-sample timing
-	//pulse_PB1_us(1);
+	//pulse_PB1();
 	
 	//
 	// ISR only fires correctly with TCNT0 reset... WHY?

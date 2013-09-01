@@ -41,3 +41,12 @@ void pulse_PB1_us(uint16_t us)
 	delay_us(2*us);
 	DDRB &= ~_BV(PB1);; // as input
 }
+
+void pulse_PB1(void)
+{
+	DDRB |= _BV(PB1); // as output
+	PORTB &= ~_BV(PB1); // LOW
+	PORTB |= _BV(PB1); // HIGH
+	PORTB &= ~_BV(PB1); // LOW
+	DDRB &= ~_BV(PB1);; // as input
+}
