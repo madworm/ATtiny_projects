@@ -60,7 +60,7 @@ int main(void)
 				OCR0A--;
 			}
 
-			if ( (tmp == '-') && (OCR0A < 254) ) {
+			if ( (tmp == '-') && (OCR0A < 255) ) {
 				OCR0A++;
 			}
 			// now back to normal

@@ -27,7 +27,15 @@ void system_ticker_setup(void)
 ISR(TIM0_COMPA_vect)
 {
 	// manual PWM...
-	PORTB |= _BV(PB0); // HIGH
+	
+	//
+	// due to interrupt latency, runtime...
+	// setting the pin at 255 and turning it off again in the overflow ISR
+	// doesn't producte 0% duty cycle.
+	//
+	if(OCR0A < 255) {
+		PORTB |= _BV(PB0); // HIGH
+	}
 }
 
 ISR(TIM0_OVF_vect)		// on attiny2313/4313 this is named TIMER0_OVF_vect
