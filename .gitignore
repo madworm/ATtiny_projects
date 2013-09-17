@@ -1,6 +1,7 @@
 output/
 bin/
 obj/
+.dep/
 *.depend
 *.layout
 
