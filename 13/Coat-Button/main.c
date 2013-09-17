@@ -10,14 +10,14 @@ uint8_t EEMEM saved_mode = 0x00;
 
 int main(void)
 {
-	setup_hw();
-
 	uint8_t mode = eeprom_read_byte(&saved_mode);
 
-	if( 1 ) {  // ISP header pin #3 and #4 shorted on power-up
+	if( PB3_PB4_shorted() ) {  // ISP header pin #3 and #4 shorted on power-up
 		mode = ( mode + 1 ) % 2;
 		eeprom_write_byte(&saved_mode, mode);
 	}
+
+	setup_hw(); // set everything we need for normal operation
 
 	switch(mode) {
 		case 0:
@@ -68,4 +68,21 @@ void breathe(uint16_t b_delay) {
 		fade(0,255,b_delay); // from, to, delay
 		fade(255,0,b_delay);
 	}
+}
+
+uint8_t PB3_PB4_shorted(void) {
+	uint8_t retval = 0;
+	DDRB |= _BV(PB3); // set PB3 as output
+	PORTB &= ~_BV(PB3); // set PB3 to LOW
+
+	DDRB &= ~_BV(PB4); // set PB4 as input
+	PORTB |= _BV(PB4); // pull-up on on PB4
+
+	if( !(PINB & _BV(PB4)) ) { // PB4 reads as LOW
+		retval = 1;
+	} else {
+		retval = 0;
+	}
+
+	return retval;
 }
