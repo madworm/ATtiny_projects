@@ -6,18 +6,17 @@ volatile uint16_t system_ticks = 0;
 
 void system_ticker_setup(void)
 {
-	// set as output for PWM
-	DDRB |= _BV(PB0);
-	OCR0A = 254;
+	// set as output for PWM (via interrupts)
+	DDRB |= ( _BV(PB3) | _BV(PB4) );
+	PORTB &= ~ ( _BV(PB3) | _BV(PB4) );
+	OCR0A = 255; // start with LEDs OFF
 	// using timer0
 	// setting prescaler to 8: 9.6MHz system-clock --> 1.2MHz timer0-clock - ~5kHz PWM clock
 	TCCR0B |= _BV(CS01);
 	TCCR0B &= ~(_BV(CS02) | _BV(CS00));
-	// set to 'NORMAL' WGM0 mode. see comments in 'uart.c' for reason
+	// set to 'NORMAL' WGM0 mode.
 	TCCR0A &= ~(_BV(WGM01) | _BV(WGM00));
 	TCCR0B &= ~_BV(WGM02);
-	// no PWM on PB0 (OC0A) 
-	TCCR0A &= ~(_BV(COM0A1) | _BV(COM0A0));
 	// enabling overflow interrupt
 	TIMSK0 |= _BV(TOIE0);
 	// enable compare match interrupt A
