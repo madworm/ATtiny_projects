@@ -15,31 +15,25 @@ uint8_t EEMEM saved_mode = 0x00;
 
 int main(void)
 {
-	/*
 	uint8_t mode = eeprom_read_byte(&saved_mode);
 
 	if( PB0_PB2_shorted() ) {  // ISP header pin #3 and #4 shorted on power-up
 		mode = ( mode + 1 ) % 2;
 		eeprom_write_byte(&saved_mode, mode);
 	}
-	*/
 
 	setup_hw(); // set and/or reset verything we need for normal operation
 
-	/*
 	switch(mode) {
 		case 0:
-			breathe(1000);
+			breathe(10);
 			break;
 		case 1:
-			breathe(10000);
+			breathe(100);
 			break;
 		default:
 			break;
 	}
-	*/
-
-	breathe(35);
 
 	/*
 	cli();
