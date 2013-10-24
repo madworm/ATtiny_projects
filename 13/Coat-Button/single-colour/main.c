@@ -3,22 +3,30 @@
 #include <avr/eeprom.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include "hardware_conf.h"
 #include "system_ticker.h"
 #include "main.h"
+
+#if !defined(NO_MOSFET) && !defined(USING_MOSFET)
+#error "Something wrong with 'hardware_conf.h' !"
+#endif
 
 uint8_t EEMEM saved_mode = 0x00;
 
 int main(void)
 {
+	/*
 	uint8_t mode = eeprom_read_byte(&saved_mode);
 
 	if( PB0_PB2_shorted() ) {  // ISP header pin #3 and #4 shorted on power-up
 		mode = ( mode + 1 ) % 2;
 		eeprom_write_byte(&saved_mode, mode);
 	}
+	*/
 
 	setup_hw(); // set and/or reset verything we need for normal operation
 
+	/*
 	switch(mode) {
 		case 0:
 			breathe(1000);
@@ -29,6 +37,19 @@ int main(void)
 		default:
 			break;
 	}
+	*/
+
+	breathe(35);
+
+	/*
+	cli();
+	
+	DDRB |= ( _BV(PB3) | _BV(PB4) );
+	// PORTB &= ~( _BV(PB3) | _BV(PB4) );
+	PORTB |= ( _BV(PB3) | _BV(PB4) );
+
+	while(1) {}
+	*/
 }
 
 void setup_hw(void)

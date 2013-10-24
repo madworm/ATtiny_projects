@@ -1,6 +1,11 @@
 #include <avr/interrupt.h>
 #include <stdint.h>
+#include "hardware_conf.h"
 #include "system_ticker.h"
+
+#if !defined(NO_MOSFET) && !defined(USING_MOSFET)
+#error "Something wrong with 'hardware_conf.h' !"
+#endif
 
 volatile uint16_t system_ticks = 0;
 
@@ -11,7 +16,7 @@ void system_ticker_setup(void)
 	PORTB &= ~ ( _BV(PB3) | _BV(PB4) );
 	OCR0A = 255; // start with LEDs OFF
 	// using timer0
-	// setting prescaler to 8: 9.6MHz system-clock --> 1.2MHz timer0-clock - ~5kHz PWM clock
+	// setting prescaler to 8: 4.8MHz system-clock --> 0.6MHz timer0-clock - ~2.4kHz PWM clock
 	TCCR0B |= _BV(CS01);
 	TCCR0B &= ~(_BV(CS02) | _BV(CS00));
 	// set to 'NORMAL' WGM0 mode.
@@ -32,16 +37,31 @@ ISR(TIM0_COMPA_vect)
 	// setting the pin at 255 and turning it off again in the overflow ISR
 	// doesn't producte 0% duty cycle.
 	//
+	
+	#ifdef NO_MOSFET
 	if(OCR0A < 255) {
 		PORTB &= ~( _BV(PB3) | _BV(PB4) ); // LOW (ON)
 	}
+	#endif
+
+	#ifdef USING_MOSFET
+	if(OCR0A < 255) {
+		PORTB |= ( _BV(PB3) | _BV(PB4) ); // HIGH (ON)
+	}
+	#endif
 }
 
 ISR(TIM0_OVF_vect)		// on attiny2313/4313 this is named TIMER0_OVF_vect
 {
 	system_ticks++;
 	
+	#ifdef NO_MOSFET
 	PORTB |= ( _BV(PB3) | _BV(PB4) ); // HIGH (OFF)
+	#endif
+	
+	#ifdef USING_MOSFET
+	PORTB &= ~( _BV(PB3) | _BV(PB4) ); // LOW (OFF)
+	#endif
 }
 
 uint16_t time(void)
