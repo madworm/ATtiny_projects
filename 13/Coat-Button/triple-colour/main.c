@@ -12,7 +12,7 @@
 #error "Something wrong with 'hardware_conf.h' !"
 #endif
 
-uint8_t EEMEM saved_mode = 0x00;
+uint8_t EEMEM saved_mode = 0x03;
 
 int main(void)
 {
@@ -20,8 +20,8 @@ int main(void)
 
 	if (PB0_PB2_shorted()) {	// ISP header pin #3 and #4 shorted on power-up
 		__delay_ms(1000);
-		if (PB0_PB2_shorted()) { // still shorted
-			mode = (mode + 1) % 3;	// cycle 0..1..2..0..1..2..0...
+		if (PB0_PB2_shorted()) {	// still shorted
+			mode = (mode + 1) % 4;	// cycle 0..1..2..3..0..1..2..3..0...
 			eeprom_write_byte(&saved_mode, mode);
 		}
 	}
@@ -30,14 +30,20 @@ int main(void)
 
 	switch (mode) {
 	case 0:
-		breathe(75, 0);
+		breathe(75, 0, 0);	// delay, color, times (0 --> infinite loop)
 		break;
 	case 1:
-		breathe(75, 1);
+		breathe(75, 1, 0);
 		break;
 	case 2:
-		breathe(75, 2);
+		breathe(75, 2, 0);
 		break;
+	case 3:
+		while (1) {
+			breathe(75, 0, 1);
+			breathe(75, 1, 1);
+			breathe(75, 2, 1);
+		}
 	default:
 		break;
 	}
@@ -92,11 +98,21 @@ void fade(uint8_t from, uint8_t to, uint16_t f_delay, uint8_t color)
 	}
 }
 
-void breathe(uint16_t b_delay, uint8_t color)
+void breathe(uint16_t b_delay, uint8_t color, int8_t times)
 {
-	while (1) {
-		fade(0, 255, b_delay, color);	// from, to, delay, color
-		fade(255, 0, b_delay, color);
+	if (times == 0) {
+		while (1) {
+			fade(0, 255, b_delay, color);	// from, to, delay, color
+			fade(255, 0, b_delay, color);
+		}
+	} else {
+		while (times > 0) {
+
+			fade(0, 255, b_delay, color);
+			fade(255, 0, b_delay, color);
+			times--;
+		}
+
 	}
 }
 
