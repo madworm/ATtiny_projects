@@ -17,11 +17,14 @@ int main(void)
 {
 	uint8_t mode = eeprom_read_byte(&saved_mode);
 
-	if( PB0_PB2_shorted() ) {  // ISP header pin #3 and #4 shorted on power-up
-		mode = ( mode + 1 ) % 2;
-		eeprom_write_byte(&saved_mode, mode);
-	}
-
+	if (PB0_PB2_shorted()) {	// ISP header pin #3 and #4 shorted on power-up
+		__delay_ms(1000);
+		if (PB0_PB2_shorted()) { // still shorted
+			mode = (mode + 1) % 2;	// cycle 0..1..0..1..0...
+			eeprom_write_byte(&saved_mode, mode);
+		}
+	}	
+		
 	setup_hw(); // set and/or reset verything we need for normal operation
 
 	switch(mode) {

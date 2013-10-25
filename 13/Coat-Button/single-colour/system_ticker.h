@@ -4,5 +4,6 @@
 void system_ticker_setup(void);
 uint16_t time(void);
 void delay(uint16_t ticks);
+void __delay_ms(uint16_t ms);
 
 #endif
