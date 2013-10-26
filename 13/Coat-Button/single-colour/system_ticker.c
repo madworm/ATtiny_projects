@@ -1,5 +1,4 @@
 #include <avr/interrupt.h>
-#include <util/delay.h>
 #include <stdint.h>
 #include "hardware_conf.h"
 #include "system_ticker.h"
@@ -80,12 +79,5 @@ void delay(uint16_t ticks)
 	uint16_t start_time = time();
 	while ((time() - start_time) < ticks) {
 		// just wait here
-	}
-}
-
-void __delay_ms(uint16_t ms) {
-	while(ms) {
-		_delay_ms(1);
-		ms--;
 	}
 }
