@@ -1,5 +1,4 @@
 #include <avr/interrupt.h>
-#include <util/delay.h>
 #include <stdint.h>
 #include "hardware_conf.h"
 #include "system_ticker.h"
@@ -8,10 +7,10 @@
 #error "Something wrong with 'hardware_conf.h' !"
 #endif
 
-volatile uint16_t system_ticks = 0;
+volatile uint16_t system_ticks = 0; // changed in an ISR
 
-uint8_t brightness_a = 0;
-uint8_t brightness_b = 0;
+volatile uint8_t brightness_a = 0; // volatile: prevent optimizer badness
+volatile uint8_t brightness_b = 0; // volatile: prevent optimizer badness
 
 void system_ticker_setup(void)
 {
@@ -96,9 +95,3 @@ void delay(uint16_t ticks)
 	}
 }
 
-void __delay_ms(uint16_t ms) {
-	while(ms) {
-		_delay_ms(1);
-		ms--;
-	}
-}

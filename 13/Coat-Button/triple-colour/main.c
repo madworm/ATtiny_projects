@@ -11,16 +11,21 @@
 #error "Something wrong with 'hardware_conf.h' !"
 #endif
 
-uint8_t EEMEM saved_mode = 0x00;
+uint8_t EEMEM saved_mode = 0;
 
 int main(void)
 {
 	uint8_t mode = eeprom_read_byte(&saved_mode);
 
+	setup_hw();
+
 	if (PB0_PB2_shorted()) {	// ISP header pin #3 and #4 shorted on power-up
-		__delay_ms(1000);
+		delay(20000); // requires system-ticker ISR to run!
 		if (PB0_PB2_shorted()) {	// still shorted
-			mode = (mode + 1) % 8;	// cycle 0..1..2..3..4..5..6..0..1..2...
+			mode++;
+			if(mode == 10) {	// cycle 0..1..2..3..4..5..6..7..8..9..0..1..2...
+				mode = 0;
+			}
 			eeprom_write_byte(&saved_mode, mode);
 		}
 	}
@@ -29,30 +34,43 @@ int main(void)
 
 	switch (mode) {
 	case 0:
-		breathe(75, 0, 0);	// delay, color, times (0 --> infinite loop)
+		brightness_a = 255;
+		while(1) {}
 		break;
 	case 1:
-		breathe(75, 1, 0);
+		brightness_b = 255;
+		while(1) {}
 		break;
 	case 2:
-		breathe(75, 2, 0);
+		brightness_a = 255;
+		brightness_b = 255;
+		while(1) {}
 		break;
 	case 3:
-	        while(1) {	
+		breathe(75, 0, 0);	// delay, color, times (0 --> infinite loop)
+		break;
+	case 4:
+		breathe(75, 1, 0);
+		break;
+	case 5:
+		breathe(75, 2, 0);
+		break;
+	case 6:
+	    while(1) {	
 			burst(5,5000,5,500,0);
 		}
 		break;
-	case 4:
-	        while(1) {	
+	case 7:
+	    while(1) {	
 			burst(5,5000,5,500,1);
 		}
 		break;
-	case 5:
-	        while(1) {	
+	case 8:
+	    while(1) {	
 			burst(5,5000,5,500,2);
 		}
 		break;
-	case 6:
+	case 9:
 		while(1) {
 			rainbow(100);
 		}
@@ -80,36 +98,32 @@ void fade(uint8_t from, uint8_t to, uint16_t f_delay, uint8_t color)
 
 	if (from <= to) {	// fade up 
 		for (counter = from; counter <= to; counter++) {
-			if (color == 0) {
-				brightness_a = counter;
-			}
-			if (color == 1) {
-				brightness_b = counter;
-			}
-			if (color == 2) {
-				brightness_a = counter;
-				brightness_b = counter;
-			}
+			helper(color, counter); // save space by avoiding code duplication
 			delay(f_delay);
 		}
 	}
 
 	if (from > to) {	// fade down 
 		for (counter = from; counter >= to; counter--) {
-			if (color == 0) {
-				brightness_a = counter;
-			}
-			if (color == 1) {
-				brightness_b = counter;
-			}
-			if (color == 2) {
-				brightness_a = counter;
-				brightness_b = counter;
-			}
+			helper(color, counter); // save space by avoiding code duplication
 			delay(f_delay);
 		}
 	}
 }
+
+void helper(uint8_t color, uint8_t value) {
+			if (color == 0) {
+				brightness_a = value;
+			}
+			if (color == 1) {
+				brightness_b = value;
+			}
+			if (color == 2) {
+				brightness_a = value;
+				brightness_b = value;
+			}
+}
+
 
 void breathe(uint16_t b_delay, uint8_t color, int8_t times)
 {
