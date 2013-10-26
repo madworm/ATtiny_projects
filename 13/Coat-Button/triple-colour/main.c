@@ -12,7 +12,7 @@
 #error "Something wrong with 'hardware_conf.h' !"
 #endif
 
-uint8_t EEMEM saved_mode = 0x03;
+uint8_t EEMEM saved_mode = 0x05;
 
 int main(void)
 {
@@ -21,7 +21,7 @@ int main(void)
 	if (PB0_PB2_shorted()) {	// ISP header pin #3 and #4 shorted on power-up
 		__delay_ms(1000);
 		if (PB0_PB2_shorted()) {	// still shorted
-			mode = (mode + 1) % 4;	// cycle 0..1..2..3..0..1..2..3..0...
+			mode = (mode + 1) % 7;	// cycle 0..1..2..3..4..5..6..0..1..2...
 			eeprom_write_byte(&saved_mode, mode);
 		}
 	}
@@ -44,6 +44,21 @@ int main(void)
 			breathe(75, 1, 1);
 			breathe(75, 2, 1);
 		}
+	case 4:
+	        while(1) {	
+			burst(5,5000,5,500,0);
+		}
+		break;
+	case 5:
+	        while(1) {	
+			burst(5,5000,5,500,1);
+		}
+		break;
+	case 6:
+	        while(1) {	
+			burst(5,5000,5,500,2);
+		}
+		break;
 	default:
 		break;
 	}
@@ -113,6 +128,38 @@ void breathe(uint16_t b_delay, uint8_t color, int8_t times)
 			times--;
 		}
 
+	}
+}
+
+void burst(uint8_t bursts, uint16_t burst_delay, uint8_t pulses, uint16_t pulse_delay, uint8_t color)
+{
+	uint8_t pulse_ctr;
+	uint8_t burst_ctr;
+	
+	for(burst_ctr = bursts ; burst_ctr > 0; burst_ctr--) {
+		for(pulse_ctr = pulses; pulse_ctr > 0; pulse_ctr--) {
+			if (color == 0) {
+				brightness_a = 255;
+				delay(pulse_delay),
+				brightness_a = 0;
+				delay(pulse_delay);
+			}
+			if (color == 1) {
+				brightness_b = 255;
+				delay(pulse_delay);
+				brightness_b = 0;
+				delay(pulse_delay);
+			}
+			if (color == 2) {
+				brightness_a = 255;
+				brightness_b = 255;
+				delay(pulse_delay);
+				brightness_a = 0;
+				brightness_b = 0;
+				delay(pulse_delay);
+			}
+		}
+		delay(burst_delay);
 	}
 }
 
