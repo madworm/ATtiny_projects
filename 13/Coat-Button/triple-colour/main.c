@@ -1,6 +1,5 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <avr/delay.h>
 #include <avr/eeprom.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -12,7 +11,7 @@
 #error "Something wrong with 'hardware_conf.h' !"
 #endif
 
-uint8_t EEMEM saved_mode = 0x05;
+uint8_t EEMEM saved_mode = 0x00;
 
 int main(void)
 {
@@ -21,7 +20,7 @@ int main(void)
 	if (PB0_PB2_shorted()) {	// ISP header pin #3 and #4 shorted on power-up
 		__delay_ms(1000);
 		if (PB0_PB2_shorted()) {	// still shorted
-			mode = (mode + 1) % 7;	// cycle 0..1..2..3..4..5..6..0..1..2...
+			mode = (mode + 1) % 8;	// cycle 0..1..2..3..4..5..6..0..1..2...
 			eeprom_write_byte(&saved_mode, mode);
 		}
 	}
@@ -39,24 +38,23 @@ int main(void)
 		breathe(75, 2, 0);
 		break;
 	case 3:
-		while (1) {
-			breathe(75, 0, 1);
-			breathe(75, 1, 1);
-			breathe(75, 2, 1);
-		}
-	case 4:
 	        while(1) {	
 			burst(5,5000,5,500,0);
 		}
 		break;
-	case 5:
+	case 4:
 	        while(1) {	
 			burst(5,5000,5,500,1);
 		}
 		break;
-	case 6:
+	case 5:
 	        while(1) {	
 			burst(5,5000,5,500,2);
+		}
+		break;
+	case 6:
+		while(1) {
+			rainbow(100);
 		}
 		break;
 	default:
@@ -160,6 +158,26 @@ void burst(uint8_t bursts, uint16_t burst_delay, uint8_t pulses, uint16_t pulse_
 			}
 		}
 		delay(burst_delay);
+	}
+}
+
+void rainbow(uint16_t rainbow_delay) {
+	int16_t ctr;
+
+	for(ctr = 0; ctr <= 255; ctr++) {
+		brightness_a = ctr;	// color a UP
+		brightness_b = 255 - ctr; // color b DOWN
+		delay(rainbow_delay);	
+	}
+
+	for(ctr = 0; ctr <= 255; ctr++) {
+		brightness_b = ctr; // color b UP
+		delay(rainbow_delay);	
+	}
+
+	for(ctr = 255; ctr > 0; ctr--) {
+		brightness_a = ctr; // color a DOWN
+		delay(rainbow_delay);	
 	}
 }
 
