@@ -23,7 +23,7 @@ int main(void)
 		delay(20000);	// requires system-ticker ISR to run!
 		if (PB0_PB2_shorted()) {	// still shorted
 			mode++;
-			if (mode == 2) {	// cycle 0..1..0..1...
+			if (mode == 4) {	// cycle 0..1..2..3..0..1...
 				mode = 0;
 			}
 			eeprom_write_byte(&saved_mode, mode);
@@ -34,24 +34,23 @@ int main(void)
 
 	switch (mode) {
 	case 0:
-		breathe(10);
+		brightness_a = 255;
+		while (1) {};
 		break;
 	case 1:
-		breathe(100);
+		breathe(75, 0);	// breathe_delay, times (0 --> infinite loop)
+		break;
+	case 2:
+		breathe(500, 0);
+		break;
+	case 3:
+		while (1) {
+			burst(5, 5000, 5, 500);	// bursts, burst_delay, pulses, pulse_delay
+		}
 		break;
 	default:
 		break;
 	}
-
-	/*
-	   cli();
-
-	   DDRB |= ( _BV(PB3) | _BV(PB4) );
-	   // PORTB &= ~( _BV(PB3) | _BV(PB4) );
-	   PORTB |= ( _BV(PB3) | _BV(PB4) );
-
-	   while(1) {}
-	 */
 }
 
 void setup_hw(void)
@@ -72,24 +71,50 @@ void fade(uint8_t from, uint8_t to, uint16_t f_delay)
 
 	if (from <= to) {	// fade up 
 		for (counter = from; counter <= to; counter++) {
-			OCR0A = 255 - counter;
+			brightness_a = counter;
 			delay(f_delay);
 		}
 	}
 
 	if (from > to) {	// fade down 
 		for (counter = from; counter >= to; counter--) {
-			OCR0A = 255 - counter;
+			brightness_a = counter;
 			delay(f_delay);
 		}
 	}
 }
 
-void breathe(uint16_t b_delay)
+void breathe(uint16_t b_delay, int8_t times)
 {
-	while (1) {
-		fade(0, 255, b_delay);	// from, to, delay
-		fade(255, 0, b_delay);
+	if (times == 0) {
+		while (1) {
+			fade(0, 255, b_delay);	// from, to, delay, color
+			fade(255, 0, b_delay);
+		}
+	} else {
+		while (times > 0) {
+
+			fade(0, 255, b_delay);
+			fade(255, 0, b_delay);
+			times--;
+		}
+
+	}
+}
+
+void burst(uint8_t bursts, uint16_t burst_delay, uint8_t pulses,
+	   uint16_t pulse_delay)
+{
+	uint8_t pulse_ctr;
+	uint8_t burst_ctr;
+
+	for (burst_ctr = bursts; burst_ctr > 0; burst_ctr--) {
+		for (pulse_ctr = pulses; pulse_ctr > 0; pulse_ctr--) {
+			brightness_a = 255;
+			delay(pulse_delay), brightness_a = 0;
+			delay(pulse_delay);
+		}
+		delay(burst_delay);
 	}
 }
 
