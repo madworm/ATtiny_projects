@@ -1,4 +1,5 @@
 #include <avr/io.h>
+#include <avr/wdt.h>
 #include <avr/interrupt.h>
 #include <avr/eeprom.h>
 #include <stdint.h>
@@ -11,7 +12,9 @@
 #error "Something wrong with 'hardware_conf.h' !"
 #endif
 
-uint8_t EEMEM saved_mode = 0x00;
+//#define DEMO
+
+uint8_t EEMEM saved_mode = 0;
 
 int main(void)
 {
@@ -19,23 +22,32 @@ int main(void)
 
 	setup_hw();
 
+#if defined(DEMO)
+	wdt_enable(WDTO_4S);
+#endif
+
+#if !defined(DEMO)
 	if (PB0_PB2_shorted()) {	// ISP header pin #3 and #4 shorted on power-up
 		delay(20000);	// requires system-ticker ISR to run!
 		if (PB0_PB2_shorted()) {	// still shorted
+#endif
 			mode++;
-			if (mode == 4) {	// cycle 0..1..2..3..0..1...
+			if (mode == 4) {	// cycle 0..1..2..3..0..1..2...
 				mode = 0;
 			}
 			eeprom_write_byte(&saved_mode, mode);
+#if !defined(DEMO)
 		}
 	}
+#endif
 
 	setup_hw();		// set and/or reset verything we need for normal operation
 
 	switch (mode) {
 	case 0:
 		brightness_a = 255;
-		while (1) {};
+		while (1) {
+		};
 		break;
 	case 1:
 		breathe(75, 0);	// breathe_delay, times (0 --> infinite loop)
