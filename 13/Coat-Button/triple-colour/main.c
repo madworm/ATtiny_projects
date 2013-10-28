@@ -245,9 +245,3 @@ uint8_t PB0_PB2_shorted(void)
 
 	return retval;
 }
-
-void demo(void)
-{
-	WDTCR |= (_BV(WDCE) | _BV(WDE));	// enable watchdog reset
-	WDTCR |= _BV(WDP3);	// 4s timeout
-}
