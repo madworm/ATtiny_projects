@@ -14,32 +14,46 @@
 
 //#define DEMO
 
+#if !defined(DEMO)
 uint8_t EEMEM saved_mode = 0;
+#endif
+
+#if defined(DEMO)
+uint8_t mode __attribute__((section(".noinit"))); // provides RESET-immune storage 
+#endif
 
 int main(void)
 {
+
+#if !defined(DEMO)
 	uint8_t mode = eeprom_read_byte(&saved_mode);
 
 	setup_hw();
 
-#if defined(DEMO)
-	wdt_enable(WDTO_4S);
-#endif
-
-#if !defined(DEMO)
 	if (PB0_PB2_shorted()) {	// ISP header pin #3 and #4 shorted on power-up
 		delay(20000);	// requires system-ticker ISR to run!
 		if (PB0_PB2_shorted()) {	// still shorted
-#endif
 			mode++;
-			if (mode == 10) {	// cycle 0..1..2..3..4..5..6..7..8..9..0..1..2...
+			if (mode > 9) {	// cycle 0..1..2..3..4..5..6..7..8..9..0..1..2...
 				mode = 0;
 			}
 			eeprom_write_byte(&saved_mode, mode);
-#if !defined(DEMO)
 		}
 	}
 #endif
+
+
+#if defined(DEMO)
+	setup_hw();
+
+	wdt_enable(WDTO_4S);
+
+	mode++;
+	if (mode > 9) {	// cycle 0..1..2..3..4..5..6..7..8..9..0..1..2...
+		mode = 0;
+	}
+#endif
+
 
 	setup_hw();		// set and/or reset verything we need for normal operation
 
