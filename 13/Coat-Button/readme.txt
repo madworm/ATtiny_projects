@@ -4,6 +4,7 @@ If you run out of FLASH space, try using a later version of avr-gcc + avr-libc +
 Comparison (triple-colour):
 
 Regular mode:
+=============
 
 avr-gcc  | avr-libc | code size (bytes)
 ---------------------------------------
@@ -13,6 +14,7 @@ avr-gcc  | avr-libc | code size (bytes)
 
 
 Demo mode:
+==========
 
 avr-gcc  | avr-libc | code size (bytes)
 ---------------------------------------
