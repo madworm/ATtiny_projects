@@ -19,7 +19,7 @@ uint8_t EEMEM saved_mode = 0;
 #endif
 
 #if defined(DEMO)
-uint8_t mode __attribute__((section(".noinit"))); // provides RESET-immune storage 
+uint8_t mode __attribute__ ((section(".noinit")));	// provides RESET-immune storage 
 #endif
 
 int main(void)
@@ -42,18 +42,16 @@ int main(void)
 	}
 #endif
 
-
 #if defined(DEMO)
 	setup_hw();
 
 	wdt_enable(WDTO_4S);
 
 	mode++;
-	if (mode > 9) {	// cycle 0..1..2..3..4..5..6..7..8..9..0..1..2...
+	if (mode > 9) {		// cycle 0..1..2..3..4..5..6..7..8..9..0..1..2...
 		mode = 0;
 	}
 #endif
-
 
 	setup_hw();		// set and/or reset everything we need for normal operation
 
@@ -181,7 +179,8 @@ void burst(uint8_t bursts, uint16_t burst_delay, uint8_t pulses,
 		for (pulse_ctr = pulses; pulse_ctr > 0; pulse_ctr--) {
 			if (color == 0) {
 				brightness_a = 255;
-				delay(pulse_delay), brightness_a = 0;
+				delay(pulse_delay);
+				brightness_a = 0;
 				delay(pulse_delay);
 			}
 			if (color == 1) {
