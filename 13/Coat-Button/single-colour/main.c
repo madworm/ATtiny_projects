@@ -55,7 +55,7 @@ int main(void)
 #endif
     
 
-	setup_hw();		// set and/or reset verything we need for normal operation
+	setup_hw();		// set and/or reset everything we need for normal operation
 
 	switch (mode) {
 	case 0:
