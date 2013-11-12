@@ -14,8 +14,8 @@ volatile uint8_t brightness_a = 0;	// volatile: prevent optimizer badness
 void system_ticker_setup(void)
 {
 	// set as output for PWM (via interrupts)
-	DDRB |= (_BV(PB4));
-	PORTB &= ~(_BV(PB4));
+	DDRB |= (_BV(PB3));
+	PORTB &= ~(_BV(PB3));
 	// using timer0
 	// setting prescaler to 1: 4.8MHz system-clock --> 4.8MHz timer0-clock - ~19kHz OVF_vect clock
 	TCCR0B |= _BV(CS00);
@@ -38,20 +38,20 @@ ISR(TIM0_OVF_vect)		// on attiny2313/4313 this is named TIMER0_OVF_vect
 
 	if (brightness_a > cycle_counter) {
 #ifdef NO_MOSFET
-		PORTB &= ~(_BV(PB4));	// LOW (ON)
+		PORTB &= ~(_BV(PB3));	// LOW (ON)
 #endif
 
 #ifdef USING_MOSFET
-		PORTB |= (_BV(PB4));	// HIGH (ON)
+		PORTB |= (_BV(PB3));	// HIGH (ON)
 #endif
 	} else {
 
 #ifdef NO_MOSFET
-		PORTB |= (_BV(PB4));	// HIGH (OFF)
+		PORTB |= (_BV(PB3));	// HIGH (OFF)
 #endif
 
 #ifdef USING_MOSFET
-		PORTB &= ~(_BV(PB4));	// LOW (OFF)
+		PORTB &= ~(_BV(PB3));	// LOW (OFF)
 #endif
 	}
 	cycle_counter++;
