@@ -14,6 +14,8 @@
 
 //#define DEMO
 
+uint32_t lfsr = 0xbeefcace;
+
 #if !defined(DEMO)
 uint8_t EEMEM saved_mode = 0;
 #endif
@@ -34,7 +36,7 @@ int main(void)
 		delay(20000);	// requires system-ticker ISR to run!
 		if (PB0_PB2_shorted()) {	// still shorted
 			mode++;
-			if (mode > 3) {	// cycle 0..1..2..3..0..1..2...
+			if (mode > 4) {	// cycle 0..1..2..3..4..0..1..2...
 				mode = 0;
 			}
 			eeprom_write_byte(&saved_mode, mode);
@@ -45,10 +47,10 @@ int main(void)
 #if defined(DEMO)
 	setup_hw();
 
-	wdt_enable(WDTO_4S);
+	wdt_enable(WDTO_8S);
 
 	mode++;
-	if (mode > 3) {		// cycle 0..1..2..3..0..1..2...
+	if (mode > 4) {		// cycle 0..1..2..3..4..0..1..2...
 		mode = 0;
 	}
 #endif
@@ -72,6 +74,10 @@ int main(void)
 			burst(5, 5000, 5, 500);	// bursts, burst_delay, pulses, pulse_delay
 		}
 		break;
+	case 4:
+		while (1) {
+			flicker();
+		}
 	default:
 		break;
 	}
@@ -163,4 +169,25 @@ uint8_t PB0_PB2_shorted(void)
 	// which does all of that 
 
 	return retval;
+}
+
+uint32_t pseudo_rand(void)
+{
+	// http://en.wikipedia.org/wiki/Linear_feedback_shift_register
+	// Galois LFSR: taps: 32 31 29 1; characteristic polynomial: x^32 + x^31 + x^29 + x + 1 */
+	lfsr = (lfsr >> 1) ^ (-(lfsr & 1u) & 0xD0000001u);
+	return lfsr;
+}
+
+void flicker(void)
+{
+	static uint8_t from = 0;
+	static uint8_t to = 0;
+
+	to = (uint8_t) (pseudo_rand());
+
+	fade(from, to, (uint8_t) (pseudo_rand() >> 24));
+	delay((uint8_t) (pseudo_rand() >> 24));	// random delay
+
+	from = to;
 }
