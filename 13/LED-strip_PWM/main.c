@@ -54,6 +54,20 @@ int main(void)
 
 		case 1:
 			// do something useful here when serial data is received
+			// the device listens on PB2 (SCK) at 9600,8,N,1
+			// this pin #3 on the ISP connector (top view)
+			//
+			// 5   3   1
+			//
+			// 6   4   2
+			//
+			// 1: MISO
+			// 2: 5V
+			// 3: SCK
+			// 4: MOSI
+			// 5: RESET
+			// 6: GND
+			//
 			tmp = soft_uart_read();
 
 			if ( (tmp == '+') && (OCR0A > 0) ) {
