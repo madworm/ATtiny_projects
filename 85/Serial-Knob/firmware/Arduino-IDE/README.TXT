@@ -1,4 +1,7 @@
 
+Instructions for compiling the firmware with the Arduino-IDE:
+=============================================================
+
 This requires the MIT attiny addons for the Arduino IDE.
 
 http://hlt.media.mit.edu/?p=1695 / https://github.com/damellis/attiny/
