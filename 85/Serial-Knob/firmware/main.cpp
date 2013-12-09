@@ -99,6 +99,7 @@ int main(void)
 			not_the_first_time_pressed = 0;
 		}
 		if( encoder_get(BUTTON_STATE) && ( (button_press_just_happened == 1) || (not_the_first_time_pressed == 1) ) ) {
+			// "¯" is an unicode character! It will be sent as 2 bytes ( 0xC2 0xAF )		  
 			soft_uart_send(PSTR("¯"),1);
 			button_press_just_happened = 0;
 			not_the_first_time_pressed = 1;
