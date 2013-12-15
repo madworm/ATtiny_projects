@@ -15,15 +15,25 @@ volatile uint8_t brightness_b = 0; // volatile: prevent optimizer badness
 void system_ticker_setup(void)
 {
 	// set as output for PWM (via interrupts)
-	DDRB |= (_BV(PB3) | _BV(PB4));
-	PORTB &= ~(_BV(PB3) | _BV(PB4));
+	//DDRB |= (_BV(PB3) | _BV(PB4));
+	//PORTB &= ~(_BV(PB3) | _BV(PB4));
+	
+	// save code-space by not doing read-modify-write ops
+	DDRB = (_BV(PB3) | _BV(PB4));
+	PORTB = ~(_BV(PB3) | _BV(PB4));
+
 	// using timer0
 	// setting prescaler to 1: 4.8MHz system-clock --> 4.8MHz timer0-clock - ~19kHz OVF_vect clock
-	TCCR0B |= _BV(CS00);
-	TCCR0B &= ~(_BV(CS01) | _BV(CS02));
+	//TCCR0B |= _BV(CS00);
+	//TCCR0B &= ~(_BV(CS01) | _BV(CS02));
 	// set to 'NORMAL' WGM0 mode.
-	TCCR0A &= ~(_BV(WGM01) | _BV(WGM00));
-	TCCR0B &= ~_BV(WGM02);
+	//TCCR0A &= ~(_BV(WGM01) | _BV(WGM00));
+	//TCCR0B &= ~_BV(WGM02);
+
+	// save code-space by not doing read-modify-write ops	
+	TCCR0A = 0x00;
+	TCCR0B = _BV(CS00);
+	
 	// enabling overflow interrupt
 	TIMSK0 |= _BV(TOIE0);
 }

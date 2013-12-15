@@ -14,6 +14,8 @@
 
 //#define DEMO
 
+uint16_t lfsr = 0xbeef;
+
 #if !defined(DEMO)
 uint8_t EEMEM saved_mode = 0;
 #endif
@@ -28,27 +30,20 @@ int main(void)
 #if !defined(DEMO)
 	uint8_t mode = eeprom_read_byte(&saved_mode);
 
-	setup_hw();
-
 	if (PB0_PB2_shorted()) {	// ISP header pin #3 and #4 shorted on power-up
-		delay(20000);	// requires system-ticker ISR to run!
-		if (PB0_PB2_shorted()) {	// still shorted
-			mode++;
-			if (mode > 9) {	// cycle 0..1..2..3..4..5..6..7..8..9..0..1..2...
-				mode = 0;
-			}
-			eeprom_write_byte(&saved_mode, mode);
+		mode++;
+		if (mode > 10) {	// cycle 0..1..2..3..4..5..6..7..8..9..10..0..1..2...
+			mode = 0;
 		}
+		eeprom_write_byte(&saved_mode, mode);
 	}
 #endif
 
 #if defined(DEMO)
-	setup_hw();
-
 	wdt_enable(WDTO_8S);
 
 	mode++;
-	if (mode > 9) {		// cycle 0..1..2..3..4..5..6..7..8..9..0..1..2...
+	if (mode > 10) {	// cycle 0..1..2..3..4..5..6..7..8..9..10..0..1..2...
 		mode = 0;
 	}
 #endif
@@ -89,6 +84,9 @@ int main(void)
 		case 9:
 			rainbow(100);
 			break;
+		case 10:
+			random_color(100);
+			break;
 		default:
 			break;
 		}
@@ -98,8 +96,6 @@ int main(void)
 
 void setup_hw(void)
 {
-	cli();			// turn interrupts off, just in case
-
 	DDRB = 0x00;		// set all as input
 	PORTB = 0xFF;		// set all pull-ups on
 
@@ -208,11 +204,15 @@ void rainbow(uint16_t rainbow_delay)
 uint8_t PB0_PB2_shorted(void)
 {
 	uint8_t retval = 0;
-	DDRB |= _BV(PB0);	// set PB0 as output
-	PORTB &= ~_BV(PB0);	// set PB0 to LOW
+	//DDRB |= _BV(PB0);     // set PB0 as output
+	//PORTB &= ~_BV(PB0);   // set PB0 to LOW
 
-	DDRB &= ~_BV(PB2);	// set PB2 as input
-	PORTB |= _BV(PB2);	// pull-up on on PB2
+	//DDRB &= ~_BV(PB2);    // set PB2 as input
+	//PORTB |= _BV(PB2);    // pull-up on on PB2
+
+	// equivalent of the above read-modify-write ops
+	DDRB = _BV(PB0);
+	PORTB = _BV(PB2);
 
 	if (!(PINB & _BV(PB2))) {	// PB2 reads as LOW
 		retval = 1;
@@ -225,4 +225,24 @@ uint8_t PB0_PB2_shorted(void)
 	// which does all of that 
 
 	return retval;
+}
+
+uint16_t pseudo_rand(void)
+{
+	// http://en.wikipedia.org/wiki/Linear_feedback_shift_register
+	// Galois LFSR: taps: 16 15 14 1; characteristic polynomial: x^16 + x^15 + x^14 + x + 1 */
+	lfsr = (lfsr >> 1) ^ (-(lfsr & 1u) & 0xD001u);
+	return lfsr;
+}
+
+void random_color(uint16_t fade_delay)
+{
+	uint8_t from_a = brightness_a;
+	uint8_t from_b = brightness_b;
+
+	uint8_t to_a = (uint8_t) (pseudo_rand() >> 8);
+	uint8_t to_b = (uint8_t) (pseudo_rand() >> 8);
+
+	fade(from_a, to_a, fade_delay, 0);
+	fade(from_b, to_b, fade_delay, 1);
 }

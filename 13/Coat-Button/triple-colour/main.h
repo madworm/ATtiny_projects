@@ -8,6 +8,8 @@ void burst(uint8_t bursts, uint16_t burst_delay, uint8_t pulses, uint16_t pulse_
 void rainbow(uint16_t rainbow_delay);
 void helper(uint8_t color, uint8_t value);
 uint8_t PB0_PB2_shorted(void);
+uint16_t pseudo_rand(void);
+void random_color(uint16_t fade_delay);
 int main(void);
 
 #endif
