@@ -57,29 +57,28 @@ int main(void)
 
 	setup_hw();		// set and/or reset everything we need for normal operation
 
-	switch (mode) {
-	case 0:
-		brightness_a = 255;
-		while (1) {
-		};
-		break;
-	case 1:
-		breathe(75, 0);	// breathe_delay, times (0 --> infinite loop)
-		break;
-	case 2:
-		breathe(500, 0);
-		break;
-	case 3:
-		while (1) {
+	while (1) {
+
+		switch (mode) {
+		case 0:
+			brightness_a = 255;
+			break;
+		case 1:
+			breathe(75, 5);	// breathe_delay, times
+			break;
+		case 2:
+			breathe(500, 5);
+			break;
+		case 3:
 			burst(5, 5000, 5, 500);	// bursts, burst_delay, pulses, pulse_delay
-		}
-		break;
-	case 4:
-		while (1) {
+			break;
+		case 4:
 			flicker();
+			break;
+		default:
+			break;
 		}
-	default:
-		break;
+
 	}
 }
 
@@ -116,19 +115,10 @@ void fade(uint8_t from, uint8_t to, uint16_t f_delay)
 
 void breathe(uint16_t b_delay, int8_t times)
 {
-	if (times == 0) {
-		while (1) {
-			fade(0, 255, b_delay);	// from, to, delay, color
-			fade(255, 0, b_delay);
-		}
-	} else {
-		while (times > 0) {
-
-			fade(0, 255, b_delay);
-			fade(255, 0, b_delay);
-			times--;
-		}
-
+	while (times > 0) {
+		fade(0, 255, b_delay);
+		fade(255, 0, b_delay);
+		times--;
 	}
 }
 
