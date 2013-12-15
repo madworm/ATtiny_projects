@@ -45,7 +45,7 @@ int main(void)
 #if defined(DEMO)
 	setup_hw();
 
-	wdt_enable(WDTO_4S);
+	wdt_enable(WDTO_8S);
 
 	mode++;
 	if (mode > 9) {		// cycle 0..1..2..3..4..5..6..7..8..9..0..1..2...
@@ -55,54 +55,44 @@ int main(void)
 
 	setup_hw();		// set and/or reset everything we need for normal operation
 
-	switch (mode) {
-	case 0:
-		brightness_a = 255;
-		while (1) {
-		}
-		break;
-	case 1:
-		brightness_b = 255;
-		while (1) {
-		}
-		break;
-	case 2:
-		brightness_a = 255;
-		brightness_b = 255;
-		while (1) {
-		}
-		break;
-	case 3:
-		breathe(75, 0, 0);	// delay, color, times (0 --> infinite loop)
-		break;
-	case 4:
-		breathe(75, 1, 0);
-		break;
-	case 5:
-		breathe(75, 2, 0);
-		break;
-	case 6:
-		while (1) {
+	while (1) {
+
+		switch (mode) {
+		case 0:
+			brightness_a = 255;
+			break;
+		case 1:
+			brightness_b = 255;
+			break;
+		case 2:
+			brightness_a = 255;
+			brightness_b = 255;
+			break;
+		case 3:
+			breathe(75, 0, 5);	// delay, color, times
+			break;
+		case 4:
+			breathe(75, 1, 5);
+			break;
+		case 5:
+			breathe(75, 2, 5);
+			break;
+		case 6:
 			burst(5, 5000, 5, 500, 0);
-		}
-		break;
-	case 7:
-		while (1) {
+			break;
+		case 7:
 			burst(5, 5000, 5, 500, 1);
-		}
-		break;
-	case 8:
-		while (1) {
+			break;
+		case 8:
 			burst(5, 5000, 5, 500, 2);
-		}
-		break;
-	case 9:
-		while (1) {
+			break;
+		case 9:
 			rainbow(100);
+			break;
+		default:
+			break;
 		}
-		break;
-	default:
-		break;
+
 	}
 }
 
@@ -153,20 +143,12 @@ void helper(uint8_t color, uint8_t value)
 
 void breathe(uint16_t b_delay, uint8_t color, int8_t times)
 {
-	if (times == 0) {
-		while (1) {
-			fade(0, 255, b_delay, color);	// from, to, delay, color
-			fade(255, 0, b_delay, color);
-		}
-	} else {
-		while (times > 0) {
-
-			fade(0, 255, b_delay, color);
-			fade(255, 0, b_delay, color);
-			times--;
-		}
-
+	while (times > 0) {
+		fade(0, 255, b_delay, color);
+		fade(255, 0, b_delay, color);
+		times--;
 	}
+
 }
 
 void burst(uint8_t bursts, uint16_t burst_delay, uint8_t pulses,
