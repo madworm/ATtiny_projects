@@ -96,30 +96,49 @@ void setup_hw(void)
 
 void fade(uint8_t from, uint8_t to, uint16_t f_delay)
 {
-	int16_t counter;
+	uint8_t counter = from;
 
 	if (from <= to) {	// fade up 
-		for (counter = from; counter <= to; counter++) {
+
+		do {
 			brightness_a = counter;
 			delay(f_delay);
-		}
+			if (counter < 255) {
+				counter++;
+			} else {
+				break;
+			}
+		} while (counter <= to);
+
 	}
 
 	if (from > to) {	// fade down 
-		for (counter = from; counter >= to; counter--) {
+
+		do {
 			brightness_a = counter;
 			delay(f_delay);
-		}
+			if (counter > 0) {
+				counter--;
+			} else {
+				break;
+			}
+
+		} while (counter >= to);
 	}
 }
 
-void breathe(uint16_t b_delay, int8_t times)
+void breathe(uint16_t b_delay, uint8_t times)
 {
-	while (times > 0) {
+	do {
 		fade(0, 255, b_delay);
 		fade(255, 0, b_delay);
-		times--;
-	}
+
+		if (times > 0) {
+			times--;
+		} else {
+			break;
+		}
+	} while (times >= 0);
 }
 
 void
