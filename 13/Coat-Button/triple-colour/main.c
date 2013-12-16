@@ -106,20 +106,34 @@ void setup_hw(void)
 
 void fade(uint8_t from, uint8_t to, uint16_t f_delay, uint8_t color)
 {
-	int16_t counter;
+	uint8_t counter = from;
 
 	if (from <= to) {	// fade up 
-		for (counter = from; counter <= to; counter++) {
+
+		do {
 			helper(color, counter);	// save space by avoiding code duplication
 			delay(f_delay);
-		}
+			if (counter < 255) {
+				counter++;
+			} else {
+				break;
+			}
+		} while (counter <= to);
+
 	}
 
 	if (from > to) {	// fade down 
-		for (counter = from; counter >= to; counter--) {
-			helper(color, counter);	// save space by avoiding code duplication
+
+		do {
+			helper(color, counter);
 			delay(f_delay);
-		}
+			if (counter > 0) {
+				counter--;
+			} else {
+				break;
+			}
+
+		} while (counter >= to);
 	}
 }
 
@@ -137,14 +151,18 @@ void helper(uint8_t color, uint8_t value)
 	}
 }
 
-void breathe(uint16_t b_delay, uint8_t color, int8_t times)
+void breathe(uint16_t b_delay, uint8_t color, uint8_t times)
 {
-	while (times > 0) {
+	do {
 		fade(0, 255, b_delay, color);
 		fade(255, 0, b_delay, color);
-		times--;
-	}
 
+		if (times > 0) {
+			times--;
+		} else {
+			break;
+		}
+	} while (times >= 0);
 }
 
 void burst(uint8_t bursts, uint16_t burst_delay, uint8_t pulses,
@@ -182,23 +200,47 @@ void burst(uint8_t bursts, uint16_t burst_delay, uint8_t pulses,
 
 void rainbow(uint16_t rainbow_delay)
 {
-	int16_t ctr;
+	uint8_t ctr;
 
-	for (ctr = 0; ctr <= 255; ctr++) {
+	ctr = 0;
+
+	do {
 		brightness_a = ctr;	// color a UP
 		brightness_b = 255 - ctr;	// color b DOWN
 		delay(rainbow_delay);
-	}
 
-	for (ctr = 0; ctr <= 255; ctr++) {
+		if (ctr < 255) {
+			ctr++;
+		} else {
+			break;
+		}
+	} while (ctr <= 255);
+
+	ctr = 0;
+
+	do {
 		brightness_b = ctr;	// color b UP
 		delay(rainbow_delay);
-	}
 
-	for (ctr = 255; ctr > 0; ctr--) {
+		if (ctr < 255) {
+			ctr++;
+		} else {
+			break;
+		}
+	} while (ctr <= 255);
+
+	ctr = 255;
+
+	do {
 		brightness_a = ctr;	// color a DOWN
 		delay(rainbow_delay);
-	}
+
+		if (ctr > 0) {
+			ctr--;
+		} else {
+			break;
+		}
+	} while (ctr >= 0);
 }
 
 uint8_t PB0_PB2_shorted(void)
