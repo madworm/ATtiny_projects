@@ -100,19 +100,33 @@ void setup_hw(void)
 
 void fade(uint8_t from, uint8_t to, uint16_t f_delay)
 {
-	int16_t counter;
+	uint8_t counter = from;
 
-	if (from <= to) {	// fade up
-		for (counter = from; counter <= to; counter++) {
+	if (from <= to) {	// fade up 
+
+		do {
 			OCR0A = (255 - counter);
 			delay(f_delay);
-		}
+			if (counter < 255) {
+				counter++;
+			} else {
+				break;
+			}
+		} while (counter <= to);
+
 	}
 
-	if (from > to) {	// fade down
-		for (counter = from; counter >= to; counter--) {
+	if (from > to) {	// fade down 
+
+		do {
 			OCR0A = (255 - counter);
 			delay(f_delay);
-		}
+			if (counter > 0) {
+				counter--;
+			} else {
+				break;
+			}
+
+		} while (counter >= to);
 	}
 }

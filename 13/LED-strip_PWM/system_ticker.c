@@ -7,8 +7,9 @@ volatile uint16_t system_ticks = 0;
 void system_ticker_setup(void)
 {
 	// set as output for PWM
-	DDRB |= _BV(PB0);
-	OCR0A = 254;
+	PORTB &= _BV(PB0); // pull-up OFF
+	DDRB |= _BV(PB0); // set as output
+	OCR0A = 255;
 	// using timer0
 	// setting prescaler to 8: 9.6MHz system-clock --> 1.2MHz timer0-clock - ~5kHz PWM clock
 	TCCR0B |= _BV(CS01);
@@ -33,7 +34,7 @@ ISR(TIM0_COMPA_vect)
 	// setting the pin at 255 and turning it off again in the overflow ISR
 	// doesn't producte 0% duty cycle.
 	//
-	if(OCR0A < 255) {
+	if(OCR0A < 250) {
 		PORTB |= _BV(PB0); // HIGH
 	}
 }
