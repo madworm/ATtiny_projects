@@ -23,7 +23,7 @@ int main(void)
 	uint32_t low_time = 0;
 	uint32_t half_period = 0;
 
-	float adc_val = 0;
+	int32_t adc_val = 0;
 	uint32_t pot_poll_timeout = 0;
 
 	while (1) {
@@ -31,11 +31,9 @@ int main(void)
 		if ((millis() - pot_poll_timeout) > 1000) {
 			uint16_t tmp1 = adc_read();
 			if (tmp1 > 512) {
-				adc_val = ((float)(tmp1) * (4.0 / 510.0) - 3.0);
+				adc_val = (78 * (int32_t)(tmp1) - 30014) * ( MEASURE_INTERVAL / 10 );
 			} else {
-				adc_val =
-				    1.0 / (((float)(tmp1) * (-4.0) / 512.0) +
-					   5.0);
+				adc_val = ( MEASURE_INTERVAL * 1000000 ) / (- 78 * (int32_t)(tmp1) + 49936 ) * 10;
 			}
 			pot_poll_timeout = millis();
 		}
@@ -46,8 +44,7 @@ int main(void)
 		}
 
 		if (flag == 1) {
-			float tmp2 = adc_val * (1000.0 * MEASURE_INTERVAL) / ( (float)(edges)-1.0 );
-			half_period = (uint32_t) (tmp2);
+			half_period = (uint32_t) (adc_val / (edges-1));
 			flag = 0;
 			fan_timeout = millis();
 		}
