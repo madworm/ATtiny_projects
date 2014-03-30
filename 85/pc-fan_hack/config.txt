@@ -1,0 +1,5 @@
+MCU="attiny${1:-85}"
+HEXFILE="main.hex"
+PROGRAMMER="avrispmkii"
+PORT="usb"
+
