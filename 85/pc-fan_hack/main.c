@@ -31,9 +31,9 @@ int main(void)
 		if ((millis() - pot_poll_timeout) > 1000) {
 			uint16_t tmp1 = adc_read();
 			if (tmp1 > 512) {
-				adc_val = (78 * (int32_t)(tmp1) - 30014) * ( MEASURE_INTERVAL / 10 );
+				adc_val = (176 * (int32_t)(tmp1) - 80288) * ( MEASURE_INTERVAL / 10 );
 			} else {
-				adc_val = ( MEASURE_INTERVAL * 1000000 ) / (- 78 * (int32_t)(tmp1) + 49936 ) * 10;
+				adc_val = ( MEASURE_INTERVAL * 1000000 ) / (- 176 * (int32_t)(tmp1) + 100112 ) * 10;
 			}
 			pot_poll_timeout = millis();
 		}
