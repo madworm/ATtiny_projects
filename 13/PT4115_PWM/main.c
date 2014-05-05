@@ -40,7 +40,7 @@ RESTART:
         default:
             break;
         }
-        delay(40);
+        delay(40); // use about 2000 if you need precise control of brightness
     }
 
 #endif
