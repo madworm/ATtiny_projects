@@ -70,6 +70,9 @@ int main(void)
 			//
 			tmp = soft_uart_read();
 
+			//
+			// A) inrease / decrease brightness by 1
+			//
 			if ( (tmp == '+') && (OCR0A > 0) ) {
 				OCR0A--;
 			}
@@ -77,8 +80,16 @@ int main(void)
 			if ( (tmp == '-') && (OCR0A < 255) ) {
 				OCR0A++;
 			}
+
+			//
+			// B) use binary values to set brightness direclty
+			//
+			// un-comment to use - don't forget to comment-out A)
+			//
+			//OCR0A = tmp;
+
 			// now back to normal
-			mode = 1;
+			mode = 0;
 			break;
 
 		default:
