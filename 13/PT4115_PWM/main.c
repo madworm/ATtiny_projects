@@ -30,6 +30,13 @@ RESTART:
             }
             break;
         case 0x02:	// PB2 pulled low
+	    /*
+	    if (OCR0A == 253) {
+	        // hopefull eliminate minimum brightness
+	        // inconsistency for one board
+	    	OCR0A = 255;
+	    }
+	    */
             if (OCR0A < 255) {
                 OCR0A++; // inverted PWM
             }
@@ -40,7 +47,7 @@ RESTART:
         default:
             break;
         }
-        delay(40); // use about 2000 if you need precise control of brightness
+        delay(750); // use about 2000 if you need precise control of brightness
     }
 
 #endif

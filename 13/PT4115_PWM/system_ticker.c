@@ -69,6 +69,8 @@ uint16_t time(void)
     time = system_ticks;
     SREG = _sreg;
     return time;
+    
+    //return system_ticks;
 }
 
 void delay(uint16_t ticks)
