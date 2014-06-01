@@ -10,8 +10,8 @@ avrdude -c avrispmkii -P usb -p attiny13 -U lfuse:w:0x79:m -U hfuse:w:0xFB:m
 #avrdude -c avrispmkii -P usb -p attiny13 -U lfuse:w:0x79:m -U hfuse:w:0xFF:m
 
 # write FLASH
-avrdude -c avrispmkII -P usb -p attiny13 -V -B 10 -e -U flash:w:$FLASH:i
+avrdude -c avrispmkII -P usb -p attiny13 -B 10 -e -U flash:w:$FLASH:i
 
 # write EEPROM
-avrdude -c avrispmkII -P usb -p attiny13 -V -B 10 -U eeprom:w:$EEPROM:i
+avrdude -c avrispmkII -P usb -p attiny13 -B 10 -U eeprom:w:$EEPROM:i
 
