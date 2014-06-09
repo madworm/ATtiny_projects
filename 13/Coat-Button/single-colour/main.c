@@ -36,7 +36,7 @@ int main(void)
 		delay(20000);	// requires system-ticker ISR to run!
 		if (PB0_PB2_shorted()) {	// still shorted
 			mode++;
-			if (mode > 4) {	// cycle 0..1..2..3..4..0..1..2...
+			if (mode > 5) {	// cycle 0..1..2..3..4..5..
 				mode = 0;
 			}
 			eeprom_write_byte(&saved_mode, mode);
@@ -50,7 +50,7 @@ int main(void)
 	wdt_enable(WDTO_8S);
 
 	mode++;
-	if (mode > 4) {		// cycle 0..1..2..3..4..0..1..2...
+	if (mode > 5) {		// cycle 0..1..2..3..4..5..
 		mode = 0;
 	}
 #endif
@@ -73,6 +73,9 @@ int main(void)
 			burst(5, 5000, 5, 500);	// bursts, burst_delay, pulses, pulse_delay
 			break;
 		case 4:
+			burst(1, 8000, 2, 2000);
+			break;
+		case 5:
 			flicker();
 			break;
 		default:
