@@ -52,7 +52,7 @@ TARGET = main
 
 
 # List C source files here. (C dependencies are automatically generated.)
-SRC = $(TARGET).c system_ticker.c adc.c pwm.c
+SRC = $(TARGET).c system_ticker.c adc.c pwm.c debug.c
 
 
 # List Assembler source files here.
