@@ -69,9 +69,6 @@ void initial_fade_in(void)
 	}
 }
 
-ISR(WDT_vect, ISR_NAKED)
-{
-	// ISR_NAKED: no push/pop stuff --> save a few bytes, as we don't do anything here
-	// just need ISR as wake-up source
-	asm volatile ("reti");	// need this!
-}
+EMPTY_INTERRUPT(WDT_vect)
+// no push/pop stuff --> save a few bytes, as we don't do anything here
+// 'reti' is taken care of by the ISR macro
