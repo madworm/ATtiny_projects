@@ -36,6 +36,14 @@ int main(void)
 			sleep_cpu();
 			sleep_disable();
 
+			// using more power saving stuff (PRR register...) isn't worth it
+			// current doesn't change a iota (steady 400µA).
+			//
+			// MCP1804: 50µA stand-by
+			// PT4115:  95µA stand-by
+			//
+			// Something is pissing away 255µA
+
 			WDTCR &= ~_BV(WDIE);
 		}
 	}
