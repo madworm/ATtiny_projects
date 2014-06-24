@@ -4,7 +4,7 @@
 
 uint16_t adc_read(void)
 {
-	ADMUX |= (_BV(MUX1) | _BV(MUX0)); // reset to channel PB3
+	ADMUX |= (_BV(MUX1) | _BV(MUX0));	// reset to channel PB3
 
 	ADCSRA |= _BV(ADSC);	// start conversion
 	while (ADCSRA & _BV(ADSC)) {

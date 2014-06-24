@@ -92,7 +92,7 @@ uint32_t micros(void)
 	return (((m << 8) + t) * 8);
 #endif
 #if (F_CPU == 1000000UL)
-	return (((m << 8) + t) * 64 );
+	return (((m << 8) + t) * 64);
 #endif
 }
 
