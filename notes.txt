@@ -1,0 +1,20 @@
+
+* PLL must be restarted after waking up from power-down (ATtiny25/45/85 and probably all others).
+
+* Don't enable an interrupt without writing code for it. It gets mapped to "bad interrupt" --> reset.
+  Behaviour can be set with "ISR(BADISR_vect) {}".
+
+  If you just need the interrupt as a wake-up source, use "EMPTY_INTERRUPT(xxx_vect) {}".
+  (no pro/epilogue, contains just 'reti').
+
+  This is equivalent:
+
+	ISR(WDT_vect, ISR_NAKED)
+	{	
+		asm volatile ("reti");
+	}
+
+	vs.
+
+	EMPTY_INTERRUPT(WDT_vect)
+
