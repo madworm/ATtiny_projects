@@ -44,6 +44,7 @@ int main(void)
 			//
 			// Something is pissing away 255µA
 
+			pll_init();	// restart pll
 			WDTCR &= ~_BV(WDIE);
 		}
 	}
@@ -53,6 +54,7 @@ void setup_hw(void)
 {
 	system_ticker_init();
 	adc_init();
+	pll_init();
 	pwm_init();
 	set_sleep_mode(SLEEP_MODE_PWR_DOWN);
 	sei();
