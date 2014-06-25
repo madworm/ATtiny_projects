@@ -29,8 +29,8 @@ int main(void)
 		delay(25);
 
 		if (OCR1B == 0) {
-			// 2s timeout --> WDT-interrupt (ISR must be defined, else mapped to bad-interrupt --> reset)
-			WDTCR = (_BV(WDIE) | _BV(WDP2) | _BV(WDP1) | _BV(WDP0));
+			// 1s timeout --> WDT-interrupt (ISR must be defined, else mapped to bad-interrupt --> reset)
+			WDTCR = (_BV(WDIE) | _BV(WDP2) | _BV(WDP1));
 
 			sleep_enable();
 			sleep_cpu();
@@ -45,7 +45,7 @@ int main(void)
 			// Something is pissing away 255µA
 
 			pll_init();	// restart pll
-			WDTCR &= ~_BV(WDIE);
+			WDTCR &= ~_BV(WDIE);	// disable WDT interrupt
 		}
 	}
 }
