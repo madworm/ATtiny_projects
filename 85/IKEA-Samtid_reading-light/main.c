@@ -26,7 +26,13 @@ int main(void)
 			}
 		}
 
-		delay(25);
+		if(OCR1B == 1) {
+			// wait so it is easier to set to lowest brightness value
+			// good for night-adapted eyes
+			delay(1500);
+		} else {
+			delay(25);
+		}		
 
 		if (OCR1B == 0) {
 			// 1s timeout --> WDT-interrupt (ISR must be defined, else mapped to bad-interrupt --> reset)
@@ -63,9 +69,15 @@ void setup_hw(void)
 void initial_fade_in(void)
 {
 	uint8_t counter;
-	for (counter = 0; counter < 127; counter++) {
+	
+	// start with lowest light level and wait a bit
+	// give night-adjusted eyes a chance to prepare for more light
+	OCR1B = 1;
+	delay(3000);
+	
+	for (counter = 1; counter < 127; counter++) {
 		OCR1B = counter;
-		delay(15);
+		delay(40);
 	}
 }
 
