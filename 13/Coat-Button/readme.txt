@@ -1,4 +1,28 @@
 
+Compiling using an installed Arduino-IDE (linux)
+------------------------------------------------
+
+Only do this, if you cannot get avr-libc + avr-gcc + avr-binutils for
+your distribution. You still need to install 'make'.
+
+If you're using winblows, you can easily run some linux version
+(openSUSE, kubuntu, Mint, Debian...) in a virtual machine (VirtualBox)
+and use the hints below.
+
+
+After changing to the code-folder, run this to compile:
+
+PATH=/home/YOURHOMEDIR/arduino-1.0.5/hardware/tools/avr/bin/:$PATH make
+
+This should compile the firmware and produce 'main.hex' and 'main.eep'
+and a few other files you probably won't need.
+
+Take a look at 'flash.sh' for how to upload with avrdude.
+
+
+--- --- ---
+
+
 If you run out of FLASH space, try using a later version of avr-gcc + avr-libc + tools.
 
 Comparison (triple-colour):
