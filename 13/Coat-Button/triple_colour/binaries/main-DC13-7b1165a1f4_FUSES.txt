@@ -1,0 +1,4 @@
+
+LFUSE	0x79
+HFUSE	0xFB
+
