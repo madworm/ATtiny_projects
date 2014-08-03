@@ -1,0 +1,12 @@
+# See: http://code.google.com/p/arduino/wiki/Platforms
+
+##############################################################
+
+attiny13.name=attiny13 4.8MHz RC oscillator ISP
+attiny13.upload.maximum_size=1024
+attiny13.bootloader.high_fuses=0xFB
+attiny13.bootloader.low_fuses=0x79
+attiny13.build.mcu=attiny13
+attiny13.build.f_cpu=4800000L
+attiny13.build.core=t13
+attiny13.build.variant=t13
