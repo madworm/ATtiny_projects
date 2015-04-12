@@ -34,7 +34,7 @@ ISR(TIM0_COMPA_vect)
 	// setting the pin at 255 and turning it off again in the overflow ISR
 	// doesn't producte 0% duty cycle.
 	//
-	if(OCR0A < 250) {
+	if(OCR0A < 254) {
 		PORTB |= _BV(PB0); // HIGH
 	}
 }
