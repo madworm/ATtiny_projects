@@ -2,6 +2,7 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include <stdint.h>
+#include "config.h"
 #include "util.h"
 
 void delay_ms(uint16_t ms)

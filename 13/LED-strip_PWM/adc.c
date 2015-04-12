@@ -1,5 +1,6 @@
 #include <avr/io.h>
 #include <stdint.h>
+#include "config.h"
 #include "adc.h"
 
 uint8_t adc_read(uint8_t channel)

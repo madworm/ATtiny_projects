@@ -2,6 +2,7 @@
 #include <avr/interrupt.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include "config.h"
 #include "util.h"
 #include "system_ticker.h"
 #include "adc.h"

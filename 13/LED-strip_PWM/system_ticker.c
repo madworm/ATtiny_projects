@@ -1,5 +1,6 @@
 #include <avr/interrupt.h>
 #include <stdint.h>
+#include "config.h"
 #include "system_ticker.h"
 
 volatile uint16_t system_ticks = 0;

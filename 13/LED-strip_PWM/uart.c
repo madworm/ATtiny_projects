@@ -2,6 +2,7 @@
 #include <avr/interrupt.h>
 #include <util/atomic.h>
 #include <stdint.h>
+#include "config.h"
 #include "util.h"
 #include "uart.h"
 
