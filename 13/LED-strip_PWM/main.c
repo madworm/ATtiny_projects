@@ -57,7 +57,7 @@ int main(void)
 #else		
 		switch (mode) {
 		case 0:
-			if (soft_uart_peek()) {
+			if (soft_uart_peek()) { // it seems this only works ONCE !?! WHY !!! ??? !!!
 				mode = 1;
 				break;
 			}
@@ -103,7 +103,7 @@ int main(void)
 			//OCR0A = tmp;
 
 			// now back to normal
-			mode = 0;
+			mode = 1; // see comment above where 'soft_uart_peek()' is called
 			break;
 
 		default:
