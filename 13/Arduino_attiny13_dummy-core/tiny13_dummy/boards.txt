@@ -2,11 +2,22 @@
 
 ##############################################################
 
-attiny13.name=attiny13 4.8MHz RC oscillator ISP
-attiny13.upload.maximum_size=1024
-attiny13.bootloader.high_fuses=0xFB
-attiny13.bootloader.low_fuses=0x79
-attiny13.build.mcu=attiny13
-attiny13.build.f_cpu=4800000L
-attiny13.build.core=t13
-attiny13.build.variant=t13
+attiny13_1.name=attiny13 4.8MHz RC oscillator ISP
+attiny13_1.upload.maximum_size=1024
+attiny13_1.bootloader.high_fuses=0xFB
+attiny13_1.bootloader.low_fuses=0x79
+attiny13_1.build.mcu=attiny13
+attiny13_1.build.f_cpu=4800000L
+attiny13_1.build.core=t13
+attiny13_1.build.variant=t13
+
+##############################################################
+
+attiny13_2.name=attiny13 9.6MHz RC oscillator ISP
+attiny13_2.upload.maximum_size=1024
+attiny13_2.bootloader.high_fuses=0xFD
+attiny13_2.bootloader.low_fuses=0x7A
+attiny13_2.build.mcu=attiny13
+attiny13_2.build.f_cpu=9600000L
+attiny13_2.build.core=t13
+attiny13_2.build.variant=t13
