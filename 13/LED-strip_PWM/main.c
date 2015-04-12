@@ -1,1 +1,1 @@
-main__std.c
+main-std.c
