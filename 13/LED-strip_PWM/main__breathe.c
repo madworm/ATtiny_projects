@@ -18,7 +18,7 @@ int main(void)
 		adc_fade_to = 255 - adc_read(POT1);	// reverse POT1 result vs direction of rotation
 		adc_delay = (uint16_t) (adc_read(POT2));
 		fade(255 - OCR0A, adc_fade_to, adc_delay); // "255 - OCR0A": current brightness (inverted PWM)
-		fade(255 - OCR0A, 0, adc_delay); // fade back to 0 for "breathing"
+		fade(255 - OCR0A, 2, adc_delay); // fade back to 2 for "breathing"
 	}
 }
 
