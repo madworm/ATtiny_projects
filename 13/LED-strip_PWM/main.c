@@ -21,30 +21,30 @@ int main(void)
 	setup_hw();
 
 	/*
-	while (1) {
-		OCR0A = 0;
-		delay_ms(500);
-		OCR0A = 254;
-		delay_ms(500);
-	}
-	*/
+	   while (1) {
+	   OCR0A = 0;
+	   delay_ms(500);
+	   OCR0A = 254;
+	   delay_ms(500);
+	   }
+	 */
 
 	/*
-	delay_ms(2500);
+	   delay_ms(2500);
 
-	while(1) {
-		OCR0A = 0;
-		delay_ms(250);
-		OCR0A = 255;
-		soft_uart_send('+',++tmp); // 21 worked for 9600
-		delay_ms(250);
-	}
-	*/
+	   while(1) {
+	   OCR0A = 0;
+	   delay_ms(250);
+	   OCR0A = 255;
+	   soft_uart_send('+',++tmp); // 21 worked for 9600
+	   delay_ms(250);
+	   }
+	 */
 
 	while (1) {
 
 #ifndef USE_UART
-#ifndef USE_BREATHE		
+#ifndef USE_BREATHE
 		adc_fade_to = 255 - adc_read(POT1);	// reverse POT1 result vs direction of rotation
 		adc_delay = (uint16_t) (adc_read(POT2));
 		fade(255 - OCR0A, adc_fade_to, adc_delay);	// "255 - OCR0A" --> inverted PWM
@@ -54,10 +54,10 @@ int main(void)
 		fade(255 - OCR0A, adc_fade_to, adc_delay);	// "255 - OCR0A" --> inverted PWM
 		fade(255 - OCR0A, 0, adc_delay);	// "255 - OCR0A" --> inverted PWM
 #endif
-#else		
+#else
 		switch (mode) {
 		case 0:
-			if (soft_uart_peek()) { // it seems this only works ONCE !?! WHY !!! ??? !!!
+			if (soft_uart_peek()) {	// it seems this only works ONCE !?! WHY !!! ??? !!! [IT IS FINE - YOU FOOL]
 				mode = 1;
 				break;
 			}
@@ -67,49 +67,53 @@ int main(void)
 			break;
 
 		case 1:
-			// do something useful here when serial data is received
-			// the device listens on PB2 (SCK) at 9600,8,N,1
-			// this pin #3 on the ISP connector (top view)
-			//
-			// 5   3   1
-			//
-			// 6   4   2
-			//
-			// 1: MISO
-			// 2: 5V
-			// 3: SCK
-			// 4: MOSI
-			// 5: RESET
-			// 6: GND
-			//
-			tmp = soft_uart_read();
+			while (1) {
+				// do something useful here when serial data is received
+				// the device listens on PB2 (SCK) at 9600,8,N,1
+				// this pin #3 on the ISP connector (top view)
+				//
+				// 5   3   1
+				//
+				// 6   4   2
+				//
+				// 1: MISO
+				// 2: 5V
+				// 3: SCK
+				// 4: MOSI
+				// 5: RESET
+				// 6: GND
+				//
+				if (soft_uart_peek()) {
+					tmp = soft_uart_read();
+				} else {
+					tmp = 0;
+				}
+				//
+				// A) inrease / decrease brightness by 1
+				//
+				if ((tmp == '+') && (OCR0A > 0)) {
+					OCR0A -= 1;
+				}
 
-			//
-			// A) inrease / decrease brightness by 1
-			//
-			if ( (tmp == '+') && (OCR0A > 0) ) {
-				OCR0A--;
+				if ((tmp == '-') && (OCR0A < 255)) {
+					OCR0A += 1;
+				}
+				//
+				// B) use binary values to set brightness direclty
+				//
+				// un-comment to use - don't forget to comment-out A)
+				//
+				//OCR0A = tmp;
+
+				// we stay in 'mode 1' forever.
+				// going back to 'mode 0' would overwrite the
+				// serial data giving the appearance that the code
+				// is broken - which it isn't!
 			}
-
-			if ( (tmp == '-') && (OCR0A < 255) ) {
-				OCR0A++;
-			}
-
-			//
-			// B) use binary values to set brightness direclty
-			//
-			// un-comment to use - don't forget to comment-out A)
-			//
-			//OCR0A = tmp;
-
-			// now back to normal
-			mode = 1; // see comment above where 'soft_uart_peek()' is called
-			break;
-
 		default:
 			break;
 		}
-#endif		
+#endif
 	}
 }
 
@@ -140,7 +144,8 @@ void fade(uint8_t from, uint8_t to, uint16_t f_delay)
 			} else {
 				break;
 			}
-		} while (counter <= to);
+		}
+		while (counter <= to);
 
 	}
 
@@ -155,6 +160,7 @@ void fade(uint8_t from, uint8_t to, uint16_t f_delay)
 				break;
 			}
 
-		} while (counter >= to);
+		}
+		while (counter >= to);
 	}
 }
